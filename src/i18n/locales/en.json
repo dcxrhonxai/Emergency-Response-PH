@@ -1,0 +1,134 @@
+{
+  "app": {
+    "name": "Emergency Response PH",
+    "tagline": "Your safety is our priority"
+  },
+  "auth": {
+    "login": "Login",
+    "signup": "Sign Up",
+    "logout": "Logout",
+    "email": "Email",
+    "password": "Password",
+    "fullName": "Full Name",
+    "signInPrompt": "Sign in to your account",
+    "signUpPrompt": "Create a new account",
+    "alreadyHaveAccount": "Already have an account?",
+    "dontHaveAccount": "Don't have an account?",
+    "signingIn": "Signing in...",
+    "signingUp": "Signing up..."
+  },
+  "emergency": {
+    "title": "Emergency",
+    "quickSOS": "Quick SOS",
+    "sendAlert": "Send Emergency Alert",
+    "selectType": "Select Emergency Type",
+    "types": {
+      "medical": "Medical Emergency",
+      "accident": "Accident",
+      "fire": "Fire",
+      "crime": "Crime",
+      "natural_disaster": "Natural Disaster",
+      "other": "Other"
+    },
+    "describeSituation": "Describe your situation",
+    "attachEvidence": "Attach Evidence (Optional)",
+    "capturePhoto": "Capture Photo",
+    "recordVideo": "Record Video",
+    "recordAudio": "Record Audio",
+    "locationAccess": "Getting your location...",
+    "sending": "Sending alert...",
+    "alertSent": "Emergency alert sent!",
+    "alertFailed": "Failed to send alert",
+    "activeAlert": "Active Emergency Alert",
+    "imSafe": "I'm Safe",
+    "endAlert": "End Alert",
+    "alertActive": "Your emergency alert is active",
+    "contactsNotified": "Your emergency contacts have been notified",
+    "escalated": "ESCALATED",
+    "escalatedMessage": "This alert has been escalated due to no response"
+  },
+  "contacts": {
+    "title": "Emergency Contacts",
+    "addContact": "Add Emergency Contact",
+    "name": "Name",
+    "phone": "Phone Number",
+    "relationship": "Relationship",
+    "saveContact": "Save Contact",
+    "cancel": "Cancel",
+    "deleteContact": "Delete Contact",
+    "deleteConfirm": "Are you sure you want to delete this contact?",
+    "noContacts": "No emergency contacts added yet",
+    "addFirst": "Add your first emergency contact"
+  },
+  "profile": {
+    "title": "Emergency Profile",
+    "medicalInfo": "Medical Information",
+    "fullName": "Full Name",
+    "phoneNumber": "Phone Number",
+    "bloodType": "Blood Type",
+    "allergies": "Allergies",
+    "medicalConditions": "Medical Conditions",
+    "emergencyNotes": "Emergency Notes",
+    "saveProfile": "Save Profile",
+    "profileUpdated": "Profile updated successfully",
+    "profileUpdateFailed": "Failed to update profile",
+    "viewMedicalID": "View Medical ID Card"
+  },
+  "medicalID": {
+    "title": "Medical ID Card",
+    "emergencyContact": "Emergency Contact",
+    "call": "Call",
+    "bloodType": "Blood Type",
+    "allergies": "Allergies",
+    "medicalConditions": "Medical Conditions",
+    "notes": "Emergency Notes",
+    "noInfo": "No information provided",
+    "instructions": "Show this card to emergency responders"
+  },
+  "history": {
+    "title": "Alert History",
+    "noAlerts": "No emergency alerts in history",
+    "active": "Active",
+    "resolved": "Resolved",
+    "escalated": "Escalated",
+    "viewDetails": "View Details",
+    "resolvedAt": "Resolved at",
+    "createdAt": "Created at"
+  },
+  "location": {
+    "title": "Location",
+    "shareLocation": "Share Location",
+    "currentLocation": "Current Location",
+    "latitude": "Latitude",
+    "longitude": "Longitude",
+    "viewOnMap": "View on Google Maps"
+  },
+  "tabs": {
+    "emergency": "Emergency",
+    "contacts": "Contacts",
+    "profile": "Profile",
+    "history": "History"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit",
+    "required": "Required"
+  },
+  "validation": {
+    "required": "This field is required",
+    "invalidEmail": "Invalid email address",
+    "invalidPhone": "Invalid phone number",
+    "minLength": "Must be at least {{count}} characters",
+    "maxLength": "Must be no more than {{count}} characters"
+  }
+}

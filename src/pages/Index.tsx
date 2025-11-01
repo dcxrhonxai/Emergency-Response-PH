@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useTranslation } from "react-i18next";
 import EmergencyForm from "@/components/EmergencyForm";
 import LocationMap from "@/components/LocationMap";
 import ContactList from "@/components/ContactList";
@@ -9,12 +10,17 @@ import PersonalContacts from "@/components/PersonalContacts";
 import AlertHistory from "@/components/AlertHistory";
 import { ActiveAlerts } from "@/components/ActiveAlerts";
 import { EmergencyProfile } from "@/components/EmergencyProfile";
-import { Shield, LogOut, User, History, Users, Heart } from "lucide-react";
+import { MedicalIDCard } from "@/components/MedicalIDCard";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { Shield, LogOut, User, History, Users, Heart, IdCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useRealtimeAlerts } from "@/hooks/useRealtimeAlerts";
 import { useEmergencyNotifications } from "@/hooks/useEmergencyNotifications";
+import { useAlertEscalation } from "@/hooks/useAlertEscalation";
 import type { Session } from "@supabase/supabase-js";
 
 export interface EmergencyContact {
@@ -28,6 +34,7 @@ export interface EmergencyContact {
 
 const Index = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [session, setSession] = useState<Session | null>(null);
   const [showEmergency, setShowEmergency] = useState(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -35,8 +42,12 @@ const Index = () => {
   const [situation, setSituation] = useState("");
   const [currentAlertId, setCurrentAlertId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("emergency");
+  const [showMedicalID, setShowMedicalID] = useState(false);
   const { alerts, isLoading: alertsLoading } = useRealtimeAlerts(session?.user?.id);
   const { sendNotifications } = useEmergencyNotifications();
+  
+  // Enable alert escalation checking
+  useAlertEscalation();
 
   useEffect(() => {
     // Check auth
@@ -174,6 +185,9 @@ const Index = () => {
     return null; // Will redirect to auth
   }
 
+  // Find if there's an escalated alert
+  const escalatedAlert = alerts?.find((alert: any) => alert.status === 'escalated');
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -182,18 +196,30 @@ const Index = () => {
           <div className="flex items-center gap-3">
             <Shield className="w-8 h-8" />
             <div>
-              <h1 className="text-2xl font-bold">Emergency Response PH</h1>
-              <p className="text-sm opacity-90">Quick access to emergency services</p>
+              <h1 className="text-2xl font-bold">{t('app.name')}</h1>
+              <p className="text-sm opacity-90">{t('app.tagline')}</p>
             </div>
           </div>
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={handleLogout}
-            className="text-primary-foreground hover:bg-primary-foreground/10"
-          >
-            <LogOut className="w-5 h-5" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setShowMedicalID(true)}
+              className="bg-primary-foreground text-primary hover:bg-primary-foreground/90"
+            >
+              <IdCard className="w-4 h-4 mr-2" />
+              Medical ID
+            </Button>
+            <LanguageSwitcher />
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={handleLogout}
+              className="text-primary-foreground hover:bg-primary-foreground/10"
+            >
+              <LogOut className="w-5 h-5" />
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -204,19 +230,19 @@ const Index = () => {
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="emergency" className="flex items-center gap-2">
                 <Shield className="w-4 h-4" />
-                Emergency
+                {t('tabs.emergency')}
               </TabsTrigger>
               <TabsTrigger value="contacts" className="flex items-center gap-2">
                 <Users className="w-4 h-4" />
-                Contacts
+                {t('tabs.contacts')}
               </TabsTrigger>
               <TabsTrigger value="profile" className="flex items-center gap-2">
                 <Heart className="w-4 h-4" />
-                Profile
+                {t('tabs.profile')}
               </TabsTrigger>
               <TabsTrigger value="history" className="flex items-center gap-2">
                 <History className="w-4 h-4" />
-                History
+                {t('tabs.history')}
               </TabsTrigger>
             </TabsList>
 
@@ -224,6 +250,19 @@ const Index = () => {
               {!alertsLoading && alerts.length > 0 && (
                 <div className="mb-6">
                   <ActiveAlerts alerts={alerts} />
+                  {escalatedAlert && (
+                    <div className="mt-4 p-4 bg-yellow-500/10 border-2 border-yellow-500 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge variant="secondary" className="bg-yellow-500 text-black">
+                          {t('emergency.escalated')}
+                        </Badge>
+                        <span className="font-semibold">Alert #{escalatedAlert.id.slice(0, 8)}</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {t('emergency.escalatedMessage')}
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
               
@@ -234,7 +273,7 @@ const Index = () => {
                   className="w-full h-32 text-3xl font-bold bg-destructive hover:bg-destructive/90 text-destructive-foreground shadow-lg animate-pulse"
                   size="lg"
                 >
-                  🚨 SOS
+                  🚨 {t('emergency.quickSOS')}
                 </Button>
                 <p className="text-center text-sm text-muted-foreground mt-2">
                   Tap for instant emergency alert
@@ -260,18 +299,18 @@ const Index = () => {
           <div className="space-y-6">
             {/* Emergency Alert */}
             <div className="bg-primary text-primary-foreground p-6 rounded-lg shadow-lg">
-              <h2 className="text-xl font-bold mb-2">Emergency Alert Active</h2>
+              <h2 className="text-xl font-bold mb-2">{t('emergency.activeAlert')}</h2>
               <p className="mb-2">
-                <strong>Type:</strong> {emergencyType}
+                <strong>{t('emergency.selectType')}:</strong> {emergencyType}
               </p>
               <p className="mb-4">
-                <strong>Situation:</strong> {situation}
+                <strong>{t('emergency.describeSituation')}:</strong> {situation}
               </p>
               <button
                 onClick={handleBack}
                 className="bg-primary-foreground text-primary px-4 py-2 rounded-md font-semibold hover:opacity-90 transition-opacity"
               >
-                Cancel Alert
+                {t('emergency.imSafe')}
               </button>
             </div>
 
@@ -296,6 +335,16 @@ const Index = () => {
           </div>
         )}
       </main>
+
+      {/* Medical ID Dialog */}
+      <Dialog open={showMedicalID} onOpenChange={setShowMedicalID}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{t('medicalID.title')}</DialogTitle>
+          </DialogHeader>
+          <MedicalIDCard />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

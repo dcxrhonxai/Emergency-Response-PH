@@ -1,0 +1,134 @@
+{
+  "app": {
+    "name": "Emergency Response PH",
+    "tagline": "Ang iyong kaligtasan ay aming priyoridad"
+  },
+  "auth": {
+    "login": "Mag-login",
+    "signup": "Mag-sign Up",
+    "logout": "Mag-logout",
+    "email": "Email",
+    "password": "Password",
+    "fullName": "Buong Pangalan",
+    "signInPrompt": "Mag-sign in sa iyong account",
+    "signUpPrompt": "Gumawa ng bagong account",
+    "alreadyHaveAccount": "Mayroon ka nang account?",
+    "dontHaveAccount": "Wala kang account?",
+    "signingIn": "Nag-sign in...",
+    "signingUp": "Nag-sign up..."
+  },
+  "emergency": {
+    "title": "Emerhensya",
+    "quickSOS": "Mabilis na SOS",
+    "sendAlert": "Magpadala ng Emergency Alert",
+    "selectType": "Pumili ng Uri ng Emerhensya",
+    "types": {
+      "medical": "Medikal na Emerhensya",
+      "accident": "Aksidente",
+      "fire": "Sunog",
+      "crime": "Krimen",
+      "natural_disaster": "Kalamidad",
+      "other": "Iba Pa"
+    },
+    "describeSituation": "Ilarawan ang iyong sitwasyon",
+    "attachEvidence": "Magdagdag ng Ebidensya (Opsyonal)",
+    "capturePhoto": "Kumuha ng Larawan",
+    "recordVideo": "Mag-record ng Video",
+    "recordAudio": "Mag-record ng Audio",
+    "locationAccess": "Kinukuha ang iyong lokasyon...",
+    "sending": "Ipinapadala ang alerto...",
+    "alertSent": "Naipadala na ang emergency alert!",
+    "alertFailed": "Hindi naipadala ang alerto",
+    "activeAlert": "Aktibong Emergency Alert",
+    "imSafe": "Ligtas Ako",
+    "endAlert": "Tapusin ang Alerto",
+    "alertActive": "Ang iyong emergency alert ay aktibo",
+    "contactsNotified": "Naipaalam na sa iyong mga emergency contact",
+    "escalated": "PINATAAS",
+    "escalatedMessage": "Ang alertong ito ay pinataas dahil walang tugon"
+  },
+  "contacts": {
+    "title": "Mga Emergency Contact",
+    "addContact": "Magdagdag ng Emergency Contact",
+    "name": "Pangalan",
+    "phone": "Numero ng Telepono",
+    "relationship": "Relasyon",
+    "saveContact": "I-save ang Contact",
+    "cancel": "Kanselahin",
+    "deleteContact": "Tanggalin ang Contact",
+    "deleteConfirm": "Sigurado ka bang gusto mong tanggalin ang contact na ito?",
+    "noContacts": "Wala pang emergency contact na naidagdag",
+    "addFirst": "Magdagdag ng iyong unang emergency contact"
+  },
+  "profile": {
+    "title": "Emergency Profile",
+    "medicalInfo": "Medikal na Impormasyon",
+    "fullName": "Buong Pangalan",
+    "phoneNumber": "Numero ng Telepono",
+    "bloodType": "Uri ng Dugo",
+    "allergies": "Mga Allergy",
+    "medicalConditions": "Mga Kondisyong Medikal",
+    "emergencyNotes": "Mga Tala sa Emerhensya",
+    "saveProfile": "I-save ang Profile",
+    "profileUpdated": "Matagumpay na na-update ang profile",
+    "profileUpdateFailed": "Hindi na-update ang profile",
+    "viewMedicalID": "Tingnan ang Medical ID Card"
+  },
+  "medicalID": {
+    "title": "Medical ID Card",
+    "emergencyContact": "Emergency Contact",
+    "call": "Tawagan",
+    "bloodType": "Uri ng Dugo",
+    "allergies": "Mga Allergy",
+    "medicalConditions": "Mga Kondisyong Medikal",
+    "notes": "Mga Tala sa Emerhensya",
+    "noInfo": "Walang impormasyon",
+    "instructions": "Ipakita ang card na ito sa mga emergency responder"
+  },
+  "history": {
+    "title": "Kasaysayan ng Alerto",
+    "noAlerts": "Walang emergency alert sa kasaysayan",
+    "active": "Aktibo",
+    "resolved": "Nalutas",
+    "escalated": "Pinataas",
+    "viewDetails": "Tingnan ang Detalye",
+    "resolvedAt": "Nalutas noong",
+    "createdAt": "Nilikha noong"
+  },
+  "location": {
+    "title": "Lokasyon",
+    "shareLocation": "Ibahagi ang Lokasyon",
+    "currentLocation": "Kasalukuyang Lokasyon",
+    "latitude": "Latitude",
+    "longitude": "Longitude",
+    "viewOnMap": "Tingnan sa Google Maps"
+  },
+  "tabs": {
+    "emergency": "Emerhensya",
+    "contacts": "Mga Contact",
+    "profile": "Profile",
+    "history": "Kasaysayan"
+  },
+  "common": {
+    "loading": "Naglo-load...",
+    "error": "May Mali",
+    "success": "Tagumpay",
+    "save": "I-save",
+    "cancel": "Kanselahin",
+    "delete": "Tanggalin",
+    "edit": "I-edit",
+    "close": "Isara",
+    "confirm": "Kumpirmahin",
+    "back": "Bumalik",
+    "next": "Susunod",
+    "submit": "Isumite",
+    "required": "Kinakailangan"
+  },
+  "validation": {
+    "required": "Kinakailangan ang field na ito",
+    "invalidEmail": "Hindi wastong email address",
+    "invalidPhone": "Hindi wastong numero ng telepono",
+    "minLength": "Dapat ay hindi bababa sa {{count}} na character",
+    "maxLength": "Dapat ay hindi hihigit sa {{count}} na character"
+  }
+}
