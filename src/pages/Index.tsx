@@ -12,6 +12,8 @@ import { ActiveAlerts } from "@/components/ActiveAlerts";
 import { EmergencyProfile } from "@/components/EmergencyProfile";
 import { MedicalIDCard } from "@/components/MedicalIDCard";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { EmergencyChat } from "@/components/EmergencyChat";
+import { EmergencyDirections } from "@/components/EmergencyDirections";
 import { Shield, LogOut, User, History, Users, Heart, IdCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -79,7 +81,7 @@ const Index = () => {
     setSituation(description);
     setShowEmergency(true);
     
-    // Get user's location
+    // Get user's location with high accuracy
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
@@ -88,6 +90,11 @@ const Index = () => {
             lng: position.coords.longitude,
           };
           setUserLocation(location);
+          
+          console.log('Location accuracy:', position.coords.accuracy, 'meters');
+          if (position.coords.accuracy > 50) {
+            toast.warning(`Location accuracy: ±${Math.round(position.coords.accuracy)}m`);
+          }
 
           // Save alert to database
           if (session?.user) {
@@ -150,6 +157,11 @@ const Index = () => {
           const defaultLocation = { lat: 14.5995, lng: 120.9842 };
           setUserLocation(defaultLocation);
           toast.warning("Could not access your location. Using default location.");
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
         }
       );
     } else {
@@ -321,8 +333,25 @@ const Index = () => {
               </div>
             )}
 
+            {/* Emergency Directions & Routing */}
+            {userLocation && (
+              <EmergencyDirections 
+                userLocation={userLocation}
+                emergencyType={emergencyType}
+              />
+            )}
+
             {/* Emergency Contacts */}
             <ContactList emergencyType={emergencyType} userLocation={userLocation} />
+
+            {/* Emergency Chat */}
+            {currentAlertId && session?.user && (
+              <EmergencyChat 
+                alertId={currentAlertId}
+                userId={session.user.id}
+                userName={session.user.email || 'User'}
+              />
+            )}
 
             {/* Share Location */}
             {session?.user && userLocation && (

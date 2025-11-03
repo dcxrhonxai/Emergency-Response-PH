@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
+import { Media } from "@capacitor-community/media";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CameraIcon, Video, X } from "lucide-react";
@@ -42,25 +43,35 @@ export const CameraCapture = ({ onCapture }: CameraCaptureProps) => {
 
   const recordVideo = async () => {
     try {
-      const video = await Camera.getPhoto({
-        quality: 90,
-        allowEditing: false,
-        resultType: CameraResultType.DataUrl,
-        source: CameraSource.Camera,
+      const result = await Media.getMedias({
+        mediaType: 'videos',
+        limit: 1
       });
 
-      if (video.dataUrl) {
-        setCapturedMedia({ data: video.dataUrl, type: 'video' });
-        onCapture(video.dataUrl, 'video');
-        toast({
-          title: "Video recorded",
-          description: "Your video has been recorded successfully",
-        });
+      if (result.medias && result.medias.length > 0) {
+        const videoPath = result.medias[0].path;
+        
+        // Convert to base64 data URL
+        const response = await fetch(videoPath);
+        const blob = await response.blob();
+        const reader = new FileReader();
+        
+        reader.onloadend = () => {
+          const dataUrl = reader.result as string;
+          setCapturedMedia({ data: dataUrl, type: 'video' });
+          onCapture(dataUrl, 'video');
+          toast({
+            title: "Video recorded",
+            description: "Your video has been recorded successfully",
+          });
+        };
+        
+        reader.readAsDataURL(blob);
       }
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to record video",
+        description: "Failed to record video. Please ensure camera permissions are granted.",
         variant: "destructive",
       });
       console.error("Error recording video:", error);
