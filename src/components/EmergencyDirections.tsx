@@ -5,19 +5,12 @@ import { Button } from "./ui/button";
 import { Navigation, Phone, MapPin, ExternalLink } from "lucide-react";
 import { Badge } from "./ui/badge";
 import { useTranslation } from "react-i18next";
-import { calculateDistance } from "@/lib/distance";
+import { calculateDistance, formatDistance } from "@/lib/distance";
+import type { Database } from "@/integrations/supabase/types";
 
-interface EmergencyService {
-  id: string;
-  name: string;
-  type: string;
-  phone: string;
-  address: string;
-  city: string;
-  latitude: number;
-  longitude: number;
-  is_national: boolean;
-}
+type EmergencyService = Database['public']['Tables']['emergency_services']['Row'] & {
+  distance?: string;
+};
 
 interface EmergencyDirectionsProps {
   userLocation: { lat: number; lng: number };
@@ -40,15 +33,22 @@ export const EmergencyDirections = ({ userLocation, emergencyType }: EmergencyDi
 
     if (data) {
       // Calculate distances and sort by proximity
-      const servicesWithDistance = data.map(service => ({
-        ...service,
-        distance: calculateDistance(
+      const servicesWithDistance: EmergencyService[] = data.map(service => {
+        const distanceKm = calculateDistance(
           userLocation.lat,
           userLocation.lng,
           Number(service.latitude),
           Number(service.longitude)
-        )
-      })).sort((a, b) => a.distance - b.distance);
+        );
+        return {
+          ...service,
+          distance: formatDistance(distanceKm)
+        };
+      }).sort((a, b) => {
+        const distA = parseFloat(a.distance || '0');
+        const distB = parseFloat(b.distance || '0');
+        return distA - distB;
+      });
 
       setNearbyServices(servicesWithDistance.slice(0, 5));
       if (servicesWithDistance.length > 0) {

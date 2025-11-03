@@ -7,15 +7,9 @@ import { ScrollArea } from "./ui/scroll-area";
 import { Send, MessageCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
+import type { Database } from "@/integrations/supabase/types";
 
-interface Message {
-  id: string;
-  alert_id: string;
-  sender_id: string;
-  sender_name: string;
-  message: string;
-  created_at: string;
-}
+type Message = Database['public']['Tables']['emergency_messages']['Row'];
 
 interface EmergencyChatProps {
   alertId: string;

@@ -91,6 +91,41 @@ export type Database = {
         }
         Relationships: []
       }
+      emergency_messages: {
+        Row: {
+          alert_id: string
+          created_at: string
+          id: string
+          message: string
+          sender_id: string
+          sender_name: string
+        }
+        Insert: {
+          alert_id: string
+          created_at?: string
+          id?: string
+          message: string
+          sender_id: string
+          sender_name: string
+        }
+        Update: {
+          alert_id?: string
+          created_at?: string
+          id?: string
+          message?: string
+          sender_id?: string
+          sender_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "emergency_messages_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "emergency_alerts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       emergency_services: {
         Row: {
           address: string | null

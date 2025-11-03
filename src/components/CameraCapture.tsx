@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
-import { Media } from "@capacitor-community/media";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CameraIcon, Video, X } from "lucide-react";
@@ -43,38 +42,33 @@ export const CameraCapture = ({ onCapture }: CameraCaptureProps) => {
 
   const recordVideo = async () => {
     try {
-      const result = await Media.getMedias({
-        mediaType: 'videos',
-        limit: 1
+      toast({
+        title: "Video Recording",
+        description: "Video recording will use native camera app. Please record and select from gallery.",
       });
 
-      if (result.medias && result.medias.length > 0) {
-        const videoPath = result.medias[0].path;
-        
-        // Convert to base64 data URL
-        const response = await fetch(videoPath);
-        const blob = await response.blob();
-        const reader = new FileReader();
-        
-        reader.onloadend = () => {
-          const dataUrl = reader.result as string;
-          setCapturedMedia({ data: dataUrl, type: 'video' });
-          onCapture(dataUrl, 'video');
-          toast({
-            title: "Video recorded",
-            description: "Your video has been recorded successfully",
-          });
-        };
-        
-        reader.readAsDataURL(blob);
+      const video = await Camera.getPhoto({
+        quality: 90,
+        allowEditing: false,
+        resultType: CameraResultType.DataUrl,
+        source: CameraSource.Photos, // Use photo library to select video
+      });
+
+      if (video.dataUrl) {
+        setCapturedMedia({ data: video.dataUrl, type: 'video' });
+        onCapture(video.dataUrl, 'video');
+        toast({
+          title: "Video selected",
+          description: "Your video has been selected successfully",
+        });
       }
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to record video. Please ensure camera permissions are granted.",
+        description: "Failed to select video. Please ensure camera permissions are granted.",
         variant: "destructive",
       });
-      console.error("Error recording video:", error);
+      console.error("Error selecting video:", error);
     }
   };
 
@@ -93,7 +87,7 @@ export const CameraCapture = ({ onCapture }: CameraCaptureProps) => {
         </Button>
         <Button onClick={recordVideo} variant="secondary" className="flex-1">
           <Video className="mr-2 h-4 w-4" />
-          Record Video
+          Select Video
         </Button>
       </div>
 

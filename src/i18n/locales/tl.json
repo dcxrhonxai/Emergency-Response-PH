@@ -85,6 +85,16 @@
     "noInfo": "Walang impormasyon",
     "instructions": "Ipakita ang card na ito sa mga emergency responder"
   },
+  "chat": {
+    "title": "Emergency Chat",
+    "noMessages": "Walang mensahe pa. Magsimulang mag-chat sa iyong emergency contacts.",
+    "placeholder": "Mag-type ng mensahe..."
+  },
+  "directions": {
+    "nearbyServices": "Malapit na Emergency Services",
+    "getDirections": "Kumuha ng Direksyon",
+    "call": "Tumawag"
+  },
   "history": {
     "title": "Kasaysayan ng Alerto",
     "noAlerts": "Walang emergency alert sa kasaysayan",

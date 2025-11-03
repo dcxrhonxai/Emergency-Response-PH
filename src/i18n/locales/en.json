@@ -85,6 +85,16 @@
     "noInfo": "No information provided",
     "instructions": "Show this card to emergency responders"
   },
+  "chat": {
+    "title": "Emergency Chat",
+    "noMessages": "No messages yet. Start chatting with your emergency contacts.",
+    "placeholder": "Type a message..."
+  },
+  "directions": {
+    "nearbyServices": "Nearby Emergency Services",
+    "getDirections": "Get Directions",
+    "call": "Call"
+  },
   "history": {
     "title": "Alert History",
     "noAlerts": "No emergency alerts in history",
