@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Phone, Trash2, Plus, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 import { personalContactSchema } from "@/lib/validation";
+import { usePhoneCaller } from "@/hooks/usePhoneCaller";
 
 interface PersonalContact {
   id: string;
@@ -100,14 +101,14 @@ const PersonalContacts = ({ userId }: PersonalContactsProps) => {
     }
   };
 
+  const { makeCall, sendSMS } = usePhoneCaller();
+
   const handleCall = (phone: string, name: string) => {
-    window.location.href = `tel:${phone}`;
-    toast.success(`Calling ${name}...`);
+    makeCall(phone, name);
   };
 
   const handleMessage = (phone: string, name: string) => {
-    window.location.href = `sms:${phone}`;
-    toast.success(`Opening message to ${name}...`);
+    sendSMS(phone);
   };
 
   if (loading) {

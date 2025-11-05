@@ -1,23 +1,21 @@
 import { EmergencyContact } from "@/pages/Index";
 import { Button } from "@/components/ui/button";
 import { Phone, MessageSquare, MapPin } from "lucide-react";
-import { toast } from "sonner";
+import { usePhoneCaller } from "@/hooks/usePhoneCaller";
 
 interface ContactCardProps {
   contact: EmergencyContact;
 }
 
 const ContactCard = ({ contact }: ContactCardProps) => {
+  const { makeCall, sendSMS, isCalling } = usePhoneCaller();
+
   const handleCall = () => {
-    // Open phone dialer with the number
-    window.location.href = `tel:${contact.phone}`;
-    toast.success(`Calling ${contact.name}...`);
+    makeCall(contact.phone, contact.name);
   };
 
   const handleMessage = () => {
-    // Open SMS app with the number
-    window.location.href = `sms:${contact.phone}`;
-    toast.success(`Opening message to ${contact.name}...`);
+    sendSMS(contact.phone);
   };
 
   return (
@@ -45,11 +43,12 @@ const ContactCard = ({ contact }: ContactCardProps) => {
         <div className="flex flex-col gap-2 flex-shrink-0">
           <Button
             onClick={handleCall}
+            disabled={isCalling}
             size="sm"
             className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold min-w-24"
           >
             <Phone className="w-4 h-4 mr-1" />
-            Call
+            {isCalling ? 'Calling...' : 'Call'}
           </Button>
           <Button
             onClick={handleMessage}
