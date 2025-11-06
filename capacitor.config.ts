@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.dcxrhonx.emergencyresponseph',
-  appName: 'EmergencyResponsePH',
+  appName: 'Emergency Response PH',
   webDir: 'dist'
 };
 
