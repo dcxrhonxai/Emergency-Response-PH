@@ -14,15 +14,17 @@ import { MedicalIDCard } from "@/components/MedicalIDCard";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { EmergencyChat } from "@/components/EmergencyChat";
 import { EmergencyDirections } from "@/components/EmergencyDirections";
-import { Shield, LogOut, User, History, Users, Heart, IdCard, Plus } from "lucide-react";
+import { Shield, LogOut, User, History, Users, Heart, IdCard, Plus, Menu, Wifi, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useRealtimeAlerts } from "@/hooks/useRealtimeAlerts";
 import { useEmergencyNotifications } from "@/hooks/useEmergencyNotifications";
 import { useAlertEscalation } from "@/hooks/useAlertEscalation";
+import { useOfflineSync } from "@/hooks/useOfflineSync";
 import type { Session } from "@supabase/supabase-js";
 
 export interface EmergencyContact {
@@ -45,11 +47,56 @@ const Index = () => {
   const [currentAlertId, setCurrentAlertId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("emergency");
   const [showMedicalID, setShowMedicalID] = useState(false);
+  const [isPulling, setIsPulling] = useState(false);
+  const [pullDistance, setPullDistance] = useState(0);
   const { alerts, isLoading: alertsLoading } = useRealtimeAlerts(session?.user?.id);
   const { sendNotifications } = useEmergencyNotifications();
+  const { isOnline } = useOfflineSync();
   
   // Enable alert escalation checking
   useAlertEscalation();
+
+  // Pull to refresh
+  useEffect(() => {
+    let startY = 0;
+    const threshold = 80;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (window.scrollY === 0) {
+        startY = e.touches[0].clientY;
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (window.scrollY === 0 && startY > 0) {
+        const currentY = e.touches[0].clientY;
+        const distance = currentY - startY;
+        if (distance > 0 && distance < 150) {
+          setPullDistance(distance);
+          setIsPulling(true);
+        }
+      }
+    };
+
+    const handleTouchEnd = () => {
+      if (pullDistance > threshold) {
+        window.location.reload();
+      }
+      setPullDistance(0);
+      setIsPulling(false);
+      startY = 0;
+    };
+
+    document.addEventListener('touchstart', handleTouchStart);
+    document.addEventListener('touchmove', handleTouchMove);
+    document.addEventListener('touchend', handleTouchEnd);
+
+    return () => {
+      document.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [pullDistance]);
 
   useEffect(() => {
     // Check auth
@@ -202,84 +249,120 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Pull to refresh indicator */}
+      {isPulling && (
+        <div 
+          className="fixed top-0 left-0 right-0 flex justify-center pt-2 z-50 transition-opacity"
+          style={{ opacity: pullDistance / 80 }}
+        >
+          <div className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs">
+            Pull to refresh...
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <header className="bg-primary text-primary-foreground shadow-lg sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Shield className="w-8 h-8" />
+        {/* Online Status Bar */}
+        <div className="border-b border-primary-foreground/20">
+          <div className="container mx-auto px-3 py-1 flex items-center justify-center gap-2">
+            {isOnline ? (
+              <>
+                <Wifi className="w-3 h-3 text-green-400" />
+                <span className="text-xs text-green-400">Online</span>
+              </>
+            ) : (
+              <>
+                <WifiOff className="w-3 h-3 text-orange-400" />
+                <span className="text-xs text-orange-400">Offline</span>
+              </>
+            )}
+          </div>
+        </div>
+
+        <div className="container mx-auto px-3 py-2 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Shield className="w-6 h-6" />
             <div>
-              <h1 className="text-2xl font-bold">{t('app.name')}</h1>
-              <p className="text-sm opacity-90">{t('app.tagline')}</p>
+              <h1 className="text-lg font-bold">{t('app.name')}</h1>
+              <p className="text-xs opacity-90">{t('app.tagline')}</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => navigate("/community-services")}
-              className="bg-primary-foreground text-primary hover:bg-primary-foreground/90"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Service
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => setShowMedicalID(true)}
-              className="bg-primary-foreground text-primary hover:bg-primary-foreground/90"
-            >
-              <IdCard className="w-4 h-4 mr-2" />
-              Medical ID
-            </Button>
-            <LanguageSwitcher />
+          <div className="flex items-center gap-1">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className="text-primary-foreground hover:bg-primary-foreground/10 h-8 w-8"
+                >
+                  <Menu className="w-5 h-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={() => setShowMedicalID(true)}>
+                  <IdCard className="w-4 h-4 mr-2" />
+                  Medical ID
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/community-services")}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Service
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <div className="w-full">
+                    <LanguageSwitcher />
+                  </div>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Button 
               variant="ghost" 
               size="icon"
               onClick={handleLogout}
-              className="text-primary-foreground hover:bg-primary-foreground/10"
+              className="text-primary-foreground hover:bg-primary-foreground/10 h-8 w-8"
             >
-              <LogOut className="w-5 h-5" />
+              <LogOut className="w-4 h-4" />
             </Button>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-6 max-w-2xl">
+      <main className="container mx-auto px-3 py-3 max-w-2xl pb-20">
         {!showEmergency ? (
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="emergency" className="flex items-center gap-2">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-3">
+            <TabsList className="grid w-full grid-cols-4 h-auto">
+              <TabsTrigger value="emergency" className="flex flex-col items-center gap-1 py-2 text-xs">
                 <Shield className="w-4 h-4" />
-                {t('tabs.emergency')}
+                <span className="hidden sm:inline">{t('tabs.emergency')}</span>
               </TabsTrigger>
-              <TabsTrigger value="contacts" className="flex items-center gap-2">
+              <TabsTrigger value="contacts" className="flex flex-col items-center gap-1 py-2 text-xs">
                 <Users className="w-4 h-4" />
-                {t('tabs.contacts')}
+                <span className="hidden sm:inline">{t('tabs.contacts')}</span>
               </TabsTrigger>
-              <TabsTrigger value="profile" className="flex items-center gap-2">
+              <TabsTrigger value="profile" className="flex flex-col items-center gap-1 py-2 text-xs">
                 <Heart className="w-4 h-4" />
-                {t('tabs.profile')}
+                <span className="hidden sm:inline">{t('tabs.profile')}</span>
               </TabsTrigger>
-              <TabsTrigger value="history" className="flex items-center gap-2">
+              <TabsTrigger value="history" className="flex flex-col items-center gap-1 py-2 text-xs">
                 <History className="w-4 h-4" />
-                {t('tabs.history')}
+                <span className="hidden sm:inline">{t('tabs.history')}</span>
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="emergency">
+            <TabsContent value="emergency" className="space-y-3">
               {!alertsLoading && alerts.length > 0 && (
-                <div className="mb-6">
+                <div className="mb-3">
                   <ActiveAlerts alerts={alerts} />
                   {escalatedAlert && (
-                    <div className="mt-4 p-4 bg-yellow-500/10 border-2 border-yellow-500 rounded-lg">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Badge variant="secondary" className="bg-yellow-500 text-black">
+                    <div className="mt-2 p-2 bg-yellow-500/10 border border-yellow-500 rounded-lg">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Badge variant="secondary" className="bg-yellow-500 text-black text-xs">
                           {t('emergency.escalated')}
                         </Badge>
-                        <span className="font-semibold">Alert #{escalatedAlert.id.slice(0, 8)}</span>
+                        <span className="text-xs font-semibold">Alert #{escalatedAlert.id.slice(0, 8)}</span>
                       </div>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         {t('emergency.escalatedMessage')}
                       </p>
                     </div>
@@ -288,15 +371,14 @@ const Index = () => {
               )}
               
               {/* Quick SOS Button */}
-              <div className="mb-6">
+              <div className="mb-3">
                 <Button
                   onClick={handleQuickSOS}
-                  className="w-full h-32 text-3xl font-bold bg-destructive hover:bg-destructive/90 text-destructive-foreground shadow-lg animate-pulse"
-                  size="lg"
+                  className="w-full h-16 text-xl font-bold bg-destructive hover:bg-destructive/90 text-destructive-foreground shadow-lg animate-pulse"
                 >
                   🚨 {t('emergency.quickSOS')}
                 </Button>
-                <p className="text-center text-sm text-muted-foreground mt-2">
+                <p className="text-center text-xs text-muted-foreground mt-1">
                   Tap for instant emergency alert
                 </p>
               </div>

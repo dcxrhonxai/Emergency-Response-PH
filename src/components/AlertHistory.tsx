@@ -180,28 +180,28 @@ const AlertHistory = ({ userId }: AlertHistoryProps) => {
 
   if (loading) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
-        Loading history...
+      <div className="text-center py-4 text-xs text-muted-foreground">
+        Loading...
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-foreground mb-2">Emergency Alert History</h2>
-          <p className="text-sm text-muted-foreground">
-            Your past emergency alerts and their status
+          <h2 className="text-lg font-bold text-foreground">Alert History</h2>
+          <p className="text-xs text-muted-foreground">
+            Past alerts & status
           </p>
         </div>
         {alerts.length > 0 && (
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="destructive" size="sm" disabled={deleting === "all"}>
-                <Trash2 className="w-4 h-4 mr-2" />
-                Delete All
+              <Button variant="destructive" size="sm" disabled={deleting === "all"} className="h-7 text-xs">
+                <Trash2 className="w-3 h-3 mr-1" />
+                <span className="hidden sm:inline">Delete All</span>
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
@@ -224,31 +224,32 @@ const AlertHistory = ({ userId }: AlertHistoryProps) => {
 
       {/* Alerts List */}
       {alerts.length === 0 ? (
-        <Card className="p-8 text-center">
-          <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-          <p className="text-muted-foreground">
-            No emergency alerts in your history
+        <Card className="p-4 text-center">
+          <AlertCircle className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+          <p className="text-xs text-muted-foreground">
+            No alerts in history
           </p>
         </Card>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-2">
           {alerts.map((alert) => (
-            <Card key={alert.id} className="p-4">
-              <div className="space-y-3">
+            <Card key={alert.id} className="p-2">
+              <div className="space-y-2">
                 {/* Header */}
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold text-foreground">
-                        {getEmergencyTypeLabel(alert.emergency_type)}
-                      </h3>
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1 mb-1 flex-wrap">
                       <Badge 
                         variant={alert.status === 'active' ? 'destructive' : 'secondary'}
+                        className="text-xs"
                       >
                         {alert.status}
                       </Badge>
+                      <h3 className="text-xs font-semibold text-foreground truncate">
+                        {getEmergencyTypeLabel(alert.emergency_type)}
+                      </h3>
                     </div>
-                    <p className="text-sm text-muted-foreground line-clamp-2">
+                    <p className="text-xs text-muted-foreground line-clamp-2">
                       {alert.situation}
                     </p>
                   </div>
@@ -256,11 +257,11 @@ const AlertHistory = ({ userId }: AlertHistoryProps) => {
                     <AlertDialogTrigger asChild>
                       <Button 
                         variant="ghost" 
-                        size="icon"
+                        size="sm"
                         disabled={deleting === alert.id}
-                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10 h-6 w-6 p-0"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3 h-3" />
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
@@ -284,20 +285,20 @@ const AlertHistory = ({ userId }: AlertHistoryProps) => {
                 </div>
 
                 {/* Meta Info */}
-                <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
-                  <div className="flex items-center gap-1">
+                <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-0.5">
                     <Clock className="w-3 h-3" />
-                    <span>{formatDate(alert.created_at)}</span>
+                    <span className="text-xs">{formatDate(alert.created_at)}</span>
                   </div>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-0.5">
                     <MapPin className="w-3 h-3" />
-                    <span>
-                      {alert.latitude.toFixed(4)}, {alert.longitude.toFixed(4)}
+                    <span className="text-xs">
+                      {alert.latitude.toFixed(2)}, {alert.longitude.toFixed(2)}
                     </span>
                   </div>
                   {alert.resolved_at && (
-                    <div className="flex items-center gap-1 text-success">
-                      <span>Resolved: {formatDate(alert.resolved_at)}</span>
+                    <div className="flex items-center gap-0.5 text-success text-xs">
+                      <span>✓ {formatDate(alert.resolved_at)}</span>
                     </div>
                   )}
                 </div>
@@ -309,7 +310,7 @@ const AlertHistory = ({ userId }: AlertHistoryProps) => {
 
       {alerts.length > 0 && (
         <p className="text-xs text-center text-muted-foreground">
-          Showing up to 20 most recent alerts
+          Up to 20 recent alerts
         </p>
       )}
     </div>

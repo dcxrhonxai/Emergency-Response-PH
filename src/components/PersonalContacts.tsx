@@ -128,29 +128,29 @@ const PersonalContacts = ({ userId }: PersonalContactsProps) => {
 
   if (loading) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
-        Loading contacts...
+      <div className="text-center py-4 text-xs text-muted-foreground">
+        Loading...
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Personal Emergency Contacts</h2>
-          <p className="text-sm text-muted-foreground">
-            Add family and friends for quick emergency access
+          <h2 className="text-lg font-bold text-foreground">Emergency Contacts</h2>
+          <p className="text-xs text-muted-foreground">
+            Quick access to family & friends
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-1">
           {contacts.length > 0 && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" size="sm">
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Delete All
+                <Button variant="destructive" size="sm" className="h-7 text-xs">
+                  <Trash2 className="w-3 h-3 mr-1" />
+                  <span className="hidden sm:inline">Delete All</span>
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
@@ -169,29 +169,30 @@ const PersonalContacts = ({ userId }: PersonalContactsProps) => {
               </AlertDialogContent>
             </AlertDialog>
           )}
-          <Button onClick={() => setShowForm(!showForm)}>
-            <Plus className="w-4 h-4 mr-2" />
-            Add Contact
+          <Button onClick={() => setShowForm(!showForm)} size="sm" className="h-7 text-xs">
+            <Plus className="w-3 h-3 mr-1" />
+            <span className="hidden sm:inline">Add</span>
           </Button>
         </div>
       </div>
 
       {/* Add Form */}
       {showForm && (
-        <Card className="p-6">
-          <form onSubmit={handleAdd} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Name *</Label>
+        <Card className="p-3">
+          <form onSubmit={handleAdd} className="space-y-2">
+            <div className="space-y-1">
+              <Label htmlFor="name" className="text-xs">Name *</Label>
               <Input
                 id="name"
                 placeholder="Juan Dela Cruz"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
+                className="h-9 text-sm"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number *</Label>
+            <div className="space-y-1">
+              <Label htmlFor="phone" className="text-xs">Phone Number *</Label>
               <Input
                 id="phone"
                 type="tel"
@@ -199,23 +200,26 @@ const PersonalContacts = ({ userId }: PersonalContactsProps) => {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 required
+                className="h-9 text-sm"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="relationship">Relationship</Label>
+            <div className="space-y-1">
+              <Label htmlFor="relationship" className="text-xs">Relationship</Label>
               <Input
                 id="relationship"
-                placeholder="e.g., Father, Friend, Spouse"
+                placeholder="e.g., Family, Friend"
                 value={relationship}
                 onChange={(e) => setRelationship(e.target.value)}
+                className="h-9 text-sm"
               />
             </div>
             <div className="flex gap-2">
-              <Button type="submit" className="flex-1">Add Contact</Button>
+              <Button type="submit" className="flex-1 h-9 text-sm">Add</Button>
               <Button 
                 type="button" 
                 variant="outline" 
                 onClick={() => setShowForm(false)}
+                className="h-9 text-sm"
               >
                 Cancel
               </Button>
@@ -226,59 +230,59 @@ const PersonalContacts = ({ userId }: PersonalContactsProps) => {
 
       {/* Contacts List */}
       {contacts.length === 0 ? (
-        <Card className="p-8 text-center">
-          <p className="text-muted-foreground mb-4">
-            No personal contacts added yet
+        <Card className="p-4 text-center">
+          <p className="text-xs text-muted-foreground mb-2">
+            No contacts added yet
           </p>
-          <Button onClick={() => setShowForm(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            Add Your First Contact
+          <Button onClick={() => setShowForm(true)} size="sm" className="h-7 text-xs">
+            <Plus className="w-3 h-3 mr-1" />
+            Add First Contact
           </Button>
         </Card>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {contacts.map((contact) => (
-            <Card key={contact.id} className="p-4">
-              <div className="flex items-start justify-between gap-4">
+            <Card key={contact.id} className="p-2">
+              <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-foreground mb-1">{contact.name}</h3>
+                  <h3 className="text-sm font-semibold text-foreground mb-0.5">{contact.name}</h3>
                   {contact.relationship && (
-                    <p className="text-sm text-muted-foreground mb-2">
+                    <p className="text-xs text-muted-foreground mb-1">
                       {contact.relationship}
                     </p>
                   )}
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Phone className="w-4 h-4" />
-                    <span className="font-mono">{contact.phone}</span>
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <Phone className="w-3 h-3" />
+                    <span className="font-mono truncate">{contact.phone}</span>
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-1">
                   <Button
                     onClick={() => handleCall(contact.phone, contact.name)}
                     size="sm"
-                    className="min-w-24"
+                    className="h-7 px-2 text-xs min-w-16"
                   >
-                    <Phone className="w-4 h-4 mr-1" />
+                    <Phone className="w-3 h-3 mr-1" />
                     Call
                   </Button>
                   <Button
                     onClick={() => handleMessage(contact.phone, contact.name)}
                     size="sm"
                     variant="outline"
-                    className="min-w-24"
+                    className="h-7 px-2 text-xs min-w-16"
                   >
-                    <MessageSquare className="w-4 h-4 mr-1" />
+                    <MessageSquare className="w-3 h-3 mr-1" />
                     Text
                   </Button>
                   <Button
                     onClick={() => handleDelete(contact.id)}
                     size="sm"
                     variant="destructive"
-                    className="min-w-24"
+                    className="h-7 px-2 text-xs min-w-16"
                   >
-                    <Trash2 className="w-4 h-4 mr-1" />
-                    Delete
+                    <Trash2 className="w-3 h-3 mr-1" />
+                    Del
                   </Button>
                 </div>
               </div>

@@ -58,71 +58,58 @@ const EmergencyForm = ({ onEmergencyClick, userId }: EmergencyFormProps) => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Status Banner */}
-      <div className="flex items-center justify-between bg-card rounded-lg p-3 shadow">
-        <div className="flex items-center gap-2">
-          {isOnline ? (
-            <>
-              <Wifi className="w-4 h-4 text-green-600" />
-              <span className="text-sm text-green-600">Online</span>
-            </>
-          ) : (
-            <>
-              <WifiOff className="w-4 h-4 text-orange-600" />
-              <span className="text-sm text-orange-600">Offline Mode</span>
-            </>
-          )}
+      {pendingCount > 0 && (
+        <div className="flex items-center justify-center bg-card rounded-lg p-2 shadow">
+          <Badge variant="outline" className="text-xs">{pendingCount} pending sync</Badge>
         </div>
-        {pendingCount > 0 && (
-          <Badge variant="outline">{pendingCount} pending sync</Badge>
-        )}
-      </div>
+      )}
 
       {/* Warning Banner */}
-      <div className="bg-primary/10 border-2 border-primary rounded-lg p-6 text-center">
-        <AlertCircle className="w-12 h-12 text-primary mx-auto mb-3" />
-        <h2 className="text-2xl font-bold text-foreground mb-2">Emergency Response</h2>
-        <p className="text-muted-foreground">
-          Fill out the form below to get immediate access to emergency services in your area
+      <div className="bg-primary/10 border border-primary rounded-lg p-3 text-center">
+        <AlertCircle className="w-6 h-6 text-primary mx-auto mb-1" />
+        <h2 className="text-base font-bold text-foreground mb-1">Emergency Response</h2>
+        <p className="text-xs text-muted-foreground">
+          Fill form to access emergency services
         </p>
       </div>
 
       {/* Form */}
-      <div className="bg-card rounded-lg shadow-lg p-6 space-y-6">
+      <div className="bg-card rounded-lg shadow-lg p-3 space-y-3">
         {/* Situation Description */}
-        <div className="space-y-2">
-          <label htmlFor="situation" className="text-sm font-semibold text-foreground block">
+        <div className="space-y-1">
+          <label htmlFor="situation" className="text-xs font-semibold text-foreground block">
             Describe Your Situation *
           </label>
           <Textarea
             id="situation"
-            placeholder="Please describe what's happening and where you are..."
+            placeholder="Describe what's happening..."
             value={situation}
             onChange={(e) => setSituation(e.target.value)}
-            className="min-h-32 text-base resize-none"
+            className="min-h-20 text-sm resize-none"
           />
           <p className="text-xs text-muted-foreground">
-            Be as specific as possible to help emergency services respond quickly
+            Be specific to help responders
           </p>
         </div>
 
         {/* Emergency Type Selection */}
-        <div className="space-y-2">
-          <label htmlFor="emergency-type" className="text-sm font-semibold text-foreground block">
+        <div className="space-y-1">
+          <label htmlFor="emergency-type" className="text-xs font-semibold text-foreground block">
             Type of Emergency *
           </label>
           <Select value={emergencyType} onValueChange={setEmergencyType}>
-            <SelectTrigger id="emergency-type" className="text-base h-12">
-              <SelectValue placeholder="Select emergency type..." />
+            <SelectTrigger id="emergency-type" className="text-sm h-9">
+              <SelectValue placeholder="Select type..." />
             </SelectTrigger>
             <SelectContent>
               {emergencyTypes.map((type) => {
                 const Icon = type.icon;
                 return (
-                  <SelectItem key={type.value} value={type.value} className="text-base py-3">
+                  <SelectItem key={type.value} value={type.value} className="text-sm py-2">
                     <div className="flex items-center gap-2">
-                      <Icon className="w-4 h-4" />
+                      <Icon className="w-3 h-3" />
                       {type.label}
                     </div>
                   </SelectItem>
@@ -133,18 +120,19 @@ const EmergencyForm = ({ onEmergencyClick, userId }: EmergencyFormProps) => {
         </div>
 
         {/* Media Capture Section */}
-        <div className="space-y-2">
+        <div className="space-y-1">
           <div className="flex items-center justify-between">
-            <label className="text-sm font-semibold text-foreground">
+            <label className="text-xs font-semibold text-foreground">
               Evidence (Optional)
             </label>
             <Button
               variant="outline"
               size="sm"
               onClick={() => setShowMediaCapture(!showMediaCapture)}
+              className="h-7 text-xs"
             >
-              <Camera className="w-4 h-4 mr-2" />
-              {showMediaCapture ? 'Hide' : 'Add'} Photos/Videos/Audio
+              <Camera className="w-3 h-3 mr-1" />
+              {showMediaCapture ? 'Hide' : 'Add'}
             </Button>
           </div>
           {showMediaCapture && (
@@ -160,31 +148,34 @@ const EmergencyForm = ({ onEmergencyClick, userId }: EmergencyFormProps) => {
         {/* Emergency Button */}
         <Button
           onClick={handleSubmit}
-          className="w-full h-16 text-xl font-bold bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all"
-          size="lg"
+          className="w-full h-12 text-base font-bold bg-primary hover:bg-primary/90 shadow-lg"
         >
-          <AlertCircle className="w-6 h-6 mr-2" />
+          <AlertCircle className="w-4 h-4 mr-2" />
           NEED HELP NOW
         </Button>
 
         {/* Info Text */}
-        <div className="text-center space-y-2 text-sm text-muted-foreground">
-          <p>By clicking the button above, your location will be detected automatically</p>
+        <div className="text-center space-y-1 text-xs text-muted-foreground">
+          <p>Location detected automatically</p>
           <p className="font-semibold text-foreground">
-            In life-threatening emergencies, call 911 immediately
+            Life-threatening? Call 911
           </p>
         </div>
       </div>
 
-      {/* Quick Tips */}
-      <div className="bg-accent/10 rounded-lg p-4 space-y-2">
-        <h3 className="font-semibold text-foreground">Emergency Tips:</h3>
-        <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-          <li>Stay calm and speak clearly</li>
-          <li>Provide your exact location if possible</li>
-          <li>Don't hang up until told to do so</li>
-          <li>Follow dispatcher instructions carefully</li>
+      {/* Quick Tips - Compact for AdMob space */}
+      <div className="bg-accent/10 rounded-lg p-2 space-y-1">
+        <h3 className="text-xs font-semibold text-foreground">Tips:</h3>
+        <ul className="text-xs text-muted-foreground space-y-0.5 list-disc list-inside">
+          <li>Stay calm, speak clearly</li>
+          <li>Provide exact location</li>
+          <li>Follow dispatcher instructions</li>
         </ul>
+      </div>
+      
+      {/* AdMob Banner Space */}
+      <div className="h-12 bg-muted/20 rounded-lg flex items-center justify-center border border-dashed border-muted-foreground/30">
+        <span className="text-xs text-muted-foreground">Ad Space</span>
       </div>
     </div>
   );

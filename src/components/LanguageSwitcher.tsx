@@ -1,12 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui/button';
 import { Languages } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 
 const languages = [
   { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -22,26 +15,19 @@ export const LanguageSwitcher = () => {
     i18n.changeLanguage(langCode);
   };
 
+  const nextLanguage = () => {
+    const currentIndex = languages.findIndex(l => l.code === i18n.language);
+    const nextIndex = (currentIndex + 1) % languages.length;
+    changeLanguage(languages[nextIndex].code);
+  };
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
-          <Languages className="h-4 w-4" />
-          <span>{currentLanguage.flag}</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        {languages.map((lang) => (
-          <DropdownMenuItem
-            key={lang.code}
-            onClick={() => changeLanguage(lang.code)}
-            className="gap-2"
-          >
-            <span>{lang.flag}</span>
-            <span>{lang.name}</span>
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <button
+      onClick={nextLanguage}
+      className="flex items-center gap-2 w-full px-2 py-1.5 text-sm hover:bg-accent rounded-sm"
+    >
+      <Languages className="h-4 w-4" />
+      <span>{currentLanguage.flag} {currentLanguage.name}</span>
+    </button>
   );
 };
