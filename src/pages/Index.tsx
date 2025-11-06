@@ -14,7 +14,7 @@ import { MedicalIDCard } from "@/components/MedicalIDCard";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { EmergencyChat } from "@/components/EmergencyChat";
 import { EmergencyDirections } from "@/components/EmergencyDirections";
-import { Shield, LogOut, User, History, Users, Heart, IdCard } from "lucide-react";
+import { Shield, LogOut, User, History, Users, Heart, IdCard, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -213,6 +213,15 @@ const Index = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => navigate("/community-services")}
+              className="bg-primary-foreground text-primary hover:bg-primary-foreground/90"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Service
+            </Button>
             <Button 
               variant="outline" 
               size="sm"

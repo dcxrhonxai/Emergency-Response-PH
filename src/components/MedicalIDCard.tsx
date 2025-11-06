@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Phone, Heart, AlertTriangle, FileText, User } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -15,6 +16,7 @@ interface Profile {
   allergies: string | null;
   medical_conditions: string | null;
   emergency_notes: string | null;
+  profile_picture: string | null;
 }
 
 interface PersonalContact {
@@ -95,6 +97,17 @@ export const MedicalIDCard = () => {
           </div>
         </CardHeader>
         <CardContent className="pt-6 space-y-4">
+          {/* Profile Picture */}
+          <div className="flex justify-center">
+            <Avatar className="w-24 h-24">
+              {profile?.profile_picture ? (
+                <AvatarImage src={profile.profile_picture} alt="Profile" />
+              ) : (
+                <AvatarFallback className="text-3xl">👤</AvatarFallback>
+              )}
+            </Avatar>
+          </div>
+
           {/* Personal Info */}
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-sm font-semibold">

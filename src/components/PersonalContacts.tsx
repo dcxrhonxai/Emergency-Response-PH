@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Phone, Trash2, Plus, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 import { personalContactSchema } from "@/lib/validation";
@@ -101,6 +102,20 @@ const PersonalContacts = ({ userId }: PersonalContactsProps) => {
     }
   };
 
+  const handleDeleteAll = async () => {
+    const { error } = await supabase
+      .from('personal_contacts')
+      .delete()
+      .eq('user_id', userId);
+
+    if (error) {
+      toast.error("Failed to delete all contacts");
+    } else {
+      setContacts([]);
+      toast.success("All contacts deleted");
+    }
+  };
+
   const { makeCall, sendSMS } = usePhoneCaller();
 
   const handleCall = (phone: string, name: string) => {
@@ -129,10 +144,36 @@ const PersonalContacts = ({ userId }: PersonalContactsProps) => {
             Add family and friends for quick emergency access
           </p>
         </div>
-        <Button onClick={() => setShowForm(!showForm)}>
-          <Plus className="w-4 h-4 mr-2" />
-          Add Contact
-        </Button>
+        <div className="flex gap-2">
+          {contacts.length > 0 && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" size="sm">
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete All
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete All Contacts?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will permanently delete all your emergency contacts. This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDeleteAll} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                    Delete All
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+          <Button onClick={() => setShowForm(!showForm)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Add Contact
+          </Button>
+        </div>
       </div>
 
       {/* Add Form */}
