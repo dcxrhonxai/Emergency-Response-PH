@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
 import CommunityServices from "./pages/CommunityServices";
+import Integrations from "./pages/Integrations";
 import NotFound from "./pages/NotFound";
 
 const App = () => {
@@ -24,6 +25,7 @@ const App = () => {
             <Route path="/auth" element={<Auth />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/community-services" element={<CommunityServices />} />
+            <Route path="/integrations" element={<Integrations />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
