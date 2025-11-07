@@ -47,14 +47,19 @@ export const uploadEvidence = async (
       return null;
     }
 
-    // Get public URL
-    const { data: { publicUrl } } = supabase.storage
+    // Get signed URL (valid for 1 hour)
+    const { data: signedUrlData, error: signedUrlError } = await supabase.storage
       .from(bucket)
-      .getPublicUrl(data.path);
+      .createSignedUrl(data.path, 3600);
+
+    if (signedUrlError || !signedUrlData) {
+      console.error('Signed URL error:', signedUrlError);
+      return null;
+    }
 
     return {
       path: data.path,
-      url: publicUrl,
+      url: signedUrlData.signedUrl,
       type
     };
   } catch (error) {

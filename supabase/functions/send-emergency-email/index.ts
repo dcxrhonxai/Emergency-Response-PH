@@ -10,6 +10,10 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+// Input validation schemas
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const phoneRegex = /^[\d\s+()-]{7,20}$/;
+
 interface EmergencyEmailRequest {
   alertId: string;
   contacts: Array<{
@@ -29,29 +33,140 @@ interface EmergencyEmailRequest {
   }>;
 }
 
+// Sanitize HTML to prevent XSS
+const escapeHtml = (text: string): string => {
+  const map: Record<string, string> = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return text.replace(/[&<>"']/g, (m) => map[m]);
+};
+
+// Validate input data
+const validateInput = (data: EmergencyEmailRequest): { valid: boolean; error?: string } => {
+  // Validate alert ID format
+  if (!data.alertId || typeof data.alertId !== 'string' || data.alertId.length < 10) {
+    return { valid: false, error: "Invalid alert ID" };
+  }
+
+  // Validate emergency type
+  if (!data.emergencyType || data.emergencyType.length > 100) {
+    return { valid: false, error: "Invalid emergency type" };
+  }
+
+  // Validate situation description
+  if (!data.situation || data.situation.length > 2000) {
+    return { valid: false, error: "Situation description too long" };
+  }
+
+  // Validate coordinates
+  if (
+    typeof data.location.latitude !== 'number' ||
+    typeof data.location.longitude !== 'number' ||
+    data.location.latitude < -90 || data.location.latitude > 90 ||
+    data.location.longitude < -180 || data.location.longitude > 180
+  ) {
+    return { valid: false, error: "Invalid location coordinates" };
+  }
+
+  // Validate contacts
+  if (!Array.isArray(data.contacts) || data.contacts.length === 0 || data.contacts.length > 20) {
+    return { valid: false, error: "Invalid number of contacts" };
+  }
+
+  for (const contact of data.contacts) {
+    if (!contact.name || contact.name.length > 200) {
+      return { valid: false, error: "Invalid contact name" };
+    }
+    if (contact.email && !emailRegex.test(contact.email)) {
+      return { valid: false, error: `Invalid email address for ${contact.name}` };
+    }
+    if (!phoneRegex.test(contact.phone)) {
+      return { valid: false, error: `Invalid phone number for ${contact.name}` };
+    }
+  }
+
+  return { valid: true };
+};
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Extract and validate JWT token
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: "Missing authorization header" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const token = authHeader.replace("Bearer ", "");
     const supabase = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    // Verify the user is authenticated
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const requestData: EmergencyEmailRequest = await req.json();
+
+    // Validate input
+    const validation = validateInput(requestData);
+    if (!validation.valid) {
+      return new Response(
+        JSON.stringify({ error: validation.error }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const { alertId, contacts, emergencyType, situation, location, evidenceFiles } = requestData;
+
+    // Verify the alert belongs to the authenticated user
+    const supabaseService = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    const {
-      alertId,
-      contacts,
-      emergencyType,
-      situation,
-      location,
-      evidenceFiles,
-    }: EmergencyEmailRequest = await req.json();
+    const { data: alert, error: alertError } = await supabaseService
+      .from("emergency_alerts")
+      .select("user_id")
+      .eq("id", alertId)
+      .single();
 
-    console.log("Processing emergency notification for alert:", alertId);
+    if (alertError || !alert) {
+      return new Response(
+        JSON.stringify({ error: "Alert not found" }),
+        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (alert.user_id !== user.id) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized to send notifications for this alert" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     const googleMapsUrl = `https://www.google.com/maps?q=${location.latitude},${location.longitude}`;
+
+    // Sanitize user inputs for HTML
+    const safeEmergencyType = escapeHtml(emergencyType);
+    const safeSituation = escapeHtml(situation);
 
     const evidenceHtml = evidenceFiles && evidenceFiles.length > 0
       ? `
@@ -59,8 +174,8 @@ const handler = async (req: Request): Promise<Response> => {
         <ul style="list-style: none; padding: 0;">
           ${evidenceFiles.map(file => `
             <li style="margin: 10px 0;">
-              <a href="${file.url}" style="color: #e74c3c; text-decoration: none;">
-                📎 View ${file.type}
+              <a href="${escapeHtml(file.url)}" style="color: #e74c3c; text-decoration: none;">
+                📎 View ${escapeHtml(file.type)}
               </a>
             </li>
           `).join('')}
@@ -72,6 +187,7 @@ const handler = async (req: Request): Promise<Response> => {
       .filter(contact => contact.email)
       .map(async (contact) => {
         try {
+          const safeName = escapeHtml(contact.name);
           const emailHtml = `
               <!DOCTYPE html>
               <html>
@@ -89,18 +205,18 @@ const handler = async (req: Request): Promise<Response> => {
                   <div class="container">
                     <div class="alert-header">
                       <h1 style="margin: 0;">🚨 EMERGENCY ALERT</h1>
-                      <p style="margin: 10px 0 0 0; font-size: 18px;">${emergencyType.toUpperCase()}</p>
+                      <p style="margin: 10px 0 0 0; font-size: 18px;">${safeEmergencyType.toUpperCase()}</p>
                     </div>
                     
                     <div class="content">
-                      <h2 style="color: #e74c3c;">Dear ${contact.name},</h2>
+                      <h2 style="color: #e74c3c;">Dear ${safeName},</h2>
                       <p style="font-size: 16px;">
                         Your emergency contact has triggered an emergency alert and needs assistance.
                       </p>
                       
                       <div class="info-box">
-                        <strong>Emergency Type:</strong> ${emergencyType}<br>
-                        <strong>Situation:</strong> ${situation}
+                        <strong>Emergency Type:</strong> ${safeEmergencyType}<br>
+                        <strong>Situation:</strong> ${safeSituation}
                       </div>
                       
                       <h3 style="color: #333;">📍 Location:</h3>
@@ -132,7 +248,6 @@ const handler = async (req: Request): Promise<Response> => {
               </html>
             `;
 
-          // Use Resend API directly via fetch
           const emailResponse = await fetch("https://api.resend.com/emails", {
             method: "POST",
             headers: {
@@ -142,16 +257,16 @@ const handler = async (req: Request): Promise<Response> => {
             body: JSON.stringify({
               from: "Emergency Alert <onboarding@resend.dev>",
               to: [contact.email!],
-              subject: `🚨 EMERGENCY ALERT: ${emergencyType.toUpperCase()}`,
+              subject: `🚨 EMERGENCY ALERT: ${safeEmergencyType.toUpperCase()}`,
               html: emailHtml,
             }),
           });
 
-          const emailData = await emailResponse.json();
-          console.log(`Email sent to ${contact.name} (${contact.email}):`, emailData);
+          if (!emailResponse.ok) {
+            throw new Error(`Email API error: ${emailResponse.status}`);
+          }
 
-          // Record notification in database
-          await supabase.from("alert_notifications").insert({
+          await supabaseService.from("alert_notifications").insert({
             alert_id: alertId,
             contact_name: contact.name,
             contact_phone: contact.phone,
@@ -160,7 +275,6 @@ const handler = async (req: Request): Promise<Response> => {
 
           return { success: true, contact: contact.name };
         } catch (error: any) {
-          console.error(`Failed to send email to ${contact.name}:`, error);
           return { success: false, contact: contact.name, error: error.message };
         }
       });
@@ -168,8 +282,6 @@ const handler = async (req: Request): Promise<Response> => {
     const emailResults = await Promise.all(emailPromises);
     const emailSuccessful = emailResults.filter(r => r.success).length;
     const emailFailed = emailResults.filter(r => !r.success).length;
-
-    console.log(`Email notifications complete: ${emailSuccessful} successful, ${emailFailed} failed`);
 
     // Send SMS notifications via Semaphore
     const smsContacts = contacts.filter(contact => contact.phone);
@@ -185,17 +297,15 @@ const handler = async (req: Request): Promise<Response> => {
           body: new URLSearchParams({
             apikey: SEMAPHORE_API_KEY!,
             number: contact.phone,
-            message: smsMessage,
+            message: smsMessage.substring(0, 480), // SMS length limit
             sendername: "EmergencyPH",
           }),
         });
 
         const smsData = await response.json();
-        console.log(`SMS response for ${contact.name} (${contact.phone}):`, smsData);
 
         if (response.ok && Array.isArray(smsData) && smsData.length > 0 && smsData[0].message_id) {
-          // Record SMS notification in database
-          await supabase.from("alert_notifications").insert({
+          await supabaseService.from("alert_notifications").insert({
             alert_id: alertId,
             contact_name: contact.name,
             contact_phone: contact.phone,
@@ -204,10 +314,9 @@ const handler = async (req: Request): Promise<Response> => {
 
           return { success: true, contact: contact.name };
         } else {
-          return { success: false, contact: contact.name, error: smsData };
+          return { success: false, contact: contact.name, error: "SMS delivery failed" };
         }
       } catch (error: any) {
-        console.error(`Failed to send SMS to ${contact.name}:`, error);
         return { success: false, contact: contact.name, error: error.message };
       }
     });
@@ -215,8 +324,6 @@ const handler = async (req: Request): Promise<Response> => {
     const smsResults = await Promise.all(smsPromises);
     const smsSuccessful = smsResults.filter(r => r.success).length;
     const smsFailed = smsResults.filter(r => !r.success).length;
-
-    console.log(`SMS notifications complete: ${smsSuccessful} successful, ${smsFailed} failed`);
 
     return new Response(
       JSON.stringify({
@@ -239,9 +346,10 @@ const handler = async (req: Request): Promise<Response> => {
       }
     );
   } catch (error: any) {
-    console.error("Error in send-emergency-email function:", error);
+    // Only log error type, not sensitive details
+    console.error("Error type:", error.name);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: "Internal server error" }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },

@@ -165,6 +165,54 @@ export type Database = {
         }
         Relationships: []
       }
+      pending_emergency_services: {
+        Row: {
+          address: string | null
+          city: string | null
+          created_at: string | null
+          id: string
+          latitude: number
+          longitude: number
+          name: string
+          phone: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          submitted_by: string
+          type: string
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          created_at?: string | null
+          id?: string
+          latitude: number
+          longitude: number
+          name: string
+          phone: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submitted_by: string
+          type: string
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          created_at?: string | null
+          id?: string
+          latitude?: number
+          longitude?: number
+          name?: string
+          phone?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submitted_by?: string
+          type?: string
+        }
+        Relationships: []
+      }
       personal_contacts: {
         Row: {
           created_at: string | null

@@ -71,8 +71,16 @@ const CommunityServices = () => {
       
       setSubmitting(true);
 
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("You must be logged in to submit a service");
+        return;
+      }
+
+      // Submit to pending_emergency_services table for admin approval
       const { error } = await supabase
-        .from("emergency_services")
+        .from("pending_emergency_services")
         .insert({
           name: validated.name,
           type: validated.type,
@@ -81,12 +89,13 @@ const CommunityServices = () => {
           city: validated.city || null,
           latitude: validated.latitude,
           longitude: validated.longitude,
-          is_national: false,
+          status: 'pending',
+          submitted_by: user.id,
         });
 
       if (error) throw error;
 
-      toast.success("Thank you! Service submitted successfully and will be available to the community.");
+      toast.success("Thank you! Service submitted for review. An admin will approve it shortly.");
       navigate("/");
     } catch (error: any) {
       if (error instanceof z.ZodError) {

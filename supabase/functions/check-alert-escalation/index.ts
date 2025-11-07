@@ -20,8 +20,6 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    console.log("Checking for alerts to escalate...");
-
     // Calculate the threshold time (current time - threshold minutes)
     const thresholdTime = new Date(
       Date.now() - ESCALATION_THRESHOLD_MINUTES * 60 * 1000
@@ -40,7 +38,6 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     if (!alertsToEscalate || alertsToEscalate.length === 0) {
-      console.log("No alerts to escalate");
       return new Response(
         JSON.stringify({
           success: true,
@@ -54,8 +51,6 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    console.log(`Found ${alertsToEscalate.length} alerts to escalate`);
-
     // Escalate each alert
     const escalationResults = await Promise.all(
       alertsToEscalate.map(async (alert) => {
@@ -67,11 +62,8 @@ const handler = async (req: Request): Promise<Response> => {
             .eq("id", alert.id);
 
           if (updateError) {
-            console.error(`Failed to escalate alert ${alert.id}:`, updateError);
-            return { alertId: alert.id, success: false, error: updateError.message };
+            return { alertId: alert.id, success: false, error: "Update failed" };
           }
-
-          console.log(`Successfully escalated alert ${alert.id}`);
 
           // Get user's emergency contacts
           const { data: contacts, error: contactsError } = await supabase
@@ -80,7 +72,6 @@ const handler = async (req: Request): Promise<Response> => {
             .eq("user_id", alert.user_id);
 
           if (contactsError || !contacts || contacts.length === 0) {
-            console.log(`No contacts found for user ${alert.user_id}`);
             return { alertId: alert.id, success: true, notificationsSent: false };
           }
 
@@ -107,14 +98,12 @@ const handler = async (req: Request): Promise<Response> => {
           );
 
           if (notificationError) {
-            console.error(`Failed to send notifications for alert ${alert.id}:`, notificationError);
             return { alertId: alert.id, success: true, notificationsSent: false };
           }
 
           return { alertId: alert.id, success: true, notificationsSent: true };
         } catch (error: any) {
-          console.error(`Error processing alert ${alert.id}:`, error);
-          return { alertId: alert.id, success: false, error: error.message };
+          return { alertId: alert.id, success: false, error: "Processing failed" };
         }
       })
     );
@@ -123,10 +112,6 @@ const handler = async (req: Request): Promise<Response> => {
     const notificationsSentCount = escalationResults.filter(
       (r) => r.notificationsSent
     ).length;
-
-    console.log(
-      `Escalation complete: ${successCount} alerts escalated, ${notificationsSentCount} notifications sent`
-    );
 
     return new Response(
       JSON.stringify({
@@ -141,9 +126,8 @@ const handler = async (req: Request): Promise<Response> => {
       }
     );
   } catch (error: any) {
-    console.error("Error in check-alert-escalation function:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: "Internal server error" }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },

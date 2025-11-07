@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import EmergencyServicesManager from '@/components/admin/EmergencyServicesManager';
 import AlertsMonitor from '@/components/admin/AlertsMonitor';
 import UserRolesManager from '@/components/admin/UserRolesManager';
+import { PendingServicesManager } from '@/components/admin/PendingServicesManager';
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -73,10 +74,14 @@ const Admin = () => {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <Tabs defaultValue="services" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 max-w-2xl">
+          <TabsList className="grid w-full grid-cols-4 max-w-3xl">
             <TabsTrigger value="services">
               <Building2 className="w-4 h-4 mr-2" />
               Services
+            </TabsTrigger>
+            <TabsTrigger value="pending">
+              <AlertTriangle className="w-4 h-4 mr-2" />
+              Pending
             </TabsTrigger>
             <TabsTrigger value="alerts">
               <AlertTriangle className="w-4 h-4 mr-2" />
@@ -90,6 +95,10 @@ const Admin = () => {
 
           <TabsContent value="services">
             <EmergencyServicesManager />
+          </TabsContent>
+
+          <TabsContent value="pending">
+            <PendingServicesManager />
           </TabsContent>
 
           <TabsContent value="alerts">
