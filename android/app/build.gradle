@@ -1,10 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace "app.lovable.fcbb65b390f2441890e8a8de327e1a60"
+    namespace "com.dcxrhonx.emergencyresponseph"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "app.lovable.fcbb65b390f2441890e8a8de327e1a60"
+        applicationId "com.dcxrhonx.emergencyresponseph"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
