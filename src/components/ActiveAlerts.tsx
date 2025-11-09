@@ -38,6 +38,29 @@ export const ActiveAlerts = ({ alerts }: ActiveAlertsProps) => {
     }
   };
 
+  const handleFalseAlarm = async (alertId: string) => {
+    const { error } = await supabase
+      .from("emergency_alerts")
+      .update({ 
+        status: "false_alarm",
+        resolved_at: new Date().toISOString()
+      })
+      .eq("id", alertId);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to cancel alert",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "False Alarm",
+        description: "Alert has been marked as false alarm and cancelled",
+      });
+    }
+  };
+
   if (activeAlerts.length === 0) {
     return null;
   }
@@ -76,13 +99,24 @@ export const ActiveAlerts = ({ alerts }: ActiveAlertsProps) => {
                   ACTIVE
                 </Badge>
               </div>
-              <Button
-                onClick={() => handleResolveAlert(alert.id)}
-                variant="outline"
-                size="sm"
-              >
-                Mark Resolved
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => handleFalseAlarm(alert.id)}
+                  variant="outline"
+                  size="sm"
+                  className="text-xs"
+                >
+                  False Alarm
+                </Button>
+                <Button
+                  onClick={() => handleResolveAlert(alert.id)}
+                  variant="outline"
+                  size="sm"
+                  className="text-xs"
+                >
+                  Resolved
+                </Button>
+              </div>
             </div>
 
             <p className="text-sm font-medium">{alert.situation}</p>

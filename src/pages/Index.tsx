@@ -25,6 +25,7 @@ import { useRealtimeAlerts } from "@/hooks/useRealtimeAlerts";
 import { useEmergencyNotifications } from "@/hooks/useEmergencyNotifications";
 import { useAlertEscalation } from "@/hooks/useAlertEscalation";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
+import { useBackgroundLocation } from "@/hooks/useBackgroundLocation";
 import type { Session } from "@supabase/supabase-js";
 
 export interface EmergencyContact {
@@ -55,6 +56,13 @@ const Index = () => {
   
   // Enable alert escalation checking
   useAlertEscalation();
+
+  // Enable background location tracking for active alerts
+  const hasActiveAlert = alerts.some((alert: any) => alert.status === 'active');
+  useBackgroundLocation({ 
+    alertId: currentAlertId, 
+    isActive: hasActiveAlert && showEmergency 
+  });
 
   // Pull to refresh
   useEffect(() => {
@@ -380,6 +388,85 @@ const Index = () => {
                 </Button>
                 <p className="text-center text-xs text-muted-foreground mt-1">
                   Tap for instant emergency alert
+                </p>
+              </div>
+
+              {/* Silent Panic Button */}
+              <div className="mb-3">
+                <Button
+                  onClick={async () => {
+                    if (!session?.user) return;
+                    
+                    // Get location silently
+                    if (navigator.geolocation) {
+                      navigator.geolocation.getCurrentPosition(
+                        async (position) => {
+                          const location = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude,
+                          };
+
+                          // Create silent alert
+                          const { data, error } = await supabase
+                            .from('emergency_alerts')
+                            .insert({
+                              user_id: session.user.id,
+                              emergency_type: '🔇 Silent Panic',
+                              situation: 'Silent panic alert activated - Send help discreetly',
+                              latitude: location.lat,
+                              longitude: location.lng,
+                            })
+                            .select()
+                            .single();
+
+                          if (data) {
+                            setCurrentAlertId(data.id);
+                            
+                            // Send notifications to contacts silently
+                            const { data: contacts } = await supabase
+                              .from("personal_contacts")
+                              .select("name, phone")
+                              .eq("user_id", session.user.id);
+
+                            if (contacts && contacts.length > 0) {
+                              const formattedContacts = contacts.map(c => ({
+                                name: c.name,
+                                phone: c.phone,
+                                email: session.user.email,
+                              }));
+
+                              await sendNotifications(
+                                data.id,
+                                formattedContacts,
+                                '🔇 Silent Panic',
+                                'Silent panic alert - Send help discreetly',
+                                location
+                              );
+                            }
+                          }
+
+                          if (error) {
+                            console.error("Error creating silent alert:", error);
+                          }
+                        },
+                        (error) => {
+                          console.error("Error getting location:", error);
+                        },
+                        {
+                          enableHighAccuracy: true,
+                          timeout: 10000,
+                          maximumAge: 0
+                        }
+                      );
+                    }
+                  }}
+                  variant="outline"
+                  className="w-full h-12 text-base font-semibold border-2 border-muted-foreground hover:bg-muted"
+                >
+                  🔇 Silent Panic
+                </Button>
+                <p className="text-center text-xs text-muted-foreground mt-1">
+                  Discreet alert without sound or notification
                 </p>
               </div>
 
