@@ -14,6 +14,7 @@ import { MedicalIDCard } from "@/components/MedicalIDCard";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { EmergencyChat } from "@/components/EmergencyChat";
 import { EmergencyDirections } from "@/components/EmergencyDirections";
+import { InAppNotifications } from "@/components/InAppNotifications";
 import { Shield, LogOut, User, History, Users, Heart, IdCard, Plus, Menu, Wifi, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -297,6 +298,7 @@ const Index = () => {
             </div>
           </div>
           <div className="flex items-center gap-1">
+            <InAppNotifications userId={session.user.id} />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button 
@@ -522,12 +524,13 @@ const Index = () => {
             {/* Emergency Contacts */}
             <ContactList emergencyType={emergencyType} userLocation={userLocation} />
 
-            {/* Emergency Chat */}
+            {/* Emergency Chat - Now supports group messaging */}
             {currentAlertId && session?.user && (
               <EmergencyChat 
                 alertId={currentAlertId}
                 userId={session.user.id}
                 userName={session.user.email || 'User'}
+                isGroupChat={true}
               />
             )}
 

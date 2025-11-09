@@ -15,9 +15,10 @@ interface EmergencyChatProps {
   alertId: string;
   userId: string;
   userName: string;
+  isGroupChat?: boolean;
 }
 
-export const EmergencyChat = ({ alertId, userId, userName }: EmergencyChatProps) => {
+export const EmergencyChat = ({ alertId, userId, userName, isGroupChat = false }: EmergencyChatProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -85,7 +86,8 @@ export const EmergencyChat = ({ alertId, userId, userName }: EmergencyChatProps)
         alert_id: alertId,
         sender_id: userId,
         sender_name: userName,
-        message: newMessage.trim()
+        message: newMessage.trim(),
+        is_group_message: isGroupChat
       });
 
     if (error) {
@@ -106,7 +108,9 @@ export const EmergencyChat = ({ alertId, userId, userName }: EmergencyChatProps)
     <Card className="p-4 space-y-4">
       <div className="flex items-center gap-2 mb-2">
         <MessageCircle className="w-5 h-5 text-primary" />
-        <h3 className="text-lg font-semibold">{t('chat.title')}</h3>
+        <h3 className="text-lg font-semibold">
+          {isGroupChat ? 'Group Emergency Chat' : t('chat.title')}
+        </h3>
       </div>
 
       <ScrollArea ref={scrollRef} className="h-64 pr-4">

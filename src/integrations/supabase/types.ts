@@ -96,6 +96,7 @@ export type Database = {
           alert_id: string
           created_at: string
           id: string
+          is_group_message: boolean | null
           message: string
           sender_id: string
           sender_name: string
@@ -104,6 +105,7 @@ export type Database = {
           alert_id: string
           created_at?: string
           id?: string
+          is_group_message?: boolean | null
           message: string
           sender_id: string
           sender_name: string
@@ -112,6 +114,7 @@ export type Database = {
           alert_id?: string
           created_at?: string
           id?: string
+          is_group_message?: boolean | null
           message?: string
           sender_id?: string
           sender_name?: string
@@ -162,6 +165,39 @@ export type Database = {
           name?: string
           phone?: string
           type?: string
+        }
+        Relationships: []
+      }
+      in_app_notifications: {
+        Row: {
+          action_url: string | null
+          created_at: string | null
+          id: string
+          message: string
+          read: boolean | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          action_url?: string | null
+          created_at?: string | null
+          id?: string
+          message: string
+          read?: boolean | null
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          action_url?: string | null
+          created_at?: string | null
+          id?: string
+          message?: string
+          read?: boolean | null
+          title?: string
+          type?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -246,6 +282,7 @@ export type Database = {
           blood_type: string | null
           created_at: string | null
           emergency_notes: string | null
+          fcm_token: string | null
           full_name: string | null
           id: string
           medical_conditions: string | null
@@ -258,6 +295,7 @@ export type Database = {
           blood_type?: string | null
           created_at?: string | null
           emergency_notes?: string | null
+          fcm_token?: string | null
           full_name?: string | null
           id: string
           medical_conditions?: string | null
@@ -270,6 +308,7 @@ export type Database = {
           blood_type?: string | null
           created_at?: string | null
           emergency_notes?: string | null
+          fcm_token?: string | null
           full_name?: string | null
           id?: string
           medical_conditions?: string | null
