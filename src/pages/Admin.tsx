@@ -3,12 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAdminCheck } from '@/hooks/useAdminCheck';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Shield, LogOut, AlertTriangle, Building2, Users } from 'lucide-react';
+import { Shield, LogOut, AlertTriangle, Building2, Users, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import EmergencyServicesManager from '@/components/admin/EmergencyServicesManager';
 import AlertsMonitor from '@/components/admin/AlertsMonitor';
 import UserRolesManager from '@/components/admin/UserRolesManager';
 import { PendingServicesManager } from '@/components/admin/PendingServicesManager';
+import AnalyticsDashboard from '@/components/admin/AnalyticsDashboard';
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -73,8 +74,12 @@ const Admin = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        <Tabs defaultValue="services" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 max-w-3xl">
+        <Tabs defaultValue="analytics" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5 max-w-4xl">
+            <TabsTrigger value="analytics">
+              <BarChart3 className="w-4 h-4 mr-2" />
+              Analytics
+            </TabsTrigger>
             <TabsTrigger value="services">
               <Building2 className="w-4 h-4 mr-2" />
               Services
@@ -92,6 +97,10 @@ const Admin = () => {
               Users
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="analytics">
+            <AnalyticsDashboard />
+          </TabsContent>
 
           <TabsContent value="services">
             <EmergencyServicesManager />
