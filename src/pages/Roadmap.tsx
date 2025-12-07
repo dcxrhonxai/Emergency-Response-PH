@@ -116,7 +116,7 @@ const roadmapData: FeatureCategory[] = [
       { name: "Alerts Monitor", completed: true },
       { name: "Emergency Services Manager", completed: true },
       { name: "User Roles Management", completed: true },
-      { name: "Analytics Dashboard", completed: false, priority: "high" },
+      { name: "Analytics Dashboard", completed: true },
       { name: "Report Generation", completed: false, priority: "medium" },
       { name: "Audit Logs", completed: false, priority: "high" },
       { name: "Bulk Operations", completed: false, priority: "low" },
