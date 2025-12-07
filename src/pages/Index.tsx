@@ -15,7 +15,7 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { EmergencyChat } from "@/components/EmergencyChat";
 import { EmergencyDirections } from "@/components/EmergencyDirections";
 import { InAppNotifications } from "@/components/InAppNotifications";
-import { Shield, LogOut, User, History, Users, Heart, IdCard, Plus, Menu, Wifi, WifiOff } from "lucide-react";
+import { Shield, LogOut, User, History, Users, Heart, IdCard, Plus, Menu, Wifi, WifiOff, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -313,6 +313,10 @@ const Index = () => {
                 <DropdownMenuItem onClick={() => setShowMedicalID(true)}>
                   <IdCard className="w-4 h-4 mr-2" />
                   Medical ID
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/medical-records")}>
+                  <FileText className="w-4 h-4 mr-2" />
+                  Medical Records
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate("/community-services")}>
                   <Plus className="w-4 h-4 mr-2" />

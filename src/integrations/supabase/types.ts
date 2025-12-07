@@ -52,6 +52,48 @@ export type Database = {
           },
         ]
       }
+      doctor_contacts: {
+        Row: {
+          address: string | null
+          created_at: string | null
+          email: string | null
+          hospital: string | null
+          id: string
+          is_primary: boolean | null
+          name: string
+          notes: string | null
+          phone: string
+          specialty: string | null
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string | null
+          email?: string | null
+          hospital?: string | null
+          id?: string
+          is_primary?: boolean | null
+          name: string
+          notes?: string | null
+          phone: string
+          specialty?: string | null
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string | null
+          email?: string | null
+          hospital?: string | null
+          id?: string
+          is_primary?: boolean | null
+          name?: string
+          notes?: string | null
+          phone?: string
+          specialty?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       emergency_alerts: {
         Row: {
           created_at: string | null
@@ -201,6 +243,95 @@ export type Database = {
         }
         Relationships: []
       }
+      medical_history: {
+        Row: {
+          attachments: Json | null
+          created_at: string | null
+          description: string | null
+          doctor_id: string | null
+          event_date: string
+          event_type: string
+          id: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          attachments?: Json | null
+          created_at?: string | null
+          description?: string | null
+          doctor_id?: string | null
+          event_date: string
+          event_type: string
+          id?: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          attachments?: Json | null
+          created_at?: string | null
+          description?: string | null
+          doctor_id?: string | null
+          event_date?: string
+          event_type?: string
+          id?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medical_history_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      medications: {
+        Row: {
+          created_at: string | null
+          dosage: string
+          end_date: string | null
+          frequency: string
+          id: string
+          is_active: boolean | null
+          name: string
+          notes: string | null
+          start_date: string
+          time_of_day: string[] | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          dosage: string
+          end_date?: string | null
+          frequency: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          notes?: string | null
+          start_date?: string
+          time_of_day?: string[] | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          dosage?: string
+          end_date?: string | null
+          frequency?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          notes?: string | null
+          start_date?: string
+          time_of_day?: string[] | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       pending_emergency_services: {
         Row: {
           address: string | null
@@ -335,6 +466,36 @@ export type Database = {
           created_at?: string | null
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      video_streams: {
+        Row: {
+          alert_id: string
+          ended_at: string | null
+          id: string
+          started_at: string | null
+          status: string | null
+          stream_url: string | null
+          user_id: string
+        }
+        Insert: {
+          alert_id: string
+          ended_at?: string | null
+          id?: string
+          started_at?: string | null
+          status?: string | null
+          stream_url?: string | null
+          user_id: string
+        }
+        Update: {
+          alert_id?: string
+          ended_at?: string | null
+          id?: string
+          started_at?: string | null
+          status?: string | null
+          stream_url?: string | null
           user_id?: string
         }
         Relationships: []
