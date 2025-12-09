@@ -1,11 +1,16 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
-import { AlertTriangle, Clock, Users, TrendingUp, Activity, CheckCircle } from "lucide-react";
+import { AlertTriangle, Clock, TrendingUp, Activity, CheckCircle, Download, FileText, RefreshCw } from "lucide-react";
 import { format, subDays, startOfDay, endOfDay, differenceInMinutes } from "date-fns";
+import { exportToCSV, exportToPDF } from "@/lib/exportUtils";
+import { toast } from "sonner";
+import AuditLogsViewer from "./AuditLogsViewer";
 
 interface AlertStats {
   total: number;
@@ -46,9 +51,31 @@ const AnalyticsDashboard = () => {
   const [alertsByType, setAlertsByType] = useState<AlertByType[]>([]);
   const [dailyActivity, setDailyActivity] = useState<DailyActivity[]>([]);
   const [hourlyDistribution, setHourlyDistribution] = useState<HourlyDistribution[]>([]);
+  const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
 
   useEffect(() => {
     loadAnalytics();
+
+    // Set up real-time subscription
+    const channel = supabase
+      .channel("analytics-realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "emergency_alerts"
+        },
+        () => {
+          loadAnalytics();
+          toast.info("Dashboard updated with new data");
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [dateRange]);
 
   const loadAnalytics = async () => {
@@ -58,7 +85,6 @@ const AnalyticsDashboard = () => {
       const startDate = startOfDay(subDays(new Date(), days));
       const endDate = endOfDay(new Date());
 
-      // Fetch all alerts in date range
       const { data: alerts, error } = await supabase
         .from("emergency_alerts")
         .select("*")
@@ -73,35 +99,27 @@ const AnalyticsDashboard = () => {
         setDailyActivity([]);
         setHourlyDistribution([]);
         setLoading(false);
+        setLastUpdate(new Date());
         return;
       }
 
-      // Calculate stats
       const active = alerts.filter(a => a.status === "active").length;
       const resolved = alerts.filter(a => a.status === "resolved").length;
       const escalated = alerts.filter(a => a.status === "escalated").length;
 
-      // Calculate average response time (from created to resolved)
       const resolvedAlerts = alerts.filter(a => a.resolved_at);
       let avgResponseTime = 0;
       if (resolvedAlerts.length > 0) {
         const totalMinutes = resolvedAlerts.reduce((sum, alert) => {
           const created = new Date(alert.created_at);
-          const resolved = new Date(alert.resolved_at!);
-          return sum + differenceInMinutes(resolved, created);
+          const resolvedAt = new Date(alert.resolved_at!);
+          return sum + differenceInMinutes(resolvedAt, created);
         }, 0);
         avgResponseTime = Math.round(totalMinutes / resolvedAlerts.length);
       }
 
-      setStats({
-        total: alerts.length,
-        active,
-        resolved,
-        escalated,
-        avgResponseTime
-      });
+      setStats({ total: alerts.length, active, resolved, escalated, avgResponseTime });
 
-      // Group by emergency type
       const typeGroups: Record<string, number> = {};
       alerts.forEach(alert => {
         const type = alert.emergency_type || "Unknown";
@@ -114,7 +132,6 @@ const AnalyticsDashboard = () => {
           .slice(0, 7)
       );
 
-      // Daily activity
       const dailyGroups: Record<string, { alerts: number; resolved: number }> = {};
       for (let i = days; i >= 0; i--) {
         const date = format(subDays(new Date(), i), "MMM dd");
@@ -137,7 +154,6 @@ const AnalyticsDashboard = () => {
         }))
       );
 
-      // Hourly distribution
       const hourlyGroups: Record<number, number> = {};
       for (let i = 0; i < 24; i++) {
         hourlyGroups[i] = 0;
@@ -148,15 +164,38 @@ const AnalyticsDashboard = () => {
       });
       setHourlyDistribution(
         Object.entries(hourlyGroups).map(([hour, count]) => ({
-          hour: `${hour.padStart(2, "0")}:00`,
+          hour: `${hour.toString().padStart(2, "0")}:00`,
           count
         }))
       );
 
+      setLastUpdate(new Date());
     } catch (error) {
       console.error("Error loading analytics:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleExport = (type: "pdf" | "csv") => {
+    const exportData = {
+      stats,
+      alertsByType,
+      dailyActivity,
+      dateRange
+    };
+
+    try {
+      if (type === "pdf") {
+        exportToPDF(exportData);
+        toast.success("PDF report downloaded");
+      } else {
+        exportToCSV(exportData);
+        toast.success("CSV report downloaded");
+      }
+    } catch (error) {
+      console.error("Export error:", error);
+      toast.error("Failed to export report");
     }
   };
 
@@ -181,23 +220,49 @@ const AnalyticsDashboard = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header with date range selector */}
-      <div className="flex items-center justify-between">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold">Analytics Overview</h2>
-          <p className="text-muted-foreground">Track emergency response metrics and patterns</p>
+          <p className="text-muted-foreground">
+            Last updated: {format(lastUpdate, "PPp")}
+          </p>
         </div>
-        <Select value={dateRange} onValueChange={setDateRange}>
-          <SelectTrigger className="w-40">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="7">Last 7 days</SelectItem>
-            <SelectItem value="14">Last 14 days</SelectItem>
-            <SelectItem value="30">Last 30 days</SelectItem>
-            <SelectItem value="90">Last 90 days</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={loadAnalytics}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+          <Select value={dateRange} onValueChange={setDateRange}>
+            <SelectTrigger className="w-40">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="7">Last 7 days</SelectItem>
+              <SelectItem value="14">Last 14 days</SelectItem>
+              <SelectItem value="30">Last 30 days</SelectItem>
+              <SelectItem value="90">Last 90 days</SelectItem>
+            </SelectContent>
+          </Select>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">
+                <Download className="h-4 w-4 mr-2" />
+                Export
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => handleExport("pdf")}>
+                <FileText className="h-4 w-4 mr-2" />
+                Export as PDF
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleExport("csv")}>
+                <FileText className="h-4 w-4 mr-2" />
+                Export as CSV
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -261,7 +326,6 @@ const AnalyticsDashboard = () => {
 
       {/* Charts Row */}
       <div className="grid md:grid-cols-2 gap-6">
-        {/* Daily Activity Chart */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -285,22 +349,8 @@ const AnalyticsDashboard = () => {
                     }}
                   />
                   <Legend />
-                  <Line
-                    type="monotone"
-                    dataKey="alerts"
-                    stroke="#ef4444"
-                    strokeWidth={2}
-                    dot={{ fill: "#ef4444" }}
-                    name="Alerts"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="resolved"
-                    stroke="#22c55e"
-                    strokeWidth={2}
-                    dot={{ fill: "#22c55e" }}
-                    name="Resolved"
-                  />
+                  <Line type="monotone" dataKey="alerts" stroke="#ef4444" strokeWidth={2} dot={{ fill: "#ef4444" }} name="Alerts" />
+                  <Line type="monotone" dataKey="resolved" stroke="#22c55e" strokeWidth={2} dot={{ fill: "#22c55e" }} name="Resolved" />
                 </LineChart>
               </ResponsiveContainer>
             ) : (
@@ -311,7 +361,6 @@ const AnalyticsDashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Alert Types Pie Chart */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -333,7 +382,7 @@ const AnalyticsDashboard = () => {
                     paddingAngle={2}
                     dataKey="count"
                     nameKey="type"
-                    label={({ type, percent }) => `${(percent * 100).toFixed(0)}%`}
+                    label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
                   >
                     {alertsByType.map((_, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -353,20 +402,11 @@ const AnalyticsDashboard = () => {
                 No data available
               </div>
             )}
-            {/* Legend */}
             {alertsByType.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-4 justify-center">
                 {alertsByType.map((item, index) => (
-                  <Badge
-                    key={item.type}
-                    variant="outline"
-                    className="text-xs"
-                    style={{ borderColor: COLORS[index % COLORS.length] }}
-                  >
-                    <div
-                      className="w-2 h-2 rounded-full mr-1"
-                      style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                    />
+                  <Badge key={item.type} variant="outline" className="text-xs" style={{ borderColor: COLORS[index % COLORS.length] }}>
+                    <div className="w-2 h-2 rounded-full mr-1" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
                     {item.type}: {item.count}
                   </Badge>
                 ))}
@@ -445,6 +485,9 @@ const AnalyticsDashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Audit Logs */}
+      <AuditLogsViewer />
     </div>
   );
 };
