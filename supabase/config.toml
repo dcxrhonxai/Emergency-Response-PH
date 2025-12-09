@@ -1,1 +1,13 @@
 project_id = "jbznnjhcqdhvjtdfxtuv"
+
+[functions.send-emergency-email]
+verify_jwt = true
+
+[functions.send-push-notification]
+verify_jwt = true
+
+[functions.check-alert-escalation]
+verify_jwt = false
+
+[functions.check-medication-reminders]
+verify_jwt = false

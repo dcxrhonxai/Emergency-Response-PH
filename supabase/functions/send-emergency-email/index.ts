@@ -10,6 +10,31 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+// Simple in-memory rate limiter
+const rateLimitStore = new Map<string, { count: number; resetAt: number }>();
+
+const checkRateLimit = (identifier: string, maxRequests: number, windowMs: number) => {
+  const now = Date.now();
+  const entry = rateLimitStore.get(identifier);
+
+  if (!entry || entry.resetAt < now) {
+    rateLimitStore.set(identifier, { count: 1, resetAt: now + windowMs });
+    return { allowed: true, remaining: maxRequests - 1 };
+  }
+
+  if (entry.count >= maxRequests) {
+    return { allowed: false, remaining: 0, resetAt: entry.resetAt };
+  }
+
+  entry.count++;
+  return { allowed: true, remaining: maxRequests - entry.count };
+};
+
+const getClientIP = (req: Request): string => {
+  return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || 
+         req.headers.get("x-real-ip") || "unknown";
+};
+
 // Input validation schemas
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const phoneRegex = /^[\d\s+()-]{7,20}$/;
@@ -95,6 +120,25 @@ const validateInput = (data: EmergencyEmailRequest): { valid: boolean; error?: s
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Rate limiting: 10 requests per minute per IP
+  const clientIP = getClientIP(req);
+  const rateLimit = checkRateLimit(`emergency_${clientIP}`, 10, 60000);
+  
+  if (!rateLimit.allowed) {
+    console.log(`Rate limit exceeded for IP: ${clientIP}`);
+    return new Response(
+      JSON.stringify({ error: "Too many requests. Please try again later." }),
+      { 
+        status: 429, 
+        headers: { 
+          ...corsHeaders, 
+          "Content-Type": "application/json",
+          "Retry-After": "60"
+        } 
+      }
+    );
   }
 
   try {
