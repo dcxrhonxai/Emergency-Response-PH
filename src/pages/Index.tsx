@@ -15,7 +15,8 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { EmergencyChat } from "@/components/EmergencyChat";
 import { EmergencyDirections } from "@/components/EmergencyDirections";
 import { InAppNotifications } from "@/components/InAppNotifications";
-import { Shield, LogOut, User, History, Users, Heart, IdCard, Plus, Menu, Wifi, WifiOff, FileText } from "lucide-react";
+import { NearbyServicesSearch } from "@/components/NearbyServicesSearch";
+import { Shield, LogOut, User, History, Users, Heart, IdCard, Plus, Menu, Wifi, WifiOff, FileText, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -345,10 +346,14 @@ const Index = () => {
       <main className="container mx-auto px-3 py-3 max-w-2xl pb-20">
         {!showEmergency ? (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-3">
-            <TabsList className="grid w-full grid-cols-4 h-auto">
+            <TabsList className="grid w-full grid-cols-5 h-auto">
               <TabsTrigger value="emergency" className="flex flex-col items-center gap-1 py-2 text-xs">
                 <Shield className="w-4 h-4" />
                 <span className="hidden sm:inline">{t('tabs.emergency')}</span>
+              </TabsTrigger>
+              <TabsTrigger value="nearby" className="flex flex-col items-center gap-1 py-2 text-xs">
+                <MapPin className="w-4 h-4" />
+                <span className="hidden sm:inline">Nearby</span>
               </TabsTrigger>
               <TabsTrigger value="contacts" className="flex flex-col items-center gap-1 py-2 text-xs">
                 <Users className="w-4 h-4" />
@@ -477,6 +482,10 @@ const Index = () => {
               </div>
 
               <EmergencyForm onEmergencyClick={handleEmergencyClick} userId={session.user.id} />
+            </TabsContent>
+
+            <TabsContent value="nearby">
+              <NearbyServicesSearch />
             </TabsContent>
 
             <TabsContent value="contacts">

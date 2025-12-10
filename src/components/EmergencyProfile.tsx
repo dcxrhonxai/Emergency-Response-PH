@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Camera, X } from "lucide-react";
 import imageCompression from "browser-image-compression";
+import { TwoFactorAuth } from "./TwoFactorAuth";
 
 interface EmergencyProfileProps {
   userId: string;
@@ -215,6 +216,7 @@ export const EmergencyProfile = ({ userId }: EmergencyProfileProps) => {
   }
 
   return (
+    <>
     <Card>
       <CardHeader>
         <CardTitle>Emergency Medical Information</CardTitle>
@@ -327,5 +329,9 @@ export const EmergencyProfile = ({ userId }: EmergencyProfileProps) => {
         </Button>
       </CardContent>
     </Card>
+
+    {/* Two-Factor Authentication */}
+    <TwoFactorAuth />
+  </>
   );
 };
