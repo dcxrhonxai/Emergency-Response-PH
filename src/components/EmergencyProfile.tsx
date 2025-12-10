@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, Camera, X } from "lucide-react";
 import imageCompression from "browser-image-compression";
 import { TwoFactorAuth } from "./TwoFactorAuth";
+import { BiometricAuth } from "./BiometricAuth";
 
 interface EmergencyProfileProps {
   userId: string;
@@ -332,6 +333,9 @@ export const EmergencyProfile = ({ userId }: EmergencyProfileProps) => {
 
     {/* Two-Factor Authentication */}
     <TwoFactorAuth />
+
+    {/* Biometric Authentication */}
+    <BiometricAuth />
   </>
   );
 };

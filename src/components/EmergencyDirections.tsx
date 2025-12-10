@@ -4,8 +4,10 @@ import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Navigation, Phone, MapPin, ExternalLink } from "lucide-react";
 import { Badge } from "./ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { useTranslation } from "react-i18next";
 import { calculateDistance, formatDistance } from "@/lib/distance";
+import { RouteOptimization } from "./RouteOptimization";
 import type { Database } from "@/integrations/supabase/types";
 
 type EmergencyService = Database['public']['Tables']['emergency_services']['Row'] & {
@@ -71,7 +73,20 @@ export const EmergencyDirections = ({ userLocation, emergencyType }: EmergencyDi
   };
 
   return (
-    <div className="space-y-4">
+    <Tabs defaultValue="optimized" className="space-y-4">
+      <TabsList className="grid w-full grid-cols-2">
+        <TabsTrigger value="optimized">Optimized Routes</TabsTrigger>
+        <TabsTrigger value="nearby">Nearby Services</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="optimized">
+        <RouteOptimization 
+          userLocation={userLocation} 
+          emergencyType={emergencyType}
+        />
+      </TabsContent>
+
+      <TabsContent value="nearby" className="space-y-4">
       {/* Map with Route */}
       {selectedService && (
         <Card className="overflow-hidden">
@@ -177,6 +192,7 @@ export const EmergencyDirections = ({ userLocation, emergencyType }: EmergencyDi
           <p><strong>Red Cross:</strong> 143 or (02) 8790-2300</p>
         </div>
       </Card>
-    </div>
+      </TabsContent>
+    </Tabs>
   );
 };
