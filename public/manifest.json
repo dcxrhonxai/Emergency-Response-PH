@@ -1,0 +1,47 @@
+{
+  "name": "Emergency Response PH",
+  "short_name": "ERPH",
+  "description": "Quick access to emergency services in the Philippines",
+  "theme_color": "#dc2626",
+  "background_color": "#0f172a",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-maskable-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/pwa-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["medical", "utilities", "lifestyle"],
+  "shortcuts": [
+    {
+      "name": "Quick SOS",
+      "short_name": "SOS",
+      "description": "Send an emergency alert immediately",
+      "url": "/?action=sos",
+      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
+    }
+  ]
+}
