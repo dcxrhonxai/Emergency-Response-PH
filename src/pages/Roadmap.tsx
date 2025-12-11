@@ -79,7 +79,7 @@ const roadmapData: FeatureCategory[] = [
       { name: "Pending Services Approval", completed: true },
       { name: "Service Rating System", completed: false, priority: "medium" },
       { name: "Service Verification", completed: false, priority: "high" },
-      { name: "Contact Groups", completed: false, priority: "low" },
+      { name: "Contact Groups", completed: true },
     ],
   },
   {
@@ -175,7 +175,7 @@ const roadmapData: FeatureCategory[] = [
       { name: "Tagalog Language", completed: true },
       { name: "Language Switcher", completed: true },
       { name: "Additional Languages", completed: false, priority: "medium" },
-      { name: "Screen Reader Support", completed: false, priority: "high" },
+      { name: "Screen Reader Support", completed: true },
       { name: "High Contrast Mode", completed: false, priority: "medium" },
       { name: "Voice Commands", completed: true },
     ],

@@ -52,6 +52,75 @@ export type Database = {
           },
         ]
       }
+      contact_group_members: {
+        Row: {
+          contact_id: string
+          created_at: string | null
+          group_id: string
+          id: string
+        }
+        Insert: {
+          contact_id: string
+          created_at?: string | null
+          group_id: string
+          id?: string
+        }
+        Update: {
+          contact_id?: string
+          created_at?: string | null
+          group_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_group_members_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "personal_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contact_group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "contact_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contact_groups: {
+        Row: {
+          color: string | null
+          created_at: string | null
+          description: string | null
+          emergency_types: string[] | null
+          id: string
+          name: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          emergency_types?: string[] | null
+          id?: string
+          name: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          emergency_types?: string[] | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       doctor_contacts: {
         Row: {
           address: string | null

@@ -4,11 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Phone, Trash2, Plus, MessageSquare } from "lucide-react";
+import { Phone, Trash2, Plus, MessageSquare, Users } from "lucide-react";
 import { toast } from "sonner";
 import { personalContactSchema } from "@/lib/validation";
 import { usePhoneCaller } from "@/hooks/usePhoneCaller";
+import { ContactGroups } from "./ContactGroups";
 
 interface PersonalContact {
   id: string;
@@ -135,161 +137,187 @@ const PersonalContacts = ({ userId }: PersonalContactsProps) => {
   }
 
   return (
-    <div className="space-y-3">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-bold text-foreground">Emergency Contacts</h2>
-          <p className="text-xs text-muted-foreground">
-            Quick access to family & friends
-          </p>
-        </div>
-        <div className="flex gap-1">
-          {contacts.length > 0 && (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="destructive" size="sm" className="h-7 text-xs">
-                  <Trash2 className="w-3 h-3 mr-1" />
-                  <span className="hidden sm:inline">Delete All</span>
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete All Contacts?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This will permanently delete all your emergency contacts. This action cannot be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDeleteAll} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                    Delete All
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          )}
-          <Button onClick={() => setShowForm(!showForm)} size="sm" className="h-7 text-xs">
-            <Plus className="w-3 h-3 mr-1" />
-            <span className="hidden sm:inline">Add</span>
-          </Button>
-        </div>
-      </div>
-
-      {/* Add Form */}
-      {showForm && (
-        <Card className="p-3">
-          <form onSubmit={handleAdd} className="space-y-2">
-            <div className="space-y-1">
-              <Label htmlFor="name" className="text-xs">Name *</Label>
-              <Input
-                id="name"
-                placeholder="Juan Dela Cruz"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                className="h-9 text-sm"
-              />
+    <div className="space-y-3" role="region" aria-label="Emergency Contacts Management">
+      <Tabs defaultValue="contacts" className="w-full">
+        <TabsList className="grid w-full grid-cols-2" aria-label="Contact management tabs">
+          <TabsTrigger value="contacts" className="text-xs">
+            <Phone className="w-3 h-3 mr-1" aria-hidden="true" />
+            Contacts
+          </TabsTrigger>
+          <TabsTrigger value="groups" className="text-xs">
+            <Users className="w-3 h-3 mr-1" aria-hidden="true" />
+            Groups
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="contacts" className="mt-3 space-y-3">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-bold text-foreground" id="contacts-heading">Emergency Contacts</h2>
+              <p className="text-xs text-muted-foreground">
+                Quick access to family & friends
+              </p>
             </div>
-            <div className="space-y-1">
-              <Label htmlFor="phone" className="text-xs">Phone Number *</Label>
-              <Input
-                id="phone"
-                type="tel"
-                placeholder="+63 912 345 6789"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                required
-                className="h-9 text-sm"
-              />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="relationship" className="text-xs">Relationship</Label>
-              <Input
-                id="relationship"
-                placeholder="e.g., Family, Friend"
-                value={relationship}
-                onChange={(e) => setRelationship(e.target.value)}
-                className="h-9 text-sm"
-              />
-            </div>
-            <div className="flex gap-2">
-              <Button type="submit" className="flex-1 h-9 text-sm">Add</Button>
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => setShowForm(false)}
-                className="h-9 text-sm"
-              >
-                Cancel
+            <div className="flex gap-1">
+              {contacts.length > 0 && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" size="sm" className="h-7 text-xs" aria-label="Delete all contacts">
+                      <Trash2 className="w-3 h-3 mr-1" aria-hidden="true" />
+                      <span className="hidden sm:inline">Delete All</span>
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete All Contacts?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently delete all your emergency contacts. This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDeleteAll} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                        Delete All
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+              <Button onClick={() => setShowForm(!showForm)} size="sm" className="h-7 text-xs" aria-label="Add new contact">
+                <Plus className="w-3 h-3 mr-1" aria-hidden="true" />
+                <span className="hidden sm:inline">Add</span>
               </Button>
             </div>
-          </form>
-        </Card>
-      )}
+          </div>
 
-      {/* Contacts List */}
-      {contacts.length === 0 ? (
-        <Card className="p-4 text-center">
-          <p className="text-xs text-muted-foreground mb-2">
-            No contacts added yet
-          </p>
-          <Button onClick={() => setShowForm(true)} size="sm" className="h-7 text-xs">
-            <Plus className="w-3 h-3 mr-1" />
-            Add First Contact
-          </Button>
-        </Card>
-      ) : (
-        <div className="space-y-2">
-          {contacts.map((contact) => (
-            <Card key={contact.id} className="p-2">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-sm font-semibold text-foreground mb-0.5">{contact.name}</h3>
-                  {contact.relationship && (
-                    <p className="text-xs text-muted-foreground mb-1">
-                      {contact.relationship}
-                    </p>
-                  )}
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Phone className="w-3 h-3" />
-                    <span className="font-mono truncate">{contact.phone}</span>
-                  </div>
+          {/* Add Form */}
+          {showForm && (
+            <Card className="p-3">
+              <form onSubmit={handleAdd} className="space-y-2" aria-label="Add new contact form">
+                <div className="space-y-1">
+                  <Label htmlFor="contact-name" className="text-xs">Name *</Label>
+                  <Input
+                    id="contact-name"
+                    placeholder="Juan Dela Cruz"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    className="h-9 text-sm"
+                    aria-required="true"
+                  />
                 </div>
-
-                <div className="flex flex-col gap-1">
-                  <Button
-                    onClick={() => handleCall(contact.phone, contact.name)}
-                    size="sm"
-                    className="h-7 px-2 text-xs min-w-16"
+                <div className="space-y-1">
+                  <Label htmlFor="contact-phone" className="text-xs">Phone Number *</Label>
+                  <Input
+                    id="contact-phone"
+                    type="tel"
+                    placeholder="+63 912 345 6789"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    required
+                    className="h-9 text-sm"
+                    aria-required="true"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="contact-relationship" className="text-xs">Relationship</Label>
+                  <Input
+                    id="contact-relationship"
+                    placeholder="e.g., Family, Friend"
+                    value={relationship}
+                    onChange={(e) => setRelationship(e.target.value)}
+                    className="h-9 text-sm"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button type="submit" className="flex-1 h-9 text-sm">Add</Button>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setShowForm(false)}
+                    className="h-9 text-sm"
                   >
-                    <Phone className="w-3 h-3 mr-1" />
-                    Call
-                  </Button>
-                  <Button
-                    onClick={() => handleMessage(contact.phone, contact.name)}
-                    size="sm"
-                    variant="outline"
-                    className="h-7 px-2 text-xs min-w-16"
-                  >
-                    <MessageSquare className="w-3 h-3 mr-1" />
-                    Text
-                  </Button>
-                  <Button
-                    onClick={() => handleDelete(contact.id)}
-                    size="sm"
-                    variant="destructive"
-                    className="h-7 px-2 text-xs min-w-16"
-                  >
-                    <Trash2 className="w-3 h-3 mr-1" />
-                    Del
+                    Cancel
                   </Button>
                 </div>
-              </div>
+              </form>
             </Card>
-          ))}
-        </div>
-      )}
+          )}
+
+          {/* Contacts List */}
+          {contacts.length === 0 ? (
+            <Card className="p-4 text-center">
+              <p className="text-xs text-muted-foreground mb-2">
+                No contacts added yet
+              </p>
+              <Button onClick={() => setShowForm(true)} size="sm" className="h-7 text-xs">
+                <Plus className="w-3 h-3 mr-1" aria-hidden="true" />
+                Add First Contact
+              </Button>
+            </Card>
+          ) : (
+            <ul className="space-y-2" role="list" aria-labelledby="contacts-heading">
+              {contacts.map((contact) => (
+                <li key={contact.id}>
+                  <Card className="p-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-sm font-semibold text-foreground mb-0.5">{contact.name}</h3>
+                        {contact.relationship && (
+                          <p className="text-xs text-muted-foreground mb-1">
+                            {contact.relationship}
+                          </p>
+                        )}
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Phone className="w-3 h-3" aria-hidden="true" />
+                          <span className="font-mono truncate">{contact.phone}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-1" role="group" aria-label={`Actions for ${contact.name}`}>
+                        <Button
+                          onClick={() => handleCall(contact.phone, contact.name)}
+                          size="sm"
+                          className="h-7 px-2 text-xs min-w-16"
+                          aria-label={`Call ${contact.name}`}
+                        >
+                          <Phone className="w-3 h-3 mr-1" aria-hidden="true" />
+                          Call
+                        </Button>
+                        <Button
+                          onClick={() => handleMessage(contact.phone, contact.name)}
+                          size="sm"
+                          variant="outline"
+                          className="h-7 px-2 text-xs min-w-16"
+                          aria-label={`Send text message to ${contact.name}`}
+                        >
+                          <MessageSquare className="w-3 h-3 mr-1" aria-hidden="true" />
+                          Text
+                        </Button>
+                        <Button
+                          onClick={() => handleDelete(contact.id)}
+                          size="sm"
+                          variant="destructive"
+                          className="h-7 px-2 text-xs min-w-16"
+                          aria-label={`Delete ${contact.name}`}
+                        >
+                          <Trash2 className="w-3 h-3 mr-1" aria-hidden="true" />
+                          Del
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                </li>
+              ))}
+            </ul>
+          )}
+        </TabsContent>
+        
+        <TabsContent value="groups" className="mt-3">
+          <ContactGroups userId={userId} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

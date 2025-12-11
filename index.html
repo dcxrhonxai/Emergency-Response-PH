@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
     <title>Emergency Response PH - Quick Access to Emergency Services</title>
     <meta name="description" content="Emergency Response PH provides instant access to national and local emergency services in the Philippines. Get help quickly during fire, medical, police, and disaster emergencies.">
     <meta name="author" content="Emergency Response PH" />
@@ -26,9 +26,29 @@
     <meta property="og:description" content="Emergency Response PH provides instant access to national and local emergency services in the Philippines. Get help quickly during fire, medical, police, and disaster emergencies.">
     <meta name="twitter:description" content="Emergency Response PH provides instant access to national and local emergency services in the Philippines. Get help quickly during fire, medical, police, and disaster emergencies.">
     <link rel="icon" type="image/x-icon" href="https://storage.googleapis.com/gpt-engineer-file-uploads/SV3wbHxb4MgquH6WAVAupsv2MGT2/uploads/1759384225662-erph logo 512.png">
+    
+    <!-- Accessibility styles for skip link -->
+    <style>
+      .skip-link {
+        position: absolute;
+        top: -40px;
+        left: 0;
+        background: #dc2626;
+        color: white;
+        padding: 8px 16px;
+        z-index: 100;
+        text-decoration: none;
+        font-weight: bold;
+      }
+      .skip-link:focus {
+        top: 0;
+      }
+    </style>
   </head>
 
   <body>
+    <!-- Skip link for keyboard users -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
