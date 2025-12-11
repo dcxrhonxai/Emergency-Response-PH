@@ -99,41 +99,45 @@ const ContactList = ({ emergencyType, userLocation }: ContactListProps) => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" role="region" aria-label="Emergency Services Directory">
       {/* National Contacts */}
-      <div className="bg-card rounded-lg shadow-lg p-6">
+      <section className="bg-card rounded-lg shadow-lg p-6" aria-labelledby="national-contacts-heading">
         <div className="flex items-center gap-2 mb-4">
-          <Phone className="w-5 h-5 text-primary" />
-          <h2 className="text-xl font-bold text-foreground">National Emergency Contacts</h2>
+          <Phone className="w-5 h-5 text-primary" aria-hidden="true" />
+          <h2 id="national-contacts-heading" className="text-xl font-bold text-foreground">National Emergency Contacts</h2>
         </div>
-        <div className="space-y-3">
+        <ul className="space-y-3" role="list" aria-label="National emergency contacts list">
           {filteredNational.map((contact) => (
-            <ContactCard key={contact.id} contact={contact} />
+            <li key={contact.id}>
+              <ContactCard contact={contact} />
+            </li>
           ))}
-        </div>
-      </div>
+        </ul>
+      </section>
 
       {/* Local Contacts */}
       {userLocation && filteredLocal.length > 0 && (
-        <div className="bg-card rounded-lg shadow-lg p-6">
+        <section className="bg-card rounded-lg shadow-lg p-6" aria-labelledby="nearby-services-heading">
           <div className="flex items-center gap-2 mb-4">
-            <Phone className="w-5 h-5 text-accent" />
-            <h2 className="text-xl font-bold text-foreground">Nearby Emergency Services</h2>
+            <Phone className="w-5 h-5 text-accent" aria-hidden="true" />
+            <h2 id="nearby-services-heading" className="text-xl font-bold text-foreground">Nearby Emergency Services</h2>
           </div>
           <p className="text-sm text-muted-foreground mb-4">
             Services near your current location
           </p>
-          <div className="space-y-3">
+          <ul className="space-y-3" role="list" aria-label="Nearby emergency services list">
             {filteredLocal.map((contact) => (
-              <ContactCard key={contact.id} contact={contact} />
+              <li key={contact.id}>
+                <ContactCard contact={contact} />
+              </li>
             ))}
-          </div>
-        </div>
+          </ul>
+        </section>
       )}
 
       {/* No Contacts Message */}
       {filteredNational.length === 0 && filteredLocal.length === 0 && (
-        <div className="bg-muted rounded-lg p-8 text-center">
+        <div className="bg-muted rounded-lg p-8 text-center" role="status">
           <p className="text-muted-foreground">
             No specific contacts found for this emergency type. Please call 911 for immediate
             assistance.
