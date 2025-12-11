@@ -92,7 +92,7 @@ const roadmapData: FeatureCategory[] = [
       { name: "Distance Calculation", completed: true },
       { name: "Nearby Services Search", completed: true },
       { name: "Route Optimization", completed: true },
-      { name: "Offline Maps", completed: false, priority: "low" },
+      { name: "Offline Maps", completed: true },
     ],
   },
   {
@@ -177,7 +177,7 @@ const roadmapData: FeatureCategory[] = [
       { name: "Additional Languages", completed: false, priority: "medium" },
       { name: "Screen Reader Support", completed: false, priority: "high" },
       { name: "High Contrast Mode", completed: false, priority: "medium" },
-      { name: "Voice Commands", completed: false, priority: "low" },
+      { name: "Voice Commands", completed: true },
     ],
   },
 ];
