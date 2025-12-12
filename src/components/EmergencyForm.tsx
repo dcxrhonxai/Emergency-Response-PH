@@ -12,6 +12,7 @@ import { AlertCircle, Flame, Activity, Car, Home, Users, Camera, Wifi, WifiOff }
 import { toast } from "sonner";
 import { emergencyFormSchema } from "@/lib/validation";
 import { MediaCapture } from "./MediaCapture";
+import { AutoEvidenceCapture } from "./AutoEvidenceCapture";
 import { UploadedFile } from "@/lib/storage";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
 import { Badge } from "./ui/badge";
@@ -19,9 +20,10 @@ import { Badge } from "./ui/badge";
 interface EmergencyFormProps {
   onEmergencyClick: (type: string, situation: string, evidenceFiles?: UploadedFile[]) => void;
   userId: string;
+  isEmergencyActive?: boolean;
 }
 
-const EmergencyForm = ({ onEmergencyClick, userId }: EmergencyFormProps) => {
+const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: EmergencyFormProps) => {
   const [situation, setSituation] = useState("");
   const [emergencyType, setEmergencyType] = useState("");
   const [showMediaCapture, setShowMediaCapture] = useState(false);
@@ -145,6 +147,13 @@ const EmergencyForm = ({ onEmergencyClick, userId }: EmergencyFormProps) => {
           )}
         </div>
 
+        {/* Auto Evidence Capture */}
+        <AutoEvidenceCapture 
+          userId={userId} 
+          isEmergencyActive={isEmergencyActive}
+          onFilesChange={(files) => setEvidenceFiles(files)}
+        />
+
         {/* Emergency Button */}
         <Button
           onClick={handleSubmit}
@@ -162,8 +171,6 @@ const EmergencyForm = ({ onEmergencyClick, userId }: EmergencyFormProps) => {
           </p>
         </div>
       </div>
-
-      {/* Quick Tips - Compact for AdMob space */}
       <div className="bg-accent/10 rounded-lg p-2 space-y-1">
         <h3 className="text-xs font-semibold text-foreground">Tips:</h3>
         <ul className="text-xs text-muted-foreground space-y-0.5 list-disc list-inside">

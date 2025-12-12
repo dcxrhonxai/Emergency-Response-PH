@@ -100,6 +100,47 @@ All colors MUST be HSL.
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
+
+  /* High Contrast Mode */
+  .high-contrast {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+
+    --card: 0 0% 0%;
+    --card-foreground: 0 0% 100%;
+
+    --popover: 0 0% 0%;
+    --popover-foreground: 0 0% 100%;
+
+    --primary: 60 100% 50%;
+    --primary-foreground: 0 0% 0%;
+
+    --secondary: 0 0% 20%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 80%;
+
+    --accent: 180 100% 50%;
+    --accent-foreground: 0 0% 0%;
+
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 100%;
+    --input: 0 0% 20%;
+    --ring: 60 100% 50%;
+
+    --emergency-red: 0 100% 50%;
+    --emergency-red-dark: 0 100% 40%;
+    --success-green: 120 100% 40%;
+    --warning-yellow: 60 100% 50%;
+  }
+
+  .high-contrast .dark {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+  }
 }
 
 @layer base {
@@ -110,4 +151,22 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* High contrast focus styles */
+.high-contrast *:focus {
+  outline: 3px solid hsl(60 100% 50%) !important;
+  outline-offset: 2px;
+}
+
+.high-contrast button,
+.high-contrast a,
+.high-contrast input,
+.high-contrast select,
+.high-contrast textarea {
+  border-width: 2px !important;
+}
+
+.high-contrast img {
+  filter: contrast(1.2);
 }

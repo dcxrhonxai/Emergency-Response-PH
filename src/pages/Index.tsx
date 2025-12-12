@@ -16,7 +16,8 @@ import { EmergencyChat } from "@/components/EmergencyChat";
 import { EmergencyDirections } from "@/components/EmergencyDirections";
 import { InAppNotifications } from "@/components/InAppNotifications";
 import { NearbyServicesSearch } from "@/components/NearbyServicesSearch";
-import { Shield, LogOut, User, History, Users, Heart, IdCard, Plus, Menu, Wifi, WifiOff, FileText, MapPin } from "lucide-react";
+import { Shield, LogOut, User, History, Users, Heart, IdCard, Plus, Menu, Wifi, WifiOff, FileText, MapPin, Eye } from "lucide-react";
+import { HighContrastToggle } from "@/components/HighContrastToggle";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -299,6 +300,7 @@ const Index = () => {
             </div>
           </div>
           <div className="flex items-center gap-1">
+            <HighContrastToggle />
             <InAppNotifications userId={session.user.id} />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
