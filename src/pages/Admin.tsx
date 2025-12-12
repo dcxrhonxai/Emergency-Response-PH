@@ -3,14 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAdminCheck } from '@/hooks/useAdminCheck';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Shield, LogOut, AlertTriangle, Building2, Users, BarChart3 } from 'lucide-react';
+import { Shield, LogOut, AlertTriangle, Building2, Users, BarChart3, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import EmergencyServicesManager from '@/components/admin/EmergencyServicesManager';
 import AlertsMonitor from '@/components/admin/AlertsMonitor';
 import UserRolesManager from '@/components/admin/UserRolesManager';
 import { PendingServicesManager } from '@/components/admin/PendingServicesManager';
 import AnalyticsDashboard from '@/components/admin/AnalyticsDashboard';
-
+import { ServiceVerificationPanel } from '@/components/ServiceVerificationPanel';
 const Admin = () => {
   const navigate = useNavigate();
   const { isAdmin, loading } = useAdminCheck();
@@ -75,7 +75,7 @@ const Admin = () => {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <Tabs defaultValue="analytics" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 max-w-4xl">
+          <TabsList className="grid w-full grid-cols-6 max-w-5xl">
             <TabsTrigger value="analytics">
               <BarChart3 className="w-4 h-4 mr-2" />
               Analytics
@@ -83,6 +83,10 @@ const Admin = () => {
             <TabsTrigger value="services">
               <Building2 className="w-4 h-4 mr-2" />
               Services
+            </TabsTrigger>
+            <TabsTrigger value="verification">
+              <CheckCircle className="w-4 h-4 mr-2" />
+              Verify
             </TabsTrigger>
             <TabsTrigger value="pending">
               <AlertTriangle className="w-4 h-4 mr-2" />
@@ -104,6 +108,10 @@ const Admin = () => {
 
           <TabsContent value="services">
             <EmergencyServicesManager />
+          </TabsContent>
+
+          <TabsContent value="verification">
+            <ServiceVerificationPanel />
           </TabsContent>
 
           <TabsContent value="pending">
