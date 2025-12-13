@@ -1,0 +1,144 @@
+{
+  "app": {
+    "name": "Emergency Response PH",
+    "tagline": "Ang imong kasiguroan mao ang among prayoridad"
+  },
+  "auth": {
+    "login": "Pag-login",
+    "signup": "Pag-signup",
+    "logout": "Pag-logout",
+    "email": "Email",
+    "password": "Password",
+    "fullName": "Tibuok Ngalan",
+    "signInPrompt": "Pag-sign in sa imong account",
+    "signUpPrompt": "Paghimo og bag-ong account",
+    "alreadyHaveAccount": "Aduna nay account?",
+    "dontHaveAccount": "Wala pay account?",
+    "signingIn": "Nag-sign in...",
+    "signingUp": "Nag-signup..."
+  },
+  "emergency": {
+    "title": "Emerhensya",
+    "quickSOS": "Dali nga SOS",
+    "sendAlert": "Ipadala ang Alerto sa Emerhensya",
+    "selectType": "Pilia ang Klase sa Emerhensya",
+    "types": {
+      "medical": "Emerhensya sa Medikal",
+      "accident": "Aksidente",
+      "fire": "Sunog",
+      "crime": "Krimen",
+      "natural_disaster": "Natural nga Kalamidad",
+      "other": "Uban pa"
+    },
+    "describeSituation": "Ihulagway ang imong sitwasyon",
+    "attachEvidence": "Idugtong ang Ebidensya (Opsyonal)",
+    "capturePhoto": "Kuhaa ang Litrato",
+    "recordVideo": "I-record ang Video",
+    "recordAudio": "I-record ang Audio",
+    "locationAccess": "Gikuha ang imong lokasyon...",
+    "sending": "Gipadala ang alerto...",
+    "alertSent": "Napadala na ang alerto sa emerhensya!",
+    "alertFailed": "Napakyas ang pagpadala sa alerto",
+    "activeAlert": "Aktibo nga Alerto sa Emerhensya",
+    "imSafe": "Luwas Ko",
+    "endAlert": "Tapuson ang Alerto",
+    "alertActive": "Aktibo ang imong alerto sa emerhensya",
+    "contactsNotified": "Na-notify na ang imong mga contact sa emerhensya",
+    "escalated": "GI-ESCALATE",
+    "escalatedMessage": "Gi-escalate kini nga alerto tungod sa walay tubag"
+  },
+  "contacts": {
+    "title": "Mga Contact sa Emerhensya",
+    "addContact": "Idugang og Contact sa Emerhensya",
+    "name": "Ngalan",
+    "phone": "Numero sa Telepono",
+    "relationship": "Relasyon",
+    "saveContact": "I-save ang Contact",
+    "cancel": "Kanselahon",
+    "deleteContact": "Tangtangon ang Contact",
+    "deleteConfirm": "Sigurado ka ba nga gusto nimong tangtangon kini nga contact?",
+    "noContacts": "Wala pay mga contact sa emerhensya nga gidugang",
+    "addFirst": "Idugang ang imong unang contact sa emerhensya"
+  },
+  "profile": {
+    "title": "Profile sa Emerhensya",
+    "medicalInfo": "Impormasyon sa Medikal",
+    "fullName": "Tibuok Ngalan",
+    "phoneNumber": "Numero sa Telepono",
+    "bloodType": "Klase sa Dugo",
+    "allergies": "Mga Alerhiya",
+    "medicalConditions": "Mga Kondisyon sa Medikal",
+    "emergencyNotes": "Mga Nota sa Emerhensya",
+    "saveProfile": "I-save ang Profile",
+    "profileUpdated": "Malampuson nga na-update ang profile",
+    "profileUpdateFailed": "Napakyas ang pag-update sa profile",
+    "viewMedicalID": "Tan-awa ang Medical ID Card"
+  },
+  "medicalID": {
+    "title": "Medical ID Card",
+    "emergencyContact": "Contact sa Emerhensya",
+    "call": "Tawagan",
+    "bloodType": "Klase sa Dugo",
+    "allergies": "Mga Alerhiya",
+    "medicalConditions": "Mga Kondisyon sa Medikal",
+    "notes": "Mga Nota sa Emerhensya",
+    "noInfo": "Walay impormasyon nga gihatag",
+    "instructions": "Ipakita kini nga card sa mga responder sa emerhensya"
+  },
+  "chat": {
+    "title": "Chat sa Emerhensya",
+    "noMessages": "Wala pay mga mensahe. Sugdi ang pagchat sa imong mga contact sa emerhensya.",
+    "placeholder": "I-type ang mensahe..."
+  },
+  "directions": {
+    "nearbyServices": "Mga Serbisyo sa Emerhensya nga Duol",
+    "getDirections": "Kuhaon ang mga Direksyon",
+    "call": "Tawagan"
+  },
+  "history": {
+    "title": "Kasaysayan sa mga Alerto",
+    "noAlerts": "Walay mga alerto sa emerhensya sa kasaysayan",
+    "active": "Aktibo",
+    "resolved": "Na-resolve",
+    "escalated": "Gi-escalate",
+    "viewDetails": "Tan-awa ang mga Detalye",
+    "resolvedAt": "Na-resolve sa",
+    "createdAt": "Gihimo sa"
+  },
+  "location": {
+    "title": "Lokasyon",
+    "shareLocation": "Ipaambit ang Lokasyon",
+    "currentLocation": "Kasamtangang Lokasyon",
+    "latitude": "Latitude",
+    "longitude": "Longitude",
+    "viewOnMap": "Tan-awa sa Google Maps"
+  },
+  "tabs": {
+    "emergency": "Emerhensya",
+    "contacts": "Mga Contact",
+    "profile": "Profile",
+    "history": "Kasaysayan"
+  },
+  "common": {
+    "loading": "Nagload...",
+    "error": "Sayop",
+    "success": "Malampuson",
+    "save": "I-save",
+    "cancel": "Kanselahon",
+    "delete": "Tangtangon",
+    "edit": "I-edit",
+    "close": "Isira",
+    "confirm": "Kumpirmahon",
+    "back": "Balik",
+    "next": "Sunod",
+    "submit": "Isumite",
+    "required": "Kinahanglan"
+  },
+  "validation": {
+    "required": "Kini nga field kinahanglan",
+    "invalidEmail": "Dili balido nga email address",
+    "invalidPhone": "Dili balido nga numero sa telepono",
+    "minLength": "Kinahanglan labing menos {{count}} ka karakter",
+    "maxLength": "Kinahanglan dili molapas sa {{count}} ka karakter"
+  }
+}

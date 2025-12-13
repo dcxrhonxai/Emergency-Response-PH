@@ -1,0 +1,144 @@
+{
+  "app": {
+    "name": "Emergency Response PH",
+    "tagline": "Tu seguridad es nuestra prioridad"
+  },
+  "auth": {
+    "login": "Iniciar sesión",
+    "signup": "Registrarse",
+    "logout": "Cerrar sesión",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "fullName": "Nombre completo",
+    "signInPrompt": "Inicia sesión en tu cuenta",
+    "signUpPrompt": "Crea una nueva cuenta",
+    "alreadyHaveAccount": "¿Ya tienes una cuenta?",
+    "dontHaveAccount": "¿No tienes una cuenta?",
+    "signingIn": "Iniciando sesión...",
+    "signingUp": "Registrándose..."
+  },
+  "emergency": {
+    "title": "Emergencia",
+    "quickSOS": "SOS Rápido",
+    "sendAlert": "Enviar Alerta de Emergencia",
+    "selectType": "Seleccionar Tipo de Emergencia",
+    "types": {
+      "medical": "Emergencia Médica",
+      "accident": "Accidente",
+      "fire": "Incendio",
+      "crime": "Crimen",
+      "natural_disaster": "Desastre Natural",
+      "other": "Otro"
+    },
+    "describeSituation": "Describe tu situación",
+    "attachEvidence": "Adjuntar Evidencia (Opcional)",
+    "capturePhoto": "Capturar Foto",
+    "recordVideo": "Grabar Video",
+    "recordAudio": "Grabar Audio",
+    "locationAccess": "Obteniendo tu ubicación...",
+    "sending": "Enviando alerta...",
+    "alertSent": "¡Alerta de emergencia enviada!",
+    "alertFailed": "Error al enviar la alerta",
+    "activeAlert": "Alerta de Emergencia Activa",
+    "imSafe": "Estoy a Salvo",
+    "endAlert": "Terminar Alerta",
+    "alertActive": "Tu alerta de emergencia está activa",
+    "contactsNotified": "Tus contactos de emergencia han sido notificados",
+    "escalated": "ESCALADA",
+    "escalatedMessage": "Esta alerta ha sido escalada debido a falta de respuesta"
+  },
+  "contacts": {
+    "title": "Contactos de Emergencia",
+    "addContact": "Agregar Contacto de Emergencia",
+    "name": "Nombre",
+    "phone": "Número de Teléfono",
+    "relationship": "Relación",
+    "saveContact": "Guardar Contacto",
+    "cancel": "Cancelar",
+    "deleteContact": "Eliminar Contacto",
+    "deleteConfirm": "¿Estás seguro de que quieres eliminar este contacto?",
+    "noContacts": "Aún no hay contactos de emergencia agregados",
+    "addFirst": "Agrega tu primer contacto de emergencia"
+  },
+  "profile": {
+    "title": "Perfil de Emergencia",
+    "medicalInfo": "Información Médica",
+    "fullName": "Nombre Completo",
+    "phoneNumber": "Número de Teléfono",
+    "bloodType": "Tipo de Sangre",
+    "allergies": "Alergias",
+    "medicalConditions": "Condiciones Médicas",
+    "emergencyNotes": "Notas de Emergencia",
+    "saveProfile": "Guardar Perfil",
+    "profileUpdated": "Perfil actualizado exitosamente",
+    "profileUpdateFailed": "Error al actualizar el perfil",
+    "viewMedicalID": "Ver Tarjeta de Identificación Médica"
+  },
+  "medicalID": {
+    "title": "Tarjeta de Identificación Médica",
+    "emergencyContact": "Contacto de Emergencia",
+    "call": "Llamar",
+    "bloodType": "Tipo de Sangre",
+    "allergies": "Alergias",
+    "medicalConditions": "Condiciones Médicas",
+    "notes": "Notas de Emergencia",
+    "noInfo": "Sin información proporcionada",
+    "instructions": "Muestra esta tarjeta a los servicios de emergencia"
+  },
+  "chat": {
+    "title": "Chat de Emergencia",
+    "noMessages": "Aún no hay mensajes. Comienza a chatear con tus contactos de emergencia.",
+    "placeholder": "Escribe un mensaje..."
+  },
+  "directions": {
+    "nearbyServices": "Servicios de Emergencia Cercanos",
+    "getDirections": "Obtener Direcciones",
+    "call": "Llamar"
+  },
+  "history": {
+    "title": "Historial de Alertas",
+    "noAlerts": "Sin alertas de emergencia en el historial",
+    "active": "Activa",
+    "resolved": "Resuelta",
+    "escalated": "Escalada",
+    "viewDetails": "Ver Detalles",
+    "resolvedAt": "Resuelta en",
+    "createdAt": "Creada en"
+  },
+  "location": {
+    "title": "Ubicación",
+    "shareLocation": "Compartir Ubicación",
+    "currentLocation": "Ubicación Actual",
+    "latitude": "Latitud",
+    "longitude": "Longitud",
+    "viewOnMap": "Ver en Google Maps"
+  },
+  "tabs": {
+    "emergency": "Emergencia",
+    "contacts": "Contactos",
+    "profile": "Perfil",
+    "history": "Historial"
+  },
+  "common": {
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "close": "Cerrar",
+    "confirm": "Confirmar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "submit": "Enviar",
+    "required": "Requerido"
+  },
+  "validation": {
+    "required": "Este campo es requerido",
+    "invalidEmail": "Dirección de correo electrónico inválida",
+    "invalidPhone": "Número de teléfono inválido",
+    "minLength": "Debe tener al menos {{count}} caracteres",
+    "maxLength": "Debe tener no más de {{count}} caracteres"
+  }
+}
