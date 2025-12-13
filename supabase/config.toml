@@ -11,3 +11,9 @@ verify_jwt = false
 
 [functions.check-medication-reminders]
 verify_jwt = false
+
+[functions.gdpr-export-data]
+verify_jwt = true
+
+[functions.gdpr-delete-account]
+verify_jwt = true
