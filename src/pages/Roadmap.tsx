@@ -77,7 +77,7 @@ const roadmapData: FeatureCategory[] = [
       { name: "Emergency Services Directory", completed: true },
       { name: "Community Service Submissions", completed: true },
       { name: "Pending Services Approval", completed: true },
-      { name: "Service Rating System", completed: false, priority: "medium" },
+      { name: "Service Rating System", completed: true },
       { name: "Service Verification", completed: true },
       { name: "Contact Groups", completed: true },
     ],
@@ -136,7 +136,7 @@ const roadmapData: FeatureCategory[] = [
       { name: "Security Audit Logging", completed: true },
       { name: "Rate Limiting", completed: true },
       { name: "Data Encryption at Rest", completed: true },
-      { name: "GDPR Compliance Tools", completed: false, priority: "medium" },
+      { name: "GDPR Compliance Tools", completed: true },
     ],
   },
   {
@@ -164,7 +164,7 @@ const roadmapData: FeatureCategory[] = [
       { name: "Progressive Web App (PWA)", completed: true },
       { name: "Performance Monitoring", completed: true },
       { name: "Lazy Loading", completed: true },
-      { name: "Image Optimization", completed: false, priority: "low" },
+      { name: "Image Optimization", completed: true },
     ],
   },
   {
