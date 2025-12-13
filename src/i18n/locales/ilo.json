@@ -1,0 +1,144 @@
+{
+  "app": {
+    "name": "Emergency Response PH",
+    "tagline": "Ti kinatalgedmo ket ti prioridadmi"
+  },
+  "auth": {
+    "login": "Ag-login",
+    "signup": "Ag-signup",
+    "logout": "Ag-logout",
+    "email": "Email",
+    "password": "Password",
+    "fullName": "Kompleto a Nagan",
+    "signInPrompt": "Ag-sign in iti accountmo",
+    "signUpPrompt": "Agaramid ti baro nga account",
+    "alreadyHaveAccount": "Adda kadin account?",
+    "dontHaveAccount": "Awan pay account?",
+    "signingIn": "Ag-sign in...",
+    "signingUp": "Ag-signup..."
+  },
+  "emergency": {
+    "title": "Emerhensya",
+    "quickSOS": "Nalaka a SOS",
+    "sendAlert": "Ipatulod ti Alerto ti Emerhensya",
+    "selectType": "Piliem ti Kita ti Emerhensya",
+    "types": {
+      "medical": "Emerhensya ti Salun-at",
+      "accident": "Aksidente",
+      "fire": "Puor",
+      "crime": "Krimen",
+      "natural_disaster": "Natural a Didigra",
+      "other": "Sabali pay"
+    },
+    "describeSituation": "Ideskribir ti kasasaadmo",
+    "attachEvidence": "Ikapet ti Ebidensya (Opsyonal)",
+    "capturePhoto": "Mangala ti Retrato",
+    "recordVideo": "I-record ti Video",
+    "recordAudio": "I-record ti Audio",
+    "locationAccess": "Maala ti lokasyonmo...",
+    "sending": "Maipatpatulod ti alerto...",
+    "alertSent": "Naipatulod ti alerto ti emerhensya!",
+    "alertFailed": "Napaay ti panagpatulod ti alerto",
+    "activeAlert": "Aktibo nga Alerto ti Emerhensya",
+    "imSafe": "Natalgedak",
+    "endAlert": "Gibusanen ti Alerto",
+    "alertActive": "Aktibo ti alertom ti emerhensya",
+    "contactsNotified": "Napakaammuan dagiti contact ti emerhensiamo",
+    "escalated": "NA-ESCALATE",
+    "escalatedMessage": "Naiyalat daytoy nga alerto gapu ta awan sungbat"
+  },
+  "contacts": {
+    "title": "Dagiti Contact ti Emerhensya",
+    "addContact": "Inayon ti Contact ti Emerhensya",
+    "name": "Nagan",
+    "phone": "Numero ti Telepono",
+    "relationship": "Relasyon",
+    "saveContact": "I-save ti Contact",
+    "cancel": "Kanselaren",
+    "deleteContact": "Ikkaten ti Contact",
+    "deleteConfirm": "Sigurado ka a kayatmo nga ikkaten daytoy a contact?",
+    "noContacts": "Awan pay dagiti nainayon a contact ti emerhensya",
+    "addFirst": "Inayon ti umuna a contact ti emerhensiamo"
+  },
+  "profile": {
+    "title": "Profile ti Emerhensya",
+    "medicalInfo": "Impormasyon ti Salun-at",
+    "fullName": "Kompleto a Nagan",
+    "phoneNumber": "Numero ti Telepono",
+    "bloodType": "Kita ti Dara",
+    "allergies": "Dagiti Alerhiya",
+    "medicalConditions": "Dagiti Kondisyon ti Salun-at",
+    "emergencyNotes": "Dagiti Nota ti Emerhensya",
+    "saveProfile": "I-save ti Profile",
+    "profileUpdated": "Balligi a na-update ti profile",
+    "profileUpdateFailed": "Napaay ti panag-update ti profile",
+    "viewMedicalID": "Kitaen ti Medical ID Card"
+  },
+  "medicalID": {
+    "title": "Medical ID Card",
+    "emergencyContact": "Contact ti Emerhensya",
+    "call": "Tumawag",
+    "bloodType": "Kita ti Dara",
+    "allergies": "Dagiti Alerhiya",
+    "medicalConditions": "Dagiti Kondisyon ti Salun-at",
+    "notes": "Dagiti Nota ti Emerhensya",
+    "noInfo": "Awan impormasyon a naited",
+    "instructions": "Ipakita daytoy a card kadagiti responder ti emerhensya"
+  },
+  "chat": {
+    "title": "Chat ti Emerhensya",
+    "noMessages": "Awan pay mensahe. Mangrugi nga agchat kadagiti contact ti emerhensiamo.",
+    "placeholder": "I-type ti mensahe..."
+  },
+  "directions": {
+    "nearbyServices": "Dagiti Asideg a Serbisyo ti Emerhensya",
+    "getDirections": "Alaen dagiti Direksyon",
+    "call": "Tumawag"
+  },
+  "history": {
+    "title": "Historia dagiti Alerto",
+    "noAlerts": "Awan dagiti alerto ti emerhensya iti historia",
+    "active": "Aktibo",
+    "resolved": "Na-resolve",
+    "escalated": "Na-escalate",
+    "viewDetails": "Kitaen dagiti Detalye",
+    "resolvedAt": "Na-resolve idi",
+    "createdAt": "Inaramid idi"
+  },
+  "location": {
+    "title": "Lokasyon",
+    "shareLocation": "Ibingay ti Lokasyon",
+    "currentLocation": "Agdama a Lokasyon",
+    "latitude": "Latitude",
+    "longitude": "Longitude",
+    "viewOnMap": "Kitaen iti Google Maps"
+  },
+  "tabs": {
+    "emergency": "Emerhensya",
+    "contacts": "Dagiti Contact",
+    "profile": "Profile",
+    "history": "Historia"
+  },
+  "common": {
+    "loading": "Agload...",
+    "error": "Biddut",
+    "success": "Balligi",
+    "save": "I-save",
+    "cancel": "Kanselaren",
+    "delete": "Ikkaten",
+    "edit": "I-edit",
+    "close": "Iserra",
+    "confirm": "Kumpirmaren",
+    "back": "Agsubli",
+    "next": "Sumaruno",
+    "submit": "Isumite",
+    "required": "Kasapulan"
+  },
+  "validation": {
+    "required": "Kasapulan daytoy a field",
+    "invalidEmail": "Di umiso nga email address",
+    "invalidPhone": "Di umiso a numero ti telepono",
+    "minLength": "Kasapulan ti nababbaba a {{count}} a karakter",
+    "maxLength": "Kasapulan a di agsobra iti {{count}} a karakter"
+  }
+}
