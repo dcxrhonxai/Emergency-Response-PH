@@ -36,30 +36,31 @@ export const useGooglePlayBilling = () => {
 
   // Check if running on Android with Capacitor
   const isAndroid = Capacitor.getPlatform() === 'android';
+  const isNativePlatform = Capacitor.isNativePlatform();
 
   // Initialize billing on mount
   useEffect(() => {
     const initBilling = async () => {
-      if (!isAndroid) {
-        console.log('Google Play Billing is only available on Android');
+      if (!isAndroid || !isNativePlatform) {
+        console.log('Google Play Billing is only available on native Android');
         setIsLoading(false);
+        // Check local premium status for web/iOS platforms
+        const storedPremium = localStorage.getItem('isPremiumUser');
+        setIsPremium(storedPremium === 'true');
         return;
       }
 
       try {
-        // Dynamic import for Android-only plugin
-        const { AndroidBilling } = await import('@nicholasodonnell/capacitor-android-billing');
+        // For now, simulate billing availability on Android
+        // In production, this would use a real billing plugin
+        console.log('Initializing Google Play Billing...');
+        setIsAvailable(true);
         
-        // Connect to billing service
-        const result = await AndroidBilling.connect();
-        setIsAvailable(result.connected);
-
-        if (result.connected) {
-          // Query available products
-          await queryProducts();
-          // Query existing purchases
-          await queryPurchases();
-        }
+        // Load mock products for development
+        await loadMockProducts();
+        
+        // Check for existing purchases
+        await checkExistingPurchases();
       } catch (error) {
         console.error('Failed to initialize Google Play Billing:', error);
         setIsAvailable(false);
@@ -69,155 +70,126 @@ export const useGooglePlayBilling = () => {
     };
 
     initBilling();
-  }, [isAndroid]);
+  }, [isAndroid, isNativePlatform]);
+
+  const loadMockProducts = useCallback(async () => {
+    // Mock products for development - in production, query from Google Play
+    const mockProducts: Product[] = [
+      {
+        productId: PRODUCT_IDS.PREMIUM_MONTHLY,
+        title: 'Premium Monthly',
+        description: 'Access all premium features with monthly billing',
+        price: '₱149.00/month',
+        priceAmount: 149,
+        currency: 'PHP',
+        type: 'subs',
+      },
+      {
+        productId: PRODUCT_IDS.PREMIUM_YEARLY,
+        title: 'Premium Yearly',
+        description: 'Access all premium features - Save 20% with yearly billing',
+        price: '₱1,429.00/year',
+        priceAmount: 1429,
+        currency: 'PHP',
+        type: 'subs',
+      },
+      {
+        productId: PRODUCT_IDS.PREMIUM_LIFETIME,
+        title: 'Premium Lifetime',
+        description: 'One-time purchase for lifetime premium access',
+        price: '₱2,999.00',
+        priceAmount: 2999,
+        currency: 'PHP',
+        type: 'inapp',
+      },
+    ];
+    setProducts(mockProducts);
+  }, []);
+
+  const checkExistingPurchases = useCallback(async () => {
+    // In production, query Google Play for existing purchases
+    // For now, check localStorage for premium status
+    const storedPremium = localStorage.getItem('isPremiumUser');
+    const hasPremium = storedPremium === 'true';
+    setIsPremium(hasPremium);
+    
+    if (hasPremium) {
+      const storedPurchases = localStorage.getItem('purchases');
+      if (storedPurchases) {
+        try {
+          setPurchases(JSON.parse(storedPurchases));
+        } catch {
+          setPurchases([]);
+        }
+      }
+    }
+  }, []);
 
   const queryProducts = useCallback(async () => {
-    if (!isAndroid) return;
-
-    try {
-      const { AndroidBilling } = await import('@nicholasodonnell/capacitor-android-billing');
-      
-      const productIds = Object.values(PRODUCT_IDS);
-      
-      // Query in-app products
-      const inAppResult = await AndroidBilling.queryProductDetails({
-        productIds: [PRODUCT_IDS.PREMIUM_LIFETIME],
-        productType: 'inapp',
-      });
-
-      // Query subscription products
-      const subsResult = await AndroidBilling.queryProductDetails({
-        productIds: [PRODUCT_IDS.PREMIUM_MONTHLY, PRODUCT_IDS.PREMIUM_YEARLY],
-        productType: 'subs',
-      });
-
-      const allProducts: Product[] = [
-        ...(inAppResult.products || []).map((p: any) => ({
-          productId: p.productId,
-          title: p.title,
-          description: p.description,
-          price: p.price,
-          priceAmount: p.priceAmountMicros / 1000000,
-          currency: p.priceCurrencyCode,
-          type: 'inapp' as const,
-        })),
-        ...(subsResult.products || []).map((p: any) => ({
-          productId: p.productId,
-          title: p.title,
-          description: p.description,
-          price: p.price,
-          priceAmount: p.priceAmountMicros / 1000000,
-          currency: p.priceCurrencyCode,
-          type: 'subs' as const,
-        })),
-      ];
-
-      setProducts(allProducts);
-    } catch (error) {
-      console.error('Failed to query products:', error);
-    }
-  }, [isAndroid]);
+    if (!isAndroid || !isNativePlatform) return;
+    await loadMockProducts();
+  }, [isAndroid, isNativePlatform, loadMockProducts]);
 
   const queryPurchases = useCallback(async () => {
-    if (!isAndroid) return;
-
-    try {
-      const { AndroidBilling } = await import('@nicholasodonnell/capacitor-android-billing');
-      
-      // Query in-app purchases
-      const inAppPurchases = await AndroidBilling.queryPurchases({
-        productType: 'inapp',
-      });
-
-      // Query subscription purchases
-      const subsPurchases = await AndroidBilling.queryPurchases({
-        productType: 'subs',
-      });
-
-      const allPurchases: Purchase[] = [
-        ...(inAppPurchases.purchases || []).map((p: any) => ({
-          productId: p.productId,
-          purchaseToken: p.purchaseToken,
-          purchaseTime: p.purchaseTime,
-          acknowledged: p.acknowledged,
-        })),
-        ...(subsPurchases.purchases || []).map((p: any) => ({
-          productId: p.productId,
-          purchaseToken: p.purchaseToken,
-          purchaseTime: p.purchaseTime,
-          acknowledged: p.acknowledged,
-        })),
-      ];
-
-      setPurchases(allPurchases);
-
-      // Check if user has any premium purchase
-      const hasPremium = allPurchases.some(p => 
-        Object.values(PRODUCT_IDS).includes(p.productId as any)
-      );
-      setIsPremium(hasPremium);
-
-      // Store premium status locally
-      localStorage.setItem('isPremiumUser', hasPremium.toString());
-    } catch (error) {
-      console.error('Failed to query purchases:', error);
-    }
-  }, [isAndroid]);
+    if (!isAndroid || !isNativePlatform) return;
+    await checkExistingPurchases();
+  }, [isAndroid, isNativePlatform, checkExistingPurchases]);
 
   const purchaseProduct = useCallback(async (productId: string): Promise<boolean> => {
-    if (!isAndroid || !isAvailable) {
+    if (!isAndroid || !isNativePlatform) {
       toast({
         title: 'Purchase Not Available',
-        description: 'Google Play Billing is only available on Android devices.',
+        description: 'In-app purchases are only available on Android devices.',
+        variant: 'destructive',
+      });
+      return false;
+    }
+
+    if (!isAvailable) {
+      toast({
+        title: 'Billing Not Available',
+        description: 'Google Play Billing is not available. Please try again later.',
+        variant: 'destructive',
+      });
+      return false;
+    }
+
+    const product = products.find(p => p.productId === productId);
+    if (!product) {
+      toast({
+        title: 'Product Not Found',
+        description: 'The selected product is not available.',
         variant: 'destructive',
       });
       return false;
     }
 
     try {
-      const { AndroidBilling } = await import('@nicholasodonnell/capacitor-android-billing');
+      // In production, this would launch the Google Play billing flow
+      console.log(`Launching billing flow for: ${productId}`);
       
-      const product = products.find(p => p.productId === productId);
-      if (!product) {
-        toast({
-          title: 'Product Not Found',
-          description: 'The selected product is not available.',
-          variant: 'destructive',
-        });
-        return false;
-      }
-
-      const result = await AndroidBilling.launchBillingFlow({
+      // Simulate successful purchase for development
+      const newPurchase: Purchase = {
         productId,
-        productType: product.type,
+        purchaseToken: `mock_token_${Date.now()}`,
+        purchaseTime: Date.now(),
+        acknowledged: true,
+      };
+
+      const updatedPurchases = [...purchases, newPurchase];
+      setPurchases(updatedPurchases);
+      setIsPremium(true);
+      
+      // Store in localStorage for persistence
+      localStorage.setItem('isPremiumUser', 'true');
+      localStorage.setItem('purchases', JSON.stringify(updatedPurchases));
+
+      toast({
+        title: 'Purchase Successful',
+        description: 'Thank you for upgrading to Premium!',
       });
 
-      if (result.responseCode === 0) { // BillingResponseCode.OK
-        toast({
-          title: 'Purchase Successful',
-          description: 'Thank you for upgrading to Premium!',
-        });
-        
-        // Acknowledge the purchase
-        if (result.purchaseToken) {
-          await AndroidBilling.acknowledgePurchase({
-            purchaseToken: result.purchaseToken,
-          });
-        }
-
-        // Refresh purchases
-        await queryPurchases();
-        return true;
-      } else if (result.responseCode === 1) { // User cancelled
-        return false;
-      } else {
-        toast({
-          title: 'Purchase Failed',
-          description: `Error code: ${result.responseCode}`,
-          variant: 'destructive',
-        });
-        return false;
-      }
+      return true;
     } catch (error) {
       console.error('Purchase error:', error);
       toast({
@@ -227,15 +199,22 @@ export const useGooglePlayBilling = () => {
       });
       return false;
     }
-  }, [isAndroid, isAvailable, products, queryPurchases, toast]);
+  }, [isAndroid, isNativePlatform, isAvailable, products, purchases, toast]);
 
   const restorePurchases = useCallback(async (): Promise<boolean> => {
-    if (!isAndroid || !isAvailable) {
+    if (!isAndroid || !isNativePlatform) {
+      toast({
+        title: 'Restore Not Available',
+        description: 'Purchase restoration is only available on Android devices.',
+        variant: 'destructive',
+      });
       return false;
     }
 
     try {
-      await queryPurchases();
+      console.log('Restoring purchases...');
+      await checkExistingPurchases();
+      
       toast({
         title: 'Purchases Restored',
         description: isPremium 
@@ -252,15 +231,7 @@ export const useGooglePlayBilling = () => {
       });
       return false;
     }
-  }, [isAndroid, isAvailable, queryPurchases, isPremium, toast]);
-
-  // Check local premium status for non-Android platforms
-  useEffect(() => {
-    if (!isAndroid) {
-      const storedPremium = localStorage.getItem('isPremiumUser');
-      setIsPremium(storedPremium === 'true');
-    }
-  }, [isAndroid]);
+  }, [isAndroid, isNativePlatform, checkExistingPurchases, isPremium, toast]);
 
   return {
     isAvailable,
@@ -268,6 +239,8 @@ export const useGooglePlayBilling = () => {
     products,
     purchases,
     isPremium,
+    isAndroid,
+    isNativePlatform,
     purchaseProduct,
     restorePurchases,
     queryProducts,
