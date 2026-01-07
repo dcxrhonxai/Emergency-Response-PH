@@ -16,7 +16,7 @@ import { EmergencyChat } from "@/components/EmergencyChat";
 import { EmergencyDirections } from "@/components/EmergencyDirections";
 import { InAppNotifications } from "@/components/InAppNotifications";
 import { NearbyServicesSearch } from "@/components/NearbyServicesSearch";
-import { Shield, LogOut, User, History, Users, Heart, IdCard, Plus, Menu, Wifi, WifiOff, FileText, MapPin, Eye } from "lucide-react";
+import { Shield, LogOut, User, History, Users, Heart, IdCard, Plus, Menu, Wifi, WifiOff, FileText, MapPin, Eye, Settings } from "lucide-react";
 import { HighContrastToggle } from "@/components/HighContrastToggle";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -325,10 +325,9 @@ const Index = () => {
                   <Plus className="w-4 h-4 mr-2" />
                   Add Service
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <div className="w-full">
-                    <LanguageSwitcher />
-                  </div>
+                <DropdownMenuItem onClick={() => navigate("/settings")}>
+                  <Settings className="w-4 h-4 mr-2" />
+                  Settings
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
