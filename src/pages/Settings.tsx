@@ -14,8 +14,15 @@ import {
   ChevronRight,
   CheckCircle,
   XCircle,
-  Loader2
+  Loader2,
+  Send,
+  Heart,
+  Flame,
+  ShieldAlert,
+  Car,
+  AlertTriangle
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -48,6 +55,31 @@ const Settings = () => {
   const [activeTab, setActiveTab] = useState('general');
   const [userId, setUserId] = useState<string | null>(null);
   const [isRequestingPermission, setIsRequestingPermission] = useState(false);
+  const [isSendingTest, setIsSendingTest] = useState(false);
+  
+  // Alert type preferences (stored in localStorage)
+  const [alertPreferences, setAlertPreferences] = useState(() => {
+    const saved = localStorage.getItem('alertPreferences');
+    return saved ? JSON.parse(saved) : {
+      medical: true,
+      fire: true,
+      police: true,
+      accident: true,
+      natural_disaster: true,
+    };
+  });
+
+  // Save preferences to localStorage when changed
+  useEffect(() => {
+    localStorage.setItem('alertPreferences', JSON.stringify(alertPreferences));
+  }, [alertPreferences]);
+
+  const toggleAlertPreference = (type: string) => {
+    setAlertPreferences((prev: Record<string, boolean>) => ({
+      ...prev,
+      [type]: !prev[type],
+    }));
+  };
 
   // Get the current user
   useEffect(() => {
@@ -64,8 +96,52 @@ const Settings = () => {
   const { 
     fcmToken, 
     permissionStatus, 
-    requestPermission 
+    requestPermission,
+    sendPushNotification 
   } = usePushNotifications({ userId: userId || '' });
+
+  const handleSendTestNotification = async () => {
+    if (!userId) {
+      toast.error('Please log in to send a test notification');
+      return;
+    }
+
+    setIsSendingTest(true);
+    try {
+      // Send using the browser's native notification API for immediate feedback
+      if (Notification.permission === 'granted') {
+        new Notification('🔔 Test Notification', {
+          body: 'Push notifications are working correctly!',
+          icon: '/pwa-192x192.png',
+          badge: '/pwa-192x192.png',
+          tag: 'test-notification',
+        });
+        toast.success('Test notification sent!');
+      } else {
+        toast.error('Push notifications not enabled');
+      }
+
+      // Also try to send via FCM for server-side verification
+      if (fcmToken) {
+        await sendPushNotification(
+          userId,
+          '🔔 Test Notification',
+          'Your push notification setup is working correctly!',
+          { type: 'test', timestamp: new Date().toISOString() }
+        );
+      }
+    } catch (error) {
+      console.error('Error sending test notification:', error);
+      // Still show success if browser notification worked
+      if (Notification.permission === 'granted') {
+        toast.success('Local notification sent (FCM may need configuration)');
+      } else {
+        toast.error('Failed to send test notification');
+      }
+    } finally {
+      setIsSendingTest(false);
+    }
+  };
 
   const handleRequestPermission = async () => {
     setIsRequestingPermission(true);
@@ -277,17 +353,143 @@ const Settings = () => {
                     </div>
                   )}
 
-                  {permissionStatus === 'granted' && fcmToken && (
-                    <div className="p-3 bg-green-500/10 rounded-lg">
-                      <div className="flex items-center gap-2 text-green-600">
-                        <CheckCircle className="h-4 w-4" />
-                        <span className="text-sm font-medium">Push notifications are active</span>
+                  {permissionStatus === 'granted' && (
+                    <div className="space-y-3">
+                      <div className="p-3 bg-green-500/10 rounded-lg">
+                        <div className="flex items-center gap-2 text-green-600">
+                          <CheckCircle className="h-4 w-4" />
+                          <span className="text-sm font-medium">Push notifications are active</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Device registered for emergency alerts
+                        </p>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Device registered for emergency alerts
-                      </p>
+                      
+                      {/* Test Notification Button */}
+                      <Button
+                        variant="outline"
+                        onClick={handleSendTestNotification}
+                        disabled={isSendingTest}
+                        className="w-full"
+                      >
+                        {isSendingTest ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Sending...
+                          </>
+                        ) : (
+                          <>
+                            <Send className="h-4 w-4 mr-2" />
+                            Send Test Notification
+                          </>
+                        )}
+                      </Button>
                     </div>
                   )}
+                </div>
+
+                <Separator />
+
+                {/* Alert Type Preferences */}
+                <div className="space-y-3">
+                  <div className="space-y-0.5">
+                    <Label className="text-base">Alert Types</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Choose which emergency types you want to receive notifications for
+                    </p>
+                  </div>
+                  
+                  <div className="grid gap-3">
+                    {/* Medical Emergencies */}
+                    <div className="flex items-center justify-between p-3 rounded-lg border border-border">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-full bg-red-100 text-red-600">
+                          <Heart className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <Label htmlFor="alert-medical" className="font-medium">Medical</Label>
+                          <p className="text-xs text-muted-foreground">Heart attacks, injuries, health emergencies</p>
+                        </div>
+                      </div>
+                      <Switch
+                        id="alert-medical"
+                        checked={alertPreferences.medical}
+                        onCheckedChange={() => toggleAlertPreference('medical')}
+                      />
+                    </div>
+
+                    {/* Fire Emergencies */}
+                    <div className="flex items-center justify-between p-3 rounded-lg border border-border">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-full bg-orange-100 text-orange-600">
+                          <Flame className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <Label htmlFor="alert-fire" className="font-medium">Fire</Label>
+                          <p className="text-xs text-muted-foreground">Building fires, wildfires, gas leaks</p>
+                        </div>
+                      </div>
+                      <Switch
+                        id="alert-fire"
+                        checked={alertPreferences.fire}
+                        onCheckedChange={() => toggleAlertPreference('fire')}
+                      />
+                    </div>
+
+                    {/* Police/Crime */}
+                    <div className="flex items-center justify-between p-3 rounded-lg border border-border">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-full bg-blue-100 text-blue-600">
+                          <ShieldAlert className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <Label htmlFor="alert-police" className="font-medium">Police/Crime</Label>
+                          <p className="text-xs text-muted-foreground">Crimes, suspicious activity, threats</p>
+                        </div>
+                      </div>
+                      <Switch
+                        id="alert-police"
+                        checked={alertPreferences.police}
+                        onCheckedChange={() => toggleAlertPreference('police')}
+                      />
+                    </div>
+
+                    {/* Accidents */}
+                    <div className="flex items-center justify-between p-3 rounded-lg border border-border">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-full bg-yellow-100 text-yellow-600">
+                          <Car className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <Label htmlFor="alert-accident" className="font-medium">Accidents</Label>
+                          <p className="text-xs text-muted-foreground">Vehicle crashes, workplace accidents</p>
+                        </div>
+                      </div>
+                      <Switch
+                        id="alert-accident"
+                        checked={alertPreferences.accident}
+                        onCheckedChange={() => toggleAlertPreference('accident')}
+                      />
+                    </div>
+
+                    {/* Natural Disasters */}
+                    <div className="flex items-center justify-between p-3 rounded-lg border border-border">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-full bg-purple-100 text-purple-600">
+                          <AlertTriangle className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <Label htmlFor="alert-disaster" className="font-medium">Natural Disasters</Label>
+                          <p className="text-xs text-muted-foreground">Earthquakes, floods, typhoons</p>
+                        </div>
+                      </div>
+                      <Switch
+                        id="alert-disaster"
+                        checked={alertPreferences.natural_disaster}
+                        onCheckedChange={() => toggleAlertPreference('natural_disaster')}
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 <Separator />
