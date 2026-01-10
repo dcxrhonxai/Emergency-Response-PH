@@ -20,7 +20,9 @@ import {
   Flame,
   ShieldAlert,
   Car,
-  AlertTriangle
+  AlertTriangle,
+  Clock,
+  BellOff
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -37,7 +39,9 @@ import { GDPRSettings } from '@/components/GDPRSettings';
 import { useGooglePlayBilling } from '@/hooks/useGooglePlayBilling';
 import { useHighContrastMode } from '@/hooks/useHighContrastMode';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { useNotificationFilter } from '@/hooks/useNotificationFilter';
 import { supabase } from '@/integrations/supabase/client';
+import { Input } from '@/components/ui/input';
 
 const LANGUAGES = [
   { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -57,28 +61,17 @@ const Settings = () => {
   const [isRequestingPermission, setIsRequestingPermission] = useState(false);
   const [isSendingTest, setIsSendingTest] = useState(false);
   
-  // Alert type preferences (stored in localStorage)
-  const [alertPreferences, setAlertPreferences] = useState(() => {
-    const saved = localStorage.getItem('alertPreferences');
-    return saved ? JSON.parse(saved) : {
-      medical: true,
-      fire: true,
-      police: true,
-      accident: true,
-      natural_disaster: true,
-    };
-  });
-
-  // Save preferences to localStorage when changed
-  useEffect(() => {
-    localStorage.setItem('alertPreferences', JSON.stringify(alertPreferences));
-  }, [alertPreferences]);
+  // Use the notification filter hook
+  const {
+    alertPreferences,
+    quietHours,
+    updateAlertPreference,
+    updateQuietHours,
+    getQuietHoursStatus,
+  } = useNotificationFilter();
 
   const toggleAlertPreference = (type: string) => {
-    setAlertPreferences((prev: Record<string, boolean>) => ({
-      ...prev,
-      [type]: !prev[type],
-    }));
+    updateAlertPreference(type as keyof typeof alertPreferences, !alertPreferences[type as keyof typeof alertPreferences]);
   };
 
   // Get the current user
@@ -490,6 +483,88 @@ const Settings = () => {
                       />
                     </div>
                   </div>
+                </div>
+
+                <Separator />
+
+                {/* Quiet Hours Settings */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-2">
+                        <Label className="text-base">Quiet Hours</Label>
+                        {quietHours.enabled && (
+                          <Badge variant={getQuietHoursStatus().active ? "default" : "secondary"} className="text-xs">
+                            {getQuietHoursStatus().active ? (
+                              <>
+                                <BellOff className="h-3 w-3 mr-1" />
+                                Active
+                              </>
+                            ) : (
+                              <>
+                                <Clock className="h-3 w-3 mr-1" />
+                                Scheduled
+                              </>
+                            )}
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Mute non-critical notifications during specified hours
+                      </p>
+                    </div>
+                    <Switch
+                      id="quiet-hours"
+                      checked={quietHours.enabled}
+                      onCheckedChange={(checked) => updateQuietHours({ enabled: checked })}
+                    />
+                  </div>
+
+                  {quietHours.enabled && (
+                    <div className="space-y-4 p-4 rounded-lg border border-border bg-muted/30">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="quiet-start" className="text-sm">Start Time</Label>
+                          <Input
+                            id="quiet-start"
+                            type="time"
+                            value={quietHours.startTime}
+                            onChange={(e) => updateQuietHours({ startTime: e.target.value })}
+                            className="w-full"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="quiet-end" className="text-sm">End Time</Label>
+                          <Input
+                            id="quiet-end"
+                            type="time"
+                            value={quietHours.endTime}
+                            onChange={(e) => updateQuietHours({ endTime: e.target.value })}
+                            className="w-full"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-2">
+                        <div className="space-y-0.5">
+                          <Label htmlFor="allow-critical" className="text-sm font-medium">Allow Critical Alerts</Label>
+                          <p className="text-xs text-muted-foreground">
+                            Medical, fire, and natural disaster alerts will still come through
+                          </p>
+                        </div>
+                        <Switch
+                          id="allow-critical"
+                          checked={quietHours.allowCritical}
+                          onCheckedChange={(checked) => updateQuietHours({ allowCritical: checked })}
+                        />
+                      </div>
+
+                      <div className="pt-2 text-xs text-muted-foreground flex items-center gap-2">
+                        <Clock className="h-3 w-3" />
+                        {getQuietHoursStatus().message}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <Separator />
