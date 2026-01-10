@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { 
@@ -11,7 +11,10 @@ import {
   Bell,
   Moon,
   Sun,
-  ChevronRight
+  ChevronRight,
+  CheckCircle,
+  XCircle,
+  Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,6 +29,8 @@ import { PremiumSubscription } from '@/components/PremiumSubscription';
 import { GDPRSettings } from '@/components/GDPRSettings';
 import { useGooglePlayBilling } from '@/hooks/useGooglePlayBilling';
 import { useHighContrastMode } from '@/hooks/useHighContrastMode';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { supabase } from '@/integrations/supabase/client';
 
 const LANGUAGES = [
   { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -41,6 +46,63 @@ const Settings = () => {
   const { isPremium } = useGooglePlayBilling();
   const { isHighContrast, toggleHighContrast } = useHighContrastMode();
   const [activeTab, setActiveTab] = useState('general');
+  const [userId, setUserId] = useState<string | null>(null);
+  const [isRequestingPermission, setIsRequestingPermission] = useState(false);
+
+  // Get the current user
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserId(user.id);
+      }
+    };
+    getUser();
+  }, []);
+
+  // Initialize push notifications hook with userId
+  const { 
+    fcmToken, 
+    permissionStatus, 
+    requestPermission 
+  } = usePushNotifications({ userId: userId || '' });
+
+  const handleRequestPermission = async () => {
+    setIsRequestingPermission(true);
+    try {
+      await requestPermission();
+    } finally {
+      setIsRequestingPermission(false);
+    }
+  };
+
+  const getPermissionStatusInfo = () => {
+    switch (permissionStatus) {
+      case 'granted':
+        return { 
+          icon: <CheckCircle className="h-4 w-4 text-green-500" />, 
+          text: 'Enabled', 
+          color: 'text-green-500',
+          badgeVariant: 'default' as const
+        };
+      case 'denied':
+        return { 
+          icon: <XCircle className="h-4 w-4 text-destructive" />, 
+          text: 'Blocked', 
+          color: 'text-destructive',
+          badgeVariant: 'destructive' as const
+        };
+      default:
+        return { 
+          icon: <Bell className="h-4 w-4 text-muted-foreground" />, 
+          text: 'Not set', 
+          color: 'text-muted-foreground',
+          badgeVariant: 'secondary' as const
+        };
+    }
+  };
+
+  const permissionInfo = getPermissionStatusInfo();
 
   const currentLanguage = LANGUAGES.find(l => l.code === i18n.language) || LANGUAGES[0];
 
@@ -168,16 +230,68 @@ const Settings = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="push-notifications">Push Notifications</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Receive alerts on your device
-                    </p>
+                {/* Push Notification Permission */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-2">
+                        <Label>Push Notifications</Label>
+                        <Badge variant={permissionInfo.badgeVariant} className="text-xs">
+                          {permissionInfo.icon}
+                          <span className="ml-1">{permissionInfo.text}</span>
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Receive emergency alerts on your device
+                      </p>
+                    </div>
                   </div>
-                  <Switch id="push-notifications" defaultChecked />
+                  
+                  {permissionStatus !== 'granted' && (
+                    <div className="flex flex-col gap-2">
+                      {permissionStatus === 'denied' ? (
+                        <div className="p-3 bg-destructive/10 rounded-lg">
+                          <p className="text-sm text-destructive">
+                            Push notifications are blocked. Please enable them in your browser settings to receive emergency alerts.
+                          </p>
+                        </div>
+                      ) : (
+                        <Button 
+                          onClick={handleRequestPermission}
+                          disabled={isRequestingPermission || !userId}
+                          className="w-full"
+                        >
+                          {isRequestingPermission ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Requesting Permission...
+                            </>
+                          ) : (
+                            <>
+                              <Bell className="h-4 w-4 mr-2" />
+                              Enable Push Notifications
+                            </>
+                          )}
+                        </Button>
+                      )}
+                    </div>
+                  )}
+
+                  {permissionStatus === 'granted' && fcmToken && (
+                    <div className="p-3 bg-green-500/10 rounded-lg">
+                      <div className="flex items-center gap-2 text-green-600">
+                        <CheckCircle className="h-4 w-4" />
+                        <span className="text-sm font-medium">Push notifications are active</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Device registered for emergency alerts
+                      </p>
+                    </div>
+                  )}
                 </div>
+
                 <Separator />
+
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label htmlFor="email-notifications">Email Notifications</Label>
