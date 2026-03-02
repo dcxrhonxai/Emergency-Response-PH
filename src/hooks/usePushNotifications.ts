@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { initializeApp, getApps } from 'firebase/app';
 import { getMessaging, getToken, onMessage, Messaging } from 'firebase/messaging';
+import { useNotificationFilter } from './useNotificationFilter';
 
 interface UsePushNotificationsProps {
   userId: string;
@@ -23,6 +24,7 @@ export const usePushNotifications = ({ userId }: UsePushNotificationsProps) => {
   const [fcmToken, setFcmToken] = useState<string | null>(null);
   const [messaging, setMessaging] = useState<Messaging | null>(null);
   const [permissionStatus, setPermissionStatus] = useState<NotificationPermission>('default');
+  const { shouldShowNotification, isWithinQuietHours, getQuietHoursStatus } = useNotificationFilter();
 
   const saveFCMToken = useCallback(async (token: string) => {
     try {
@@ -139,10 +141,17 @@ export const usePushNotifications = ({ userId }: UsePushNotificationsProps) => {
         }
       }
 
-      // Handle foreground messages
+      // Handle foreground messages with notification filtering
       onMessage(msg, (payload) => {
         console.log('Foreground message received:', payload);
         
+        // Check if notification should be shown based on user preferences and quiet hours
+        const emergencyType = payload.data?.emergency_type || payload.notification?.title || '';
+        if (!shouldShowNotification(emergencyType)) {
+          console.log('Notification filtered out by user preferences or quiet hours');
+          return;
+        }
+
         // Show toast notification for foreground messages
         toast(payload.notification?.title || 'New Notification', {
           description: payload.notification?.body,
