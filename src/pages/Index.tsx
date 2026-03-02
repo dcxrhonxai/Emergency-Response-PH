@@ -16,9 +16,10 @@ import { EmergencyChat } from "@/components/EmergencyChat";
 import { EmergencyDirections } from "@/components/EmergencyDirections";
 import { InAppNotifications } from "@/components/InAppNotifications";
 import { NearbyServicesSearch } from "@/components/NearbyServicesSearch";
-import { Shield, LogOut, User, History, Users, Heart, IdCard, Plus, Menu, Wifi, WifiOff, FileText, MapPin, Eye, Settings } from "lucide-react";
+import { Shield, LogOut, User, History, Users, Heart, IdCard, Plus, Menu, Wifi, WifiOff, FileText, MapPin, Eye, Settings, BellOff, Bell } from "lucide-react";
 import { HighContrastToggle } from "@/components/HighContrastToggle";
 import { Button } from "@/components/ui/button";
+import { useNotificationFilter } from "@/hooks/useNotificationFilter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
@@ -56,7 +57,8 @@ const Index = () => {
   const { alerts, isLoading: alertsLoading } = useRealtimeAlerts(session?.user?.id);
   const { sendNotifications } = useEmergencyNotifications();
   const { isOnline } = useOfflineSync();
-  
+  const { quietHours, updateQuietHours, getQuietHoursStatus } = useNotificationFilter();
+  const quietStatus = getQuietHoursStatus();
   // Enable alert escalation checking
   useAlertEscalation();
 
@@ -300,6 +302,20 @@ const Index = () => {
             </div>
           </div>
           <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`h-8 w-8 ${quietHours.enabled ? 'text-orange-400 hover:bg-orange-400/20' : 'text-primary-foreground hover:bg-primary-foreground/10'}`}
+              onClick={() => {
+                updateQuietHours({ enabled: !quietHours.enabled });
+                toast(quietHours.enabled ? 'Do Not Disturb disabled' : 'Do Not Disturb enabled', {
+                  description: quietHours.enabled ? 'You will receive all notifications' : `Non-critical notifications muted ${quietHours.startTime} - ${quietHours.endTime}`,
+                });
+              }}
+              title={quietStatus.message}
+            >
+              {quietHours.enabled ? <BellOff className="w-5 h-5" /> : <Bell className="w-5 h-5" />}
+            </Button>
             <HighContrastToggle />
             <InAppNotifications userId={session.user.id} />
             <DropdownMenu>
