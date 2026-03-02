@@ -359,6 +359,32 @@ const Index = () => {
         </div>
       </header>
 
+      {/* DND Banner */}
+      {quietHours.enabled && (
+        <div className="bg-orange-500/15 border-b border-orange-500/30">
+          <div className="container mx-auto px-3 py-1.5 flex items-center justify-between max-w-2xl">
+            <div className="flex items-center gap-2">
+              <BellOff className="w-3.5 h-3.5 text-orange-500" />
+              <span className="text-xs font-medium text-orange-600 dark:text-orange-400">
+                Do Not Disturb is on · {quietHours.startTime} – {quietHours.endTime}
+                {quietHours.allowCritical && ' · Critical alerts allowed'}
+              </span>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 text-xs text-orange-600 dark:text-orange-400 hover:bg-orange-500/20 px-2"
+              onClick={() => {
+                updateQuietHours({ enabled: false });
+                toast('Do Not Disturb disabled');
+              }}
+            >
+              Turn off
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Main Content */}
       <main className="container mx-auto px-3 py-3 max-w-2xl pb-20">
         {!showEmergency ? (

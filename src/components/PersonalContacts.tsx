@@ -6,11 +6,13 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Phone, Trash2, Plus, MessageSquare, Users } from "lucide-react";
+import { Phone, Trash2, Plus, MessageSquare, Users, BellOff, Bell } from "lucide-react";
 import { toast } from "sonner";
 import { personalContactSchema } from "@/lib/validation";
 import { usePhoneCaller } from "@/hooks/usePhoneCaller";
 import { ContactGroups } from "./ContactGroups";
+import { useNotificationFilter } from "@/hooks/useNotificationFilter";
+import { Switch } from "@/components/ui/switch";
 
 interface PersonalContact {
   id: string;
@@ -119,6 +121,7 @@ const PersonalContacts = ({ userId }: PersonalContactsProps) => {
   };
 
   const { makeCall, sendSMS } = usePhoneCaller();
+  const { isContactDndBypassed, addDndBypassContact, removeDndBypassContact, quietHours } = useNotificationFilter();
 
   const handleCall = (phone: string, name: string) => {
     makeCall(phone, name);
@@ -126,6 +129,16 @@ const PersonalContacts = ({ userId }: PersonalContactsProps) => {
 
   const handleMessage = (phone: string, name: string) => {
     sendSMS(phone);
+  };
+
+  const toggleDndBypass = (contactId: string, contactName: string) => {
+    if (isContactDndBypassed(contactId)) {
+      removeDndBypassContact(contactId);
+      toast(`${contactName} will be muted during DND`);
+    } else {
+      addDndBypassContact(contactId, contactName);
+      toast(`${contactName} can bypass Do Not Disturb`);
+    }
   };
 
   if (loading) {
@@ -273,6 +286,22 @@ const PersonalContacts = ({ userId }: PersonalContactsProps) => {
                           <Phone className="w-3 h-3" aria-hidden="true" />
                           <span className="font-mono truncate">{contact.phone}</span>
                         </div>
+                        {quietHours.enabled && (
+                          <div className="flex items-center gap-1.5 mt-1.5">
+                            <Switch
+                              checked={isContactDndBypassed(contact.id)}
+                              onCheckedChange={() => toggleDndBypass(contact.id, contact.name)}
+                              className="scale-75 origin-left"
+                            />
+                            <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                              {isContactDndBypassed(contact.id) ? (
+                                <><Bell className="w-2.5 h-2.5" /> Bypasses DND</>
+                              ) : (
+                                <><BellOff className="w-2.5 h-2.5" /> Muted in DND</>
+                              )}
+                            </span>
+                          </div>
+                        )}
                       </div>
 
                       <div className="flex flex-col gap-1" role="group" aria-label={`Actions for ${contact.name}`}>

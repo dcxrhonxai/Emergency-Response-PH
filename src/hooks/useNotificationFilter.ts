@@ -10,12 +10,16 @@ export interface AlertPreferences {
 
 export interface QuietHoursSettings {
   enabled: boolean;
-  startTime: string; // HH:MM format
-  endTime: string; // HH:MM format
-  allowCritical: boolean; // Allow critical alerts during quiet hours
+  startTime: string;
+  endTime: string;
+  allowCritical: boolean;
 }
 
-// Map emergency types to preference keys
+export interface DNDBypassContact {
+  contactId: string;
+  name: string;
+}
+
 const EMERGENCY_TYPE_MAP: Record<string, keyof AlertPreferences> = {
   medical: 'medical',
   health: 'medical',
@@ -31,7 +35,6 @@ const EMERGENCY_TYPE_MAP: Record<string, keyof AlertPreferences> = {
   disaster: 'natural_disaster',
 };
 
-// Critical alert types that should bypass quiet hours
 const CRITICAL_ALERT_TYPES = ['medical', 'health', 'fire', 'natural_disaster', 'earthquake', 'typhoon'];
 
 const DEFAULT_ALERT_PREFERENCES: AlertPreferences = {
@@ -60,7 +63,11 @@ export const useNotificationFilter = () => {
     return saved ? JSON.parse(saved) : DEFAULT_QUIET_HOURS;
   });
 
-  // Persist to localStorage
+  const [dndBypassContacts, setDndBypassContacts] = useState<DNDBypassContact[]>(() => {
+    const saved = localStorage.getItem('dndBypassContacts');
+    return saved ? JSON.parse(saved) : [];
+  });
+
   useEffect(() => {
     localStorage.setItem('alertPreferences', JSON.stringify(alertPreferences));
   }, [alertPreferences]);
@@ -69,6 +76,10 @@ export const useNotificationFilter = () => {
     localStorage.setItem('quietHoursSettings', JSON.stringify(quietHours));
   }, [quietHours]);
 
+  useEffect(() => {
+    localStorage.setItem('dndBypassContacts', JSON.stringify(dndBypassContacts));
+  }, [dndBypassContacts]);
+
   const updateAlertPreference = useCallback((type: keyof AlertPreferences, enabled: boolean) => {
     setAlertPreferences(prev => ({ ...prev, [type]: enabled }));
   }, []);
@@ -76,6 +87,21 @@ export const useNotificationFilter = () => {
   const updateQuietHours = useCallback((settings: Partial<QuietHoursSettings>) => {
     setQuietHours(prev => ({ ...prev, ...settings }));
   }, []);
+
+  const addDndBypassContact = useCallback((contactId: string, name: string) => {
+    setDndBypassContacts(prev => {
+      if (prev.some(c => c.contactId === contactId)) return prev;
+      return [...prev, { contactId, name }];
+    });
+  }, []);
+
+  const removeDndBypassContact = useCallback((contactId: string) => {
+    setDndBypassContacts(prev => prev.filter(c => c.contactId !== contactId));
+  }, []);
+
+  const isContactDndBypassed = useCallback((contactId: string): boolean => {
+    return dndBypassContacts.some(c => c.contactId === contactId);
+  }, [dndBypassContacts]);
 
   const isWithinQuietHours = useCallback((): boolean => {
     if (!quietHours.enabled) return false;
@@ -89,12 +115,10 @@ export const useNotificationFilter = () => {
     const startMinutes = startH * 60 + startM;
     const endMinutes = endH * 60 + endM;
 
-    // Handle overnight quiet hours (e.g., 22:00 - 07:00)
     if (startMinutes > endMinutes) {
       return currentMinutes >= startMinutes || currentMinutes < endMinutes;
     }
     
-    // Same day quiet hours (e.g., 13:00 - 15:00)
     return currentMinutes >= startMinutes && currentMinutes < endMinutes;
   }, [quietHours.enabled, quietHours.startTime, quietHours.endTime]);
 
@@ -103,10 +127,9 @@ export const useNotificationFilter = () => {
     return CRITICAL_ALERT_TYPES.some(type => normalizedType.includes(type));
   }, []);
 
-  const shouldShowNotification = useCallback((emergencyType: string): boolean => {
+  const shouldShowNotification = useCallback((emergencyType: string, contactId?: string): boolean => {
     const normalizedType = emergencyType.toLowerCase();
     
-    // Find matching preference key
     let preferenceKey: keyof AlertPreferences | undefined;
     for (const [keyword, key] of Object.entries(EMERGENCY_TYPE_MAP)) {
       if (normalizedType.includes(keyword)) {
@@ -115,33 +138,32 @@ export const useNotificationFilter = () => {
       }
     }
 
-    // If no matching type found, default to showing
     if (!preferenceKey) {
-      console.log(`Unknown emergency type: ${emergencyType}, defaulting to show`);
       return true;
     }
 
-    // Check if this alert type is enabled
     if (!alertPreferences[preferenceKey]) {
-      console.log(`Alert type ${preferenceKey} is disabled by user preference`);
       return false;
     }
 
     // Check quiet hours
     if (isWithinQuietHours()) {
+      // Check if contact bypasses DND
+      if (contactId && isContactDndBypassed(contactId)) {
+        return true;
+      }
+
       const isCritical = isCriticalAlert(emergencyType);
       
       if (isCritical && quietHours.allowCritical) {
-        console.log(`Critical alert ${emergencyType} allowed during quiet hours`);
         return true;
       }
       
-      console.log(`Alert ${emergencyType} blocked during quiet hours`);
       return false;
     }
 
     return true;
-  }, [alertPreferences, isWithinQuietHours, isCriticalAlert, quietHours.allowCritical]);
+  }, [alertPreferences, isWithinQuietHours, isCriticalAlert, quietHours.allowCritical, isContactDndBypassed]);
 
   const getQuietHoursStatus = useCallback((): { active: boolean; message: string } => {
     const active = isWithinQuietHours();
@@ -166,10 +188,14 @@ export const useNotificationFilter = () => {
   return {
     alertPreferences,
     quietHours,
+    dndBypassContacts,
     updateAlertPreference,
     updateQuietHours,
     setAlertPreferences,
     setQuietHours,
+    addDndBypassContact,
+    removeDndBypassContact,
+    isContactDndBypassed,
     shouldShowNotification,
     isWithinQuietHours,
     isCriticalAlert,
