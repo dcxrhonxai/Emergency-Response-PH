@@ -589,18 +589,64 @@ const Settings = () => {
                       </div>
 
                       {quietHours.digestEnabled && (
-                        <div className="space-y-2">
-                          <Label htmlFor="digest-time" className="text-sm">Digest Time</Label>
-                          <Input
-                            id="digest-time"
-                            type="time"
-                            value={quietHours.digestTime}
-                            onChange={(e) => updateQuietHours({ digestTime: e.target.value })}
-                            className="w-full"
-                          />
-                          <p className="text-xs text-muted-foreground">
-                            You'll receive a notification summarizing everything you missed
-                          </p>
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="digest-time" className="text-sm">Digest Time</Label>
+                            <Input
+                              id="digest-time"
+                              type="time"
+                              value={quietHours.digestTime}
+                              onChange={(e) => updateQuietHours({ digestTime: e.target.value })}
+                              className="w-full"
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label className="text-sm">Delivery Method</Label>
+                            <p className="text-xs text-muted-foreground">
+                              Choose how you want to receive your daily digest
+                            </p>
+                            <div className="grid gap-2 mt-1">
+                              {([
+                                { id: 'in_app' as const, label: 'In-App Notification', icon: <Bell className="h-3.5 w-3.5" />, desc: 'Shows in your notification center' },
+                                { id: 'push' as const, label: 'Push Notification', icon: <Send className="h-3.5 w-3.5" />, desc: 'Sent to your device even when app is closed' },
+                                { id: 'email' as const, label: 'Email', icon: <Send className="h-3.5 w-3.5" />, desc: 'Detailed summary sent to your email' },
+                              ]).map(({ id, label, icon, desc }) => {
+                                const isSelected = (quietHours.digestDelivery || ['in_app']).includes(id);
+                                return (
+                                  <button
+                                    key={id}
+                                    onClick={() => {
+                                      const current = quietHours.digestDelivery || ['in_app'];
+                                      const updated = isSelected
+                                        ? current.filter(m => m !== id)
+                                        : [...current, id];
+                                      // Must have at least one method
+                                      if (updated.length > 0) {
+                                        updateQuietHours({ digestDelivery: updated } as any);
+                                      } else {
+                                        toast.error('Select at least one delivery method');
+                                      }
+                                    }}
+                                    className={`flex items-center gap-3 p-3 rounded-lg border text-left transition-colors ${
+                                      isSelected
+                                        ? 'border-primary bg-primary/5'
+                                        : 'border-border hover:border-primary/50'
+                                    }`}
+                                  >
+                                    <div className={`p-1.5 rounded-full ${isSelected ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                                      {icon}
+                                    </div>
+                                    <div className="flex-1">
+                                      <span className="text-sm font-medium">{label}</span>
+                                      <p className="text-xs text-muted-foreground">{desc}</p>
+                                    </div>
+                                    {isSelected && <CheckCircle className="h-4 w-4 text-primary" />}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
                         </div>
                       )}
 
