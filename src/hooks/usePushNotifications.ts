@@ -151,8 +151,21 @@ export const usePushNotifications = ({ userId }: UsePushNotificationsProps) => {
         const emergencyType = payload.data?.emergency_type || payload.notification?.title || '';
         if (!shouldShowNotification(emergencyType)) {
           console.log('Notification filtered out by user preferences or quiet hours');
+          // Log filtered notification for history
+          try {
+            const existing = JSON.parse(localStorage.getItem('dndFilteredNotifications') || '[]');
+            existing.unshift({
+              type: emergencyType,
+              time: new Date().toLocaleString(),
+              reason: isWithinQuietHours() ? 'Quiet hours active' : 'Alert type disabled',
+            });
+            localStorage.setItem('dndFilteredNotifications', JSON.stringify(existing.slice(0, 100)));
+          } catch (e) {}
           return;
         }
+
+        // Play custom sound for the emergency type
+        playEmergencySound(emergencyType);
 
         // Show toast notification for foreground messages
         toast(payload.notification?.title || 'New Notification', {
