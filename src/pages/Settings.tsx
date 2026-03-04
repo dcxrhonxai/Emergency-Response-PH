@@ -24,6 +24,7 @@ import {
   Clock,
   BellOff
 } from 'lucide-react';
+import { Volume2, Play } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
