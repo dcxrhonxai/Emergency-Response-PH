@@ -26,6 +26,7 @@ export const usePushNotifications = ({ userId }: UsePushNotificationsProps) => {
   const [messaging, setMessaging] = useState<Messaging | null>(null);
   const [permissionStatus, setPermissionStatus] = useState<NotificationPermission>('default');
   const { shouldShowNotification, isWithinQuietHours, getQuietHoursStatus } = useNotificationFilter();
+  const { playEmergencySound } = useNotificationSounds();
 
   const saveFCMToken = useCallback(async (token: string) => {
     try {
