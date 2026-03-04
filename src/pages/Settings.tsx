@@ -74,6 +74,14 @@ const Settings = () => {
     getQuietHoursStatus,
   } = useNotificationFilter();
 
+  const {
+    soundPreferences,
+    updateSoundPreference,
+    updateSoundEnabled,
+    updateVolume,
+    previewSound,
+  } = useNotificationSounds();
+
   const toggleAlertPreference = (type: string) => {
     updateAlertPreference(type as keyof typeof alertPreferences, !alertPreferences[type as keyof typeof alertPreferences]);
   };
