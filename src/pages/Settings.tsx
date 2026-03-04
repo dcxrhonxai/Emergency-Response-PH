@@ -674,6 +674,17 @@ const Settings = () => {
               </CardHeader>
               <CardContent className="space-y-2">
                 <button
+                  onClick={() => navigate('/notification-history')}
+                  className="flex items-center justify-between w-full p-3 rounded-lg hover:bg-muted transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <Bell className="h-4 w-4 text-muted-foreground" />
+                    <span>Notification History</span>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </button>
+                <Separator />
+                <button
                   onClick={() => navigate('/roadmap')}
                   className="flex items-center justify-between w-full p-3 rounded-lg hover:bg-muted transition-colors"
                 >
