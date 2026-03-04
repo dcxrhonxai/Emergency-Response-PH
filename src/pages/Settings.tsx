@@ -571,6 +571,39 @@ const Settings = () => {
                         />
                       </div>
 
+                      <Separator />
+
+                      {/* Daily Digest */}
+                      <div className="flex items-center justify-between pt-2">
+                        <div className="space-y-0.5">
+                          <Label htmlFor="digest-enabled" className="text-sm font-medium">Daily Digest</Label>
+                          <p className="text-xs text-muted-foreground">
+                            Receive a summary of missed notifications after quiet hours
+                          </p>
+                        </div>
+                        <Switch
+                          id="digest-enabled"
+                          checked={quietHours.digestEnabled}
+                          onCheckedChange={(checked) => updateQuietHours({ digestEnabled: checked })}
+                        />
+                      </div>
+
+                      {quietHours.digestEnabled && (
+                        <div className="space-y-2">
+                          <Label htmlFor="digest-time" className="text-sm">Digest Time</Label>
+                          <Input
+                            id="digest-time"
+                            type="time"
+                            value={quietHours.digestTime}
+                            onChange={(e) => updateQuietHours({ digestTime: e.target.value })}
+                            className="w-full"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            You'll receive a notification summarizing everything you missed
+                          </p>
+                        </div>
+                      )}
+
                       <div className="pt-2 text-xs text-muted-foreground flex items-center gap-2">
                         <Clock className="h-3 w-3" />
                         {getQuietHoursStatus().message}
