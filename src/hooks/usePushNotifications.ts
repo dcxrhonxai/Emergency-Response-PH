@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { initializeApp, getApps } from 'firebase/app';
 import { getMessaging, getToken, onMessage, Messaging } from 'firebase/messaging';
 import { useNotificationFilter } from './useNotificationFilter';
+import { useNotificationSounds } from './useNotificationSounds';
 
 interface UsePushNotificationsProps {
   userId: string;
