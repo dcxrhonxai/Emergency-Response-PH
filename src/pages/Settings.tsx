@@ -24,6 +24,7 @@ import {
   Clock,
   BellOff
 } from 'lucide-react';
+import { Volume2, Play } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -42,6 +43,9 @@ import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useNotificationFilter } from '@/hooks/useNotificationFilter';
 import { supabase } from '@/integrations/supabase/client';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Slider } from '@/components/ui/slider';
+import { useNotificationSounds, AVAILABLE_SOUNDS } from '@/hooks/useNotificationSounds';
 
 const LANGUAGES = [
   { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -69,6 +73,14 @@ const Settings = () => {
     updateQuietHours,
     getQuietHoursStatus,
   } = useNotificationFilter();
+
+  const {
+    soundPreferences,
+    updateSoundPreference,
+    updateSoundEnabled,
+    updateVolume,
+    previewSound,
+  } = useNotificationSounds();
 
   const toggleAlertPreference = (type: string) => {
     updateAlertPreference(type as keyof typeof alertPreferences, !alertPreferences[type as keyof typeof alertPreferences]);
@@ -579,14 +591,78 @@ const Settings = () => {
                   <Switch id="email-notifications" defaultChecked />
                 </div>
                 <Separator />
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="sound-alerts">Sound Alerts</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Play sound for emergency notifications
-                    </p>
+
+                {/* Sound Customization */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-2">
+                        <Label className="text-base">Sound Alerts</Label>
+                        <Volume2 className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Customize alert sounds per emergency type
+                      </p>
+                    </div>
+                    <Switch
+                      checked={soundPreferences.enabled}
+                      onCheckedChange={updateSoundEnabled}
+                    />
                   </div>
-                  <Switch id="sound-alerts" defaultChecked />
+
+                  {soundPreferences.enabled && (
+                    <div className="space-y-4 p-4 rounded-lg border border-border bg-muted/30">
+                      <div className="space-y-2">
+                        <Label className="text-sm">Volume</Label>
+                        <Slider
+                          value={[soundPreferences.volume * 100]}
+                          onValueChange={([v]) => updateVolume(v / 100)}
+                          max={100}
+                          step={5}
+                          className="w-full"
+                        />
+                        <p className="text-xs text-muted-foreground text-right">{Math.round(soundPreferences.volume * 100)}%</p>
+                      </div>
+
+                      {([
+                        { key: 'medical' as const, label: 'Medical', icon: <Heart className="h-3 w-3" /> },
+                        { key: 'fire' as const, label: 'Fire', icon: <Flame className="h-3 w-3" /> },
+                        { key: 'police' as const, label: 'Police', icon: <ShieldAlert className="h-3 w-3" /> },
+                        { key: 'accident' as const, label: 'Accident', icon: <Car className="h-3 w-3" /> },
+                        { key: 'natural_disaster' as const, label: 'Disaster', icon: <AlertTriangle className="h-3 w-3" /> },
+                      ]).map(({ key, label, icon }) => (
+                        <div key={key} className="flex items-center gap-2">
+                          <div className="flex items-center gap-1.5 min-w-[90px]">
+                            {icon}
+                            <span className="text-sm">{label}</span>
+                          </div>
+                          <Select
+                            value={soundPreferences[key]}
+                            onValueChange={(v) => updateSoundPreference(key, v)}
+                          >
+                            <SelectTrigger className="flex-1 h-8 text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {AVAILABLE_SOUNDS.map((s) => (
+                                <SelectItem key={s.id} value={s.id}>
+                                  {s.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => previewSound(soundPreferences[key])}
+                          >
+                            <Play className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -597,6 +673,17 @@ const Settings = () => {
                 <CardTitle>Quick Links</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
+                <button
+                  onClick={() => navigate('/notification-history')}
+                  className="flex items-center justify-between w-full p-3 rounded-lg hover:bg-muted transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <Bell className="h-4 w-4 text-muted-foreground" />
+                    <span>Notification History</span>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </button>
+                <Separator />
                 <button
                   onClick={() => navigate('/roadmap')}
                   className="flex items-center justify-between w-full p-3 rounded-lg hover:bg-muted transition-colors"

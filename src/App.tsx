@@ -18,6 +18,7 @@ const Integrations = lazy(() => import("./pages/Integrations"));
 const Roadmap = lazy(() => import("./pages/Roadmap"));
 const MedicalRecords = lazy(() => import("./pages/MedicalRecords"));
 const Settings = lazy(() => import("./pages/Settings"));
+const NotificationHistory = lazy(() => import("./pages/NotificationHistory"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const App = () => {
@@ -55,6 +56,7 @@ const App = () => {
               <Route path="/roadmap" element={<Roadmap />} />
               <Route path="/medical-records" element={<MedicalRecords />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/notification-history" element={<NotificationHistory />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

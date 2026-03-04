@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { initializeApp, getApps } from 'firebase/app';
 import { getMessaging, getToken, onMessage, Messaging } from 'firebase/messaging';
 import { useNotificationFilter } from './useNotificationFilter';
+import { useNotificationSounds } from './useNotificationSounds';
 
 interface UsePushNotificationsProps {
   userId: string;
@@ -25,6 +26,7 @@ export const usePushNotifications = ({ userId }: UsePushNotificationsProps) => {
   const [messaging, setMessaging] = useState<Messaging | null>(null);
   const [permissionStatus, setPermissionStatus] = useState<NotificationPermission>('default');
   const { shouldShowNotification, isWithinQuietHours, getQuietHoursStatus } = useNotificationFilter();
+  const { playEmergencySound } = useNotificationSounds();
 
   const saveFCMToken = useCallback(async (token: string) => {
     try {
@@ -149,8 +151,21 @@ export const usePushNotifications = ({ userId }: UsePushNotificationsProps) => {
         const emergencyType = payload.data?.emergency_type || payload.notification?.title || '';
         if (!shouldShowNotification(emergencyType)) {
           console.log('Notification filtered out by user preferences or quiet hours');
+          // Log filtered notification for history
+          try {
+            const existing = JSON.parse(localStorage.getItem('dndFilteredNotifications') || '[]');
+            existing.unshift({
+              type: emergencyType,
+              time: new Date().toLocaleString(),
+              reason: isWithinQuietHours() ? 'Quiet hours active' : 'Alert type disabled',
+            });
+            localStorage.setItem('dndFilteredNotifications', JSON.stringify(existing.slice(0, 100)));
+          } catch (e) {}
           return;
         }
+
+        // Play custom sound for the emergency type
+        playEmergencySound(emergencyType);
 
         // Show toast notification for foreground messages
         toast(payload.notification?.title || 'New Notification', {
