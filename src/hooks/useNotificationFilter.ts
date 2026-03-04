@@ -13,6 +13,8 @@ export interface QuietHoursSettings {
   startTime: string;
   endTime: string;
   allowCritical: boolean;
+  digestEnabled: boolean;
+  digestTime: string;
 }
 
 export interface DNDBypassContact {
