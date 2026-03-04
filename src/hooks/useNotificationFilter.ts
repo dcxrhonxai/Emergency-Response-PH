@@ -8,6 +8,8 @@ export interface AlertPreferences {
   natural_disaster: boolean;
 }
 
+export type DigestDeliveryMethod = 'in_app' | 'push' | 'email';
+
 export interface QuietHoursSettings {
   enabled: boolean;
   startTime: string;
@@ -15,6 +17,7 @@ export interface QuietHoursSettings {
   allowCritical: boolean;
   digestEnabled: boolean;
   digestTime: string;
+  digestDelivery: DigestDeliveryMethod[];
 }
 
 export interface DNDBypassContact {
