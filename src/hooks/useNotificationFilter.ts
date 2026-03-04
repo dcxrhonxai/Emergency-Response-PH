@@ -52,6 +52,8 @@ const DEFAULT_QUIET_HOURS: QuietHoursSettings = {
   startTime: '22:00',
   endTime: '07:00',
   allowCritical: true,
+  digestEnabled: true,
+  digestTime: '08:00',
 };
 
 export const useNotificationFilter = () => {
