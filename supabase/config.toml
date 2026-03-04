@@ -17,3 +17,6 @@ verify_jwt = true
 
 [functions.gdpr-delete-account]
 verify_jwt = true
+
+[functions.send-daily-digest]
+verify_jwt = false
