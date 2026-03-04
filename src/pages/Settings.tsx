@@ -43,6 +43,9 @@ import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useNotificationFilter } from '@/hooks/useNotificationFilter';
 import { supabase } from '@/integrations/supabase/client';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Slider } from '@/components/ui/slider';
+import { useNotificationSounds, AVAILABLE_SOUNDS } from '@/hooks/useNotificationSounds';
 
 const LANGUAGES = [
   { code: 'en', name: 'English', flag: '🇺🇸' },
