@@ -18,6 +18,7 @@ const Integrations = lazy(() => import("./pages/Integrations"));
 const Roadmap = lazy(() => import("./pages/Roadmap"));
 const MedicalRecords = lazy(() => import("./pages/MedicalRecords"));
 const Settings = lazy(() => import("./pages/Settings"));
+const NotificationHistory = lazy(() => import("./pages/NotificationHistory"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const App = () => {
