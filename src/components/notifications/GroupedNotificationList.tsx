@@ -104,6 +104,16 @@ export const GroupedNotificationList = ({
     <div className="space-y-1">
       {displayItems.map((item) => {
         if (!isGroup(item)) {
+          if (isMobile) {
+            return (
+              <SwipeableNotificationItem
+                key={item.id}
+                notification={item}
+                onRemove={onNotificationRemove}
+                onMarkRead={onNotificationMarkRead}
+              />
+            );
+          }
           return <NotificationItem key={item.id} notification={item} />;
         }
 
