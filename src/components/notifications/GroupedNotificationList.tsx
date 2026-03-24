@@ -4,7 +4,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { NotificationItem, type NotificationLog } from './NotificationItem';
+import { SwipeableNotificationItem } from './SwipeableNotificationItem';
 import { formatDistanceToNow } from 'date-fns';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface NotificationGroup {
   key: string;
@@ -73,10 +75,15 @@ const getTypeColor = (type: string) => {
 export const GroupedNotificationList = ({
   notifications,
   groupingEnabled,
+  onNotificationRemove,
+  onNotificationMarkRead,
 }: {
   notifications: NotificationLog[];
   groupingEnabled: boolean;
+  onNotificationRemove?: (id: string) => void;
+  onNotificationMarkRead?: (id: string) => void;
 }) => {
+  const isMobile = useIsMobile();
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
   const displayItems = useMemo(() => {
@@ -97,6 +104,16 @@ export const GroupedNotificationList = ({
     <div className="space-y-1">
       {displayItems.map((item) => {
         if (!isGroup(item)) {
+          if (isMobile) {
+            return (
+              <SwipeableNotificationItem
+                key={item.id}
+                notification={item}
+                onRemove={onNotificationRemove}
+                onMarkRead={onNotificationMarkRead}
+              />
+            );
+          }
           return <NotificationItem key={item.id} notification={item} />;
         }
 
@@ -145,7 +162,16 @@ export const GroupedNotificationList = ({
             <CollapsibleContent>
               <div className="ml-4 border-l-2 border-muted pl-2 mt-1 space-y-1">
                 {group.items.map((n) => (
-                  <NotificationItem key={n.id} notification={n} />
+                  isMobile ? (
+                    <SwipeableNotificationItem
+                      key={n.id}
+                      notification={n}
+                      onRemove={onNotificationRemove}
+                      onMarkRead={onNotificationMarkRead}
+                    />
+                  ) : (
+                    <NotificationItem key={n.id} notification={n} />
+                  )
                 ))}
               </div>
             </CollapsibleContent>
