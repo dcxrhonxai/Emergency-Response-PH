@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Bell, BellOff, Filter, Trash2, CheckCheck, Layers } from 'lucide-react';
+import { ArrowLeft, Bell, BellOff, Filter, Trash2, CheckCheck, Layers, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
@@ -19,6 +20,15 @@ const NotificationHistory = () => {
   const [filter, setFilter] = useState<string>('all');
   const [userId, setUserId] = useState<string | null>(null);
   const [groupingEnabled, setGroupingEnabled] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredNotifications = useMemo(() => {
+    if (!searchQuery.trim()) return notifications;
+    const q = searchQuery.toLowerCase();
+    return notifications.filter(
+      n => n.title.toLowerCase().includes(q) || n.message.toLowerCase().includes(q)
+    );
+  }, [notifications, searchQuery]);
 
   useEffect(() => {
     const getUser = async () => {
@@ -127,6 +137,17 @@ const NotificationHistory = () => {
       </header>
 
       <main className="container mx-auto px-4 py-6 max-w-4xl space-y-6">
+        {/* Search */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search notifications..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+
         {/* Filters & Actions */}
         <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
           <div className="flex items-center gap-3">
@@ -175,21 +196,21 @@ const NotificationHistory = () => {
         <Card>
           <CardHeader>
             <CardTitle className="text-base">
-              Notifications ({notifications.length})
+              Notifications ({filteredNotifications.length}{searchQuery ? ` of ${notifications.length}` : ''})
             </CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
               <div className="text-center py-8 text-muted-foreground">Loading...</div>
-            ) : notifications.length === 0 ? (
+            ) : filteredNotifications.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <Bell className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p>No notifications found</p>
+                <p>{searchQuery ? 'No matching notifications' : 'No notifications found'}</p>
               </div>
             ) : (
               <ScrollArea className="h-[500px]">
                 <GroupedNotificationList
-                  notifications={notifications}
+                  notifications={filteredNotifications}
                   groupingEnabled={groupingEnabled}
                 />
               </ScrollArea>
