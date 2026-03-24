@@ -75,10 +75,15 @@ const getTypeColor = (type: string) => {
 export const GroupedNotificationList = ({
   notifications,
   groupingEnabled,
+  onNotificationRemove,
+  onNotificationMarkRead,
 }: {
   notifications: NotificationLog[];
   groupingEnabled: boolean;
+  onNotificationRemove?: (id: string) => void;
+  onNotificationMarkRead?: (id: string) => void;
 }) => {
+  const isMobile = useIsMobile();
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
   const displayItems = useMemo(() => {
