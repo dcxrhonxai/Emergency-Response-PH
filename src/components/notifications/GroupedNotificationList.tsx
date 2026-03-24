@@ -162,7 +162,16 @@ export const GroupedNotificationList = ({
             <CollapsibleContent>
               <div className="ml-4 border-l-2 border-muted pl-2 mt-1 space-y-1">
                 {group.items.map((n) => (
-                  <NotificationItem key={n.id} notification={n} />
+                  isMobile ? (
+                    <SwipeableNotificationItem
+                      key={n.id}
+                      notification={n}
+                      onRemove={onNotificationRemove}
+                      onMarkRead={onNotificationMarkRead}
+                    />
+                  ) : (
+                    <NotificationItem key={n.id} notification={n} />
+                  )
                 ))}
               </div>
             </CollapsibleContent>
