@@ -212,6 +212,8 @@ const NotificationHistory = () => {
                 <GroupedNotificationList
                   notifications={filteredNotifications}
                   groupingEnabled={groupingEnabled}
+                  onNotificationRemove={() => loadNotifications()}
+                  onNotificationMarkRead={() => loadNotifications()}
                 />
               </ScrollArea>
             )}
