@@ -35,7 +35,7 @@ export function useVoiceCommands(config: VoiceCommandConfig = {}) {
   });
   
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
-  const restartTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const restartTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Check if Web Speech API is supported
   useEffect(() => {

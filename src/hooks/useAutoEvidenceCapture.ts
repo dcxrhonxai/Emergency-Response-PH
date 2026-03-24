@@ -22,7 +22,7 @@ export const useAutoEvidenceCapture = ({
   const [isCapturing, setIsCapturing] = useState(false);
   const [captureCount, setCaptureCount] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
