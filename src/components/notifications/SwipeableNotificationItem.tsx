@@ -15,6 +15,21 @@ interface SwipeableNotificationItemProps {
 const SWIPE_THRESHOLD = 80;
 const DISMISS_THRESHOLD = 150;
 
+const triggerHaptic = async (type: 'light' | 'medium' | 'success' | 'warning') => {
+  try {
+    if (type === 'success') {
+      await Haptics.notification({ type: NotificationType.Success });
+    } else if (type === 'warning') {
+      await Haptics.notification({ type: NotificationType.Warning });
+    } else {
+      await Haptics.impact({ style: type === 'light' ? ImpactStyle.Light : ImpactStyle.Medium });
+    }
+  } catch {
+    // Haptics not available (web browser)
+  }
+};
+const DISMISS_THRESHOLD = 150;
+
 export const SwipeableNotificationItem = ({
   notification,
   onRemove,
