@@ -118,6 +118,7 @@ export const SwipeableNotificationItem = ({
       if (error) {
         toast.error('Failed to mark as read');
       } else {
+        triggerHaptic('success');
         toast.success('Marked as read');
         onMarkRead?.(notification.id);
       }
