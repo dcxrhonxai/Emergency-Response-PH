@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { NotificationItem, type NotificationLog } from './NotificationItem';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
 
 interface SwipeableNotificationItemProps {
   notification: NotificationLog;
