@@ -79,6 +79,7 @@ export const SwipeableNotificationItem = ({
 
     // Swipe left beyond dismiss threshold → delete with undo
     if (diff < -DISMISS_THRESHOLD) {
+      triggerHaptic('warning');
       setDismissed(true);
       const undoTimeout = setTimeout(async () => {
         const { error } = await supabase
