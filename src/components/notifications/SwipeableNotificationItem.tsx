@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { NotificationItem, type NotificationLog } from './NotificationItem';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
 
 interface SwipeableNotificationItemProps {
   notification: NotificationLog;
@@ -13,6 +14,20 @@ interface SwipeableNotificationItemProps {
 
 const SWIPE_THRESHOLD = 80;
 const DISMISS_THRESHOLD = 150;
+
+const triggerHaptic = async (type: 'light' | 'medium' | 'success' | 'warning') => {
+  try {
+    if (type === 'success') {
+      await Haptics.notification({ type: NotificationType.Success });
+    } else if (type === 'warning') {
+      await Haptics.notification({ type: NotificationType.Warning });
+    } else {
+      await Haptics.impact({ style: type === 'light' ? ImpactStyle.Light : ImpactStyle.Medium });
+    }
+  } catch {
+    // Haptics not available (web browser)
+  }
+};
 
 export const SwipeableNotificationItem = ({
   notification,
@@ -25,10 +40,14 @@ export const SwipeableNotificationItem = ({
   const [offsetX, setOffsetX] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+  const crossedReadRef = useRef(false);
+  const crossedDeleteRef = useRef(false);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     startXRef.current = e.touches[0].clientX;
     currentXRef.current = 0;
+    crossedReadRef.current = false;
+    crossedDeleteRef.current = false;
     setIsSwiping(true);
   }, []);
 
@@ -37,6 +56,21 @@ export const SwipeableNotificationItem = ({
     const diff = e.touches[0].clientX - startXRef.current;
     currentXRef.current = diff;
     setOffsetX(diff);
+
+    // Haptic when crossing thresholds
+    if (diff > SWIPE_THRESHOLD && !crossedReadRef.current) {
+      crossedReadRef.current = true;
+      triggerHaptic('light');
+    } else if (diff <= SWIPE_THRESHOLD) {
+      crossedReadRef.current = false;
+    }
+
+    if (diff < -SWIPE_THRESHOLD && !crossedDeleteRef.current) {
+      crossedDeleteRef.current = true;
+      triggerHaptic('medium');
+    } else if (diff >= -SWIPE_THRESHOLD) {
+      crossedDeleteRef.current = false;
+    }
   }, [isSwiping]);
 
   const handleTouchEnd = useCallback(async () => {
@@ -45,6 +79,7 @@ export const SwipeableNotificationItem = ({
 
     // Swipe left beyond dismiss threshold → delete with undo
     if (diff < -DISMISS_THRESHOLD) {
+      triggerHaptic('warning');
       setDismissed(true);
       const undoTimeout = setTimeout(async () => {
         const { error } = await supabase
@@ -83,6 +118,7 @@ export const SwipeableNotificationItem = ({
       if (error) {
         toast.error('Failed to mark as read');
       } else {
+        triggerHaptic('success');
         toast.success('Marked as read');
         onMarkRead?.(notification.id);
       }
