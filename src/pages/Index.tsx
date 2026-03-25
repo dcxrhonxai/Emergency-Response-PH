@@ -480,6 +480,7 @@ const Index = () => {
                             .single();
 
                           if (data) {
+                            triggerNotification('warning');
                             setCurrentAlertId(data.id);
                             
                             // Send notifications to contacts silently
