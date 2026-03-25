@@ -43,10 +43,10 @@ export const SwipeableNotificationItem = ({
     setIsSwiping(false);
     const diff = currentXRef.current;
 
-    // Swipe left beyond dismiss threshold → delete
+    // Swipe left beyond dismiss threshold → delete with undo
     if (diff < -DISMISS_THRESHOLD) {
       setDismissed(true);
-      setTimeout(async () => {
+      const undoTimeout = setTimeout(async () => {
         const { error } = await supabase
           .from('in_app_notifications')
           .delete()
@@ -56,10 +56,21 @@ export const SwipeableNotificationItem = ({
           setDismissed(false);
           setOffsetX(0);
         } else {
-          toast.success('Notification dismissed');
           onRemove?.(notification.id);
         }
-      }, 200);
+      }, 4000);
+
+      toast('Notification dismissed', {
+        action: {
+          label: 'Undo',
+          onClick: () => {
+            clearTimeout(undoTimeout);
+            setDismissed(false);
+            setOffsetX(0);
+          },
+        },
+        duration: 3500,
+      });
       return;
     }
 
