@@ -5,6 +5,7 @@ import { NotificationItem, type NotificationLog } from './NotificationItem';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
+import { isHapticEnabled } from '@/hooks/useHapticFeedback';
 
 interface SwipeableNotificationItemProps {
   notification: NotificationLog;
@@ -16,6 +17,7 @@ const SWIPE_THRESHOLD = 80;
 const DISMISS_THRESHOLD = 150;
 
 const triggerHaptic = async (type: 'light' | 'medium' | 'success' | 'warning') => {
+  if (!isHapticEnabled()) return;
   try {
     if (type === 'success') {
       await Haptics.notification({ type: NotificationType.Success });
