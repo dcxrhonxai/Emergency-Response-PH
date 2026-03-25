@@ -30,6 +30,7 @@ import { useEmergencyNotifications } from "@/hooks/useEmergencyNotifications";
 import { useAlertEscalation } from "@/hooks/useAlertEscalation";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
 import { useBackgroundLocation } from "@/hooks/useBackgroundLocation";
+import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import type { Session } from "@supabase/supabase-js";
 
 export interface EmergencyContact {
@@ -130,10 +131,14 @@ const Index = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
+  const { triggerImpact, triggerNotification } = useHapticFeedback();
+
   const handleQuickSOS = async () => {
+    await triggerImpact('heavy');
     const quickType = "🚨 EMERGENCY - SOS";
     const quickSituation = "Quick SOS activated - Immediate help needed";
     handleEmergencyClick(quickType, quickSituation);
+    await triggerNotification('warning');
   };
 
   const handleEmergencyClick = async (type: string, description: string, evidenceFiles?: any[]) => {
