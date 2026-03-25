@@ -28,7 +28,6 @@ const triggerHaptic = async (type: 'light' | 'medium' | 'success' | 'warning') =
     // Haptics not available (web browser)
   }
 };
-const DISMISS_THRESHOLD = 150;
 
 export const SwipeableNotificationItem = ({
   notification,
