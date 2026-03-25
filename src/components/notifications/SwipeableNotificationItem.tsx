@@ -40,10 +40,14 @@ export const SwipeableNotificationItem = ({
   const [offsetX, setOffsetX] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+  const crossedReadRef = useRef(false);
+  const crossedDeleteRef = useRef(false);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     startXRef.current = e.touches[0].clientX;
     currentXRef.current = 0;
+    crossedReadRef.current = false;
+    crossedDeleteRef.current = false;
     setIsSwiping(true);
   }, []);
 
@@ -52,6 +56,21 @@ export const SwipeableNotificationItem = ({
     const diff = e.touches[0].clientX - startXRef.current;
     currentXRef.current = diff;
     setOffsetX(diff);
+
+    // Haptic when crossing thresholds
+    if (diff > SWIPE_THRESHOLD && !crossedReadRef.current) {
+      crossedReadRef.current = true;
+      triggerHaptic('light');
+    } else if (diff <= SWIPE_THRESHOLD) {
+      crossedReadRef.current = false;
+    }
+
+    if (diff < -SWIPE_THRESHOLD && !crossedDeleteRef.current) {
+      crossedDeleteRef.current = true;
+      triggerHaptic('medium');
+    } else if (diff >= -SWIPE_THRESHOLD) {
+      crossedDeleteRef.current = false;
+    }
   }, [isSwiping]);
 
   const handleTouchEnd = useCallback(async () => {
