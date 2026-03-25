@@ -30,6 +30,7 @@ import { useEmergencyNotifications } from "@/hooks/useEmergencyNotifications";
 import { useAlertEscalation } from "@/hooks/useAlertEscalation";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
 import { useBackgroundLocation } from "@/hooks/useBackgroundLocation";
+import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import type { Session } from "@supabase/supabase-js";
 
 export interface EmergencyContact {
