@@ -455,6 +455,7 @@ const Index = () => {
                 <Button
                   onClick={async () => {
                     if (!session?.user) return;
+                    triggerImpact('heavy');
                     
                     // Get location silently
                     if (navigator.geolocation) {
@@ -479,6 +480,7 @@ const Index = () => {
                             .single();
 
                           if (data) {
+                            triggerNotification('warning');
                             setCurrentAlertId(data.id);
                             
                             // Send notifications to contacts silently
