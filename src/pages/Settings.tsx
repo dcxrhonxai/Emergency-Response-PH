@@ -22,7 +22,8 @@ import {
   Car,
   AlertTriangle,
   Clock,
-  BellOff
+  BellOff,
+  Vibrate
 } from 'lucide-react';
 import { Volume2, Play } from 'lucide-react';
 import { toast } from 'sonner';
@@ -46,6 +47,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { useNotificationSounds, AVAILABLE_SOUNDS } from '@/hooks/useNotificationSounds';
+import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 
 const LANGUAGES = [
   { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -60,6 +62,7 @@ const Settings = () => {
   const { t, i18n } = useTranslation();
   const { isPremium } = useGooglePlayBilling();
   const { isHighContrast, toggleHighContrast } = useHighContrastMode();
+  const { isEnabled: hapticEnabled, toggleHaptic } = useHapticFeedback();
   const [activeTab, setActiveTab] = useState('general');
   const [userId, setUserId] = useState<string | null>(null);
   const [isRequestingPermission, setIsRequestingPermission] = useState(false);
@@ -294,6 +297,23 @@ const Settings = () => {
                     id="high-contrast"
                     checked={isHighContrast}
                     onCheckedChange={toggleHighContrast}
+                  />
+                </div>
+                <Separator />
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="haptic-feedback" className="flex items-center gap-2">
+                      <Vibrate className="h-4 w-4" />
+                      Haptic Feedback
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Vibration feedback for swipe gestures on mobile
+                    </p>
+                  </div>
+                  <Switch
+                    id="haptic-feedback"
+                    checked={hapticEnabled}
+                    onCheckedChange={toggleHaptic}
                   />
                 </div>
               </CardContent>
