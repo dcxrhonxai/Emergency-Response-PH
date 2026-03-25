@@ -455,6 +455,7 @@ const Index = () => {
                 <Button
                   onClick={async () => {
                     if (!session?.user) return;
+                    triggerImpact('heavy');
                     
                     // Get location silently
                     if (navigator.geolocation) {
