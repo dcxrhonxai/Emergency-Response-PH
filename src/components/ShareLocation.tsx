@@ -21,6 +21,7 @@ interface ShareLocationProps {
 const ShareLocation = ({ userId, location, situation }: ShareLocationProps) => {
   const [contacts, setContacts] = useState<PersonalContact[]>([]);
   const [loading, setLoading] = useState(true);
+  const { triggerImpact } = useHapticFeedback();
 
   useEffect(() => {
     loadContacts();
