@@ -393,7 +393,7 @@ const Index = () => {
       {/* Main Content */}
       <main className="container mx-auto px-3 py-3 max-w-2xl pb-20">
         {!showEmergency ? (
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-3">
+          <Tabs value={activeTab} onValueChange={(val) => { triggerImpact('light'); setActiveTab(val); }} className="space-y-3">
             <TabsList className="grid w-full grid-cols-5 h-auto">
               <TabsTrigger value="emergency" className="flex flex-col items-center gap-1 py-2 text-xs">
                 <Shield className="w-4 h-4" />
