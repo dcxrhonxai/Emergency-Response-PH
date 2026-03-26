@@ -30,6 +30,7 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
   const [showMediaCapture, setShowMediaCapture] = useState(false);
   const [evidenceFiles, setEvidenceFiles] = useState<UploadedFile[]>([]);
   const { isOnline, pendingCount } = useOfflineSync();
+  const { triggerImpact } = useHapticFeedback();
 
   const emergencyTypes = [
     { value: "fire", label: "Fire Emergency", icon: Flame },

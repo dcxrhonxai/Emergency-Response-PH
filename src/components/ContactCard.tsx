@@ -10,12 +10,15 @@ interface ContactCardProps {
 
 const ContactCard = ({ contact }: ContactCardProps) => {
   const { makeCall, sendSMS, isCalling } = usePhoneCaller();
+  const { triggerImpact } = useHapticFeedback();
 
   const handleCall = () => {
+    triggerImpact('medium');
     makeCall(contact.phone, contact.name);
   };
 
   const handleMessage = () => {
+    triggerImpact('light');
     sendSMS(contact.phone);
   };
 
