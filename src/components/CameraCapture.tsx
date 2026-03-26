@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CameraIcon, Video, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 
 interface CameraCaptureProps {
   onCapture: (imageData: string, type: 'photo' | 'video') => void;

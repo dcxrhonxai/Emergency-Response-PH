@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Mic, Square, Play, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 
 interface AudioRecorderProps {
   onRecordingComplete: (audioData: string) => void;
