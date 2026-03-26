@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Share2, MapPin } from "lucide-react";
 import { toast } from "sonner";
+import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 
 interface PersonalContact {
   id: string;
@@ -20,6 +21,7 @@ interface ShareLocationProps {
 const ShareLocation = ({ userId, location, situation }: ShareLocationProps) => {
   const [contacts, setContacts] = useState<PersonalContact[]>([]);
   const [loading, setLoading] = useState(true);
+  const { triggerImpact } = useHapticFeedback();
 
   useEffect(() => {
     loadContacts();
@@ -41,6 +43,7 @@ const ShareLocation = ({ userId, location, situation }: ShareLocationProps) => {
   };
 
   const shareLocation = (contact: PersonalContact) => {
+    triggerImpact('medium');
     const googleMapsUrl = `https://maps.google.com/?q=${location.lat},${location.lng}`;
     const message = `EMERGENCY ALERT: ${situation}. My location: ${googleMapsUrl}`;
     
@@ -50,6 +53,7 @@ const ShareLocation = ({ userId, location, situation }: ShareLocationProps) => {
   };
 
   const shareWithAll = () => {
+    triggerImpact('heavy');
     if (contacts.length === 0) {
       toast.error("No contacts to share with");
       return;
