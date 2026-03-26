@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Share2, MapPin } from "lucide-react";
 import { toast } from "sonner";
+import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 
 interface PersonalContact {
   id: string;
