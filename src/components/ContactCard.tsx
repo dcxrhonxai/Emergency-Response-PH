@@ -2,6 +2,7 @@ import { EmergencyContact } from "@/pages/Index";
 import { Button } from "@/components/ui/button";
 import { Phone, MessageSquare, MapPin } from "lucide-react";
 import { usePhoneCaller } from "@/hooks/usePhoneCaller";
+import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 
 interface ContactCardProps {
   contact: EmergencyContact;
@@ -9,12 +10,15 @@ interface ContactCardProps {
 
 const ContactCard = ({ contact }: ContactCardProps) => {
   const { makeCall, sendSMS, isCalling } = usePhoneCaller();
+  const { triggerImpact } = useHapticFeedback();
 
   const handleCall = () => {
+    triggerImpact('medium');
     makeCall(contact.phone, contact.name);
   };
 
   const handleMessage = () => {
+    triggerImpact('light');
     sendSMS(contact.phone);
   };
 

@@ -16,6 +16,7 @@ import { AutoEvidenceCapture } from "./AutoEvidenceCapture";
 import { UploadedFile } from "@/lib/storage";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
 import { Badge } from "./ui/badge";
+import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 
 interface EmergencyFormProps {
   onEmergencyClick: (type: string, situation: string, evidenceFiles?: UploadedFile[]) => void;
@@ -29,6 +30,7 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
   const [showMediaCapture, setShowMediaCapture] = useState(false);
   const [evidenceFiles, setEvidenceFiles] = useState<UploadedFile[]>([]);
   const { isOnline, pendingCount } = useOfflineSync();
+  const { triggerImpact } = useHapticFeedback();
 
   const emergencyTypes = [
     { value: "fire", label: "Fire Emergency", icon: Flame },
@@ -44,6 +46,8 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
   };
 
   const handleSubmit = () => {
+    triggerImpact('heavy');
+
     // Validate input using Zod schema
     const result = emergencyFormSchema.safeParse({
       situation,
@@ -101,7 +105,7 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
           <label htmlFor="emergency-type" className="text-xs font-semibold text-foreground block">
             Type of Emergency *
           </label>
-          <Select value={emergencyType} onValueChange={setEmergencyType}>
+          <Select value={emergencyType} onValueChange={(val) => { triggerImpact('light'); setEmergencyType(val); }}>
             <SelectTrigger id="emergency-type" className="text-sm h-9">
               <SelectValue placeholder="Select type..." />
             </SelectTrigger>

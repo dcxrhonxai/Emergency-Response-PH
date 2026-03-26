@@ -13,6 +13,7 @@ import { usePhoneCaller } from "@/hooks/usePhoneCaller";
 import { ContactGroups } from "./ContactGroups";
 import { useNotificationFilter } from "@/hooks/useNotificationFilter";
 import { Switch } from "@/components/ui/switch";
+import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 
 interface PersonalContact {
   id: string;
@@ -122,12 +123,15 @@ const PersonalContacts = ({ userId }: PersonalContactsProps) => {
 
   const { makeCall, sendSMS } = usePhoneCaller();
   const { isContactDndBypassed, addDndBypassContact, removeDndBypassContact, quietHours } = useNotificationFilter();
+  const { triggerImpact } = useHapticFeedback();
 
   const handleCall = (phone: string, name: string) => {
+    triggerImpact('medium');
     makeCall(phone, name);
   };
 
   const handleMessage = (phone: string, name: string) => {
+    triggerImpact('light');
     sendSMS(phone);
   };
 
