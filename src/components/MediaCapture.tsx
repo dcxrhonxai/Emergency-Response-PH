@@ -25,6 +25,7 @@ export const MediaCapture = ({ userId, onFilesUploaded }: MediaCaptureProps) => 
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
+  const { triggerImpact } = useHapticFeedback();
 
   const handleCameraCapture = async (imageData: string, type: 'photo' | 'video') => {
     let finalData = imageData;
