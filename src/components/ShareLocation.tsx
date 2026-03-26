@@ -43,6 +43,7 @@ const ShareLocation = ({ userId, location, situation }: ShareLocationProps) => {
   };
 
   const shareLocation = (contact: PersonalContact) => {
+    triggerImpact('medium');
     const googleMapsUrl = `https://maps.google.com/?q=${location.lat},${location.lng}`;
     const message = `EMERGENCY ALERT: ${situation}. My location: ${googleMapsUrl}`;
     
@@ -52,6 +53,7 @@ const ShareLocation = ({ userId, location, situation }: ShareLocationProps) => {
   };
 
   const shareWithAll = () => {
+    triggerImpact('heavy');
     if (contacts.length === 0) {
       toast.error("No contacts to share with");
       return;
