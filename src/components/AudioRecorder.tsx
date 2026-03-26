@@ -15,8 +15,10 @@ export const AudioRecorder = ({ onRecordingComplete }: AudioRecorderProps) => {
   const [audioData, setAudioData] = useState<string | null>(null);
   const [duration, setDuration] = useState(0);
   const { toast } = useToast();
+  const { triggerImpact, triggerNotification } = useHapticFeedback();
 
   const startRecording = async () => {
+    triggerImpact('medium');
     try {
       const hasPermission = await VoiceRecorder.requestAudioRecordingPermission();
       
@@ -48,6 +50,7 @@ export const AudioRecorder = ({ onRecordingComplete }: AudioRecorderProps) => {
   };
 
   const stopRecording = async () => {
+    triggerImpact('heavy');
     try {
       const result = await VoiceRecorder.stopRecording();
       

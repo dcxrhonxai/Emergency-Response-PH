@@ -13,8 +13,10 @@ interface CameraCaptureProps {
 export const CameraCapture = ({ onCapture }: CameraCaptureProps) => {
   const [capturedMedia, setCapturedMedia] = useState<{ data: string; type: 'photo' | 'video' } | null>(null);
   const { toast } = useToast();
+  const { triggerImpact } = useHapticFeedback();
 
   const takePhoto = async () => {
+    triggerImpact('medium');
     try {
       const image = await Camera.getPhoto({
         quality: 90,
@@ -42,6 +44,7 @@ export const CameraCapture = ({ onCapture }: CameraCaptureProps) => {
   };
 
   const recordVideo = async () => {
+    triggerImpact('medium');
     try {
       toast({
         title: "Video Recording",
