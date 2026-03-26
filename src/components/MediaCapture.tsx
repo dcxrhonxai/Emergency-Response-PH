@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { compressVideo, formatFileSize, getVideoSize } from "@/lib/videoCompression";
 import { uploadEvidence, UploadedFile } from "@/lib/storage";
 import { Loader2, Trash2, Upload } from "lucide-react";
+import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 
 interface MediaCaptureProps {
   userId: string;
@@ -24,6 +25,7 @@ export const MediaCapture = ({ userId, onFilesUploaded }: MediaCaptureProps) => 
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
+  const { triggerImpact } = useHapticFeedback();
 
   const handleCameraCapture = async (imageData: string, type: 'photo' | 'video') => {
     let finalData = imageData;
@@ -106,7 +108,7 @@ export const MediaCapture = ({ userId, onFilesUploaded }: MediaCaptureProps) => 
 
   return (
     <div className="space-y-4">
-      <Tabs defaultValue="camera" className="w-full">
+      <Tabs defaultValue="camera" className="w-full" onValueChange={() => triggerImpact('light')}>
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="camera">Camera</TabsTrigger>
           <TabsTrigger value="audio">Audio</TabsTrigger>
