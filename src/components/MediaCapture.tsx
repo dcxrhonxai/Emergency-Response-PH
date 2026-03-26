@@ -108,7 +108,7 @@ export const MediaCapture = ({ userId, onFilesUploaded }: MediaCaptureProps) => 
 
   return (
     <div className="space-y-4">
-      <Tabs defaultValue="camera" className="w-full">
+      <Tabs defaultValue="camera" className="w-full" onValueChange={() => triggerImpact('light')}>
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="camera">Camera</TabsTrigger>
           <TabsTrigger value="audio">Audio</TabsTrigger>
