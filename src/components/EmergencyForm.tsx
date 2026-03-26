@@ -105,7 +105,7 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
           <label htmlFor="emergency-type" className="text-xs font-semibold text-foreground block">
             Type of Emergency *
           </label>
-          <Select value={emergencyType} onValueChange={setEmergencyType}>
+          <Select value={emergencyType} onValueChange={(val) => { triggerImpact('light'); setEmergencyType(val); }}>
             <SelectTrigger id="emergency-type" className="text-sm h-9">
               <SelectValue placeholder="Select type..." />
             </SelectTrigger>
