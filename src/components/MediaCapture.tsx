@@ -25,7 +25,7 @@ export const MediaCapture = ({ userId, onFilesUploaded }: MediaCaptureProps) => 
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
-  const { triggerImpact } = useHapticFeedback();
+  const { triggerImpact, triggerNotification } = useHapticFeedback();
 
   const handleCameraCapture = async (imageData: string, type: 'photo' | 'video') => {
     let finalData = imageData;
@@ -72,6 +72,7 @@ export const MediaCapture = ({ userId, onFilesUploaded }: MediaCaptureProps) => 
 
   const handleUploadAll = async () => {
     if (capturedMedia.length === 0) return;
+    triggerImpact('heavy');
 
     setIsUploading(true);
     const uploaded: UploadedFile[] = [];
@@ -103,6 +104,7 @@ export const MediaCapture = ({ userId, onFilesUploaded }: MediaCaptureProps) => 
   };
 
   const handleDeleteCaptured = (index: number) => {
+    triggerImpact('light');
     setCapturedMedia((prev) => prev.filter((_, i) => i !== index));
   };
 
