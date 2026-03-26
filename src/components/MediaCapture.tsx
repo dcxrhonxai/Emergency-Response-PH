@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { compressVideo, formatFileSize, getVideoSize } from "@/lib/videoCompression";
 import { uploadEvidence, UploadedFile } from "@/lib/storage";
 import { Loader2, Trash2, Upload } from "lucide-react";
+import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 
 interface MediaCaptureProps {
   userId: string;
