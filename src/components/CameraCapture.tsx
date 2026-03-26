@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CameraIcon, Video, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 
 interface CameraCaptureProps {
   onCapture: (imageData: string, type: 'photo' | 'video') => void;
@@ -12,8 +13,10 @@ interface CameraCaptureProps {
 export const CameraCapture = ({ onCapture }: CameraCaptureProps) => {
   const [capturedMedia, setCapturedMedia] = useState<{ data: string; type: 'photo' | 'video' } | null>(null);
   const { toast } = useToast();
+  const { triggerImpact } = useHapticFeedback();
 
   const takePhoto = async () => {
+    triggerImpact('medium');
     try {
       const image = await Camera.getPhoto({
         quality: 90,
@@ -41,6 +44,7 @@ export const CameraCapture = ({ onCapture }: CameraCaptureProps) => {
   };
 
   const recordVideo = async () => {
+    triggerImpact('medium');
     try {
       toast({
         title: "Video Recording",
