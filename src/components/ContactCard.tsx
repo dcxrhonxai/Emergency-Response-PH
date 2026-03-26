@@ -2,6 +2,7 @@ import { EmergencyContact } from "@/pages/Index";
 import { Button } from "@/components/ui/button";
 import { Phone, MessageSquare, MapPin } from "lucide-react";
 import { usePhoneCaller } from "@/hooks/usePhoneCaller";
+import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 
 interface ContactCardProps {
   contact: EmergencyContact;

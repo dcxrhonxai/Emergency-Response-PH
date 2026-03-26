@@ -16,6 +16,7 @@ import { AutoEvidenceCapture } from "./AutoEvidenceCapture";
 import { UploadedFile } from "@/lib/storage";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
 import { Badge } from "./ui/badge";
+import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 
 interface EmergencyFormProps {
   onEmergencyClick: (type: string, situation: string, evidenceFiles?: UploadedFile[]) => void;
