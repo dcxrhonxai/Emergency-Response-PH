@@ -46,6 +46,8 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
   };
 
   const handleSubmit = () => {
+    triggerImpact('heavy');
+
     // Validate input using Zod schema
     const result = emergencyFormSchema.safeParse({
       situation,
