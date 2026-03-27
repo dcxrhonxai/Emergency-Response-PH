@@ -122,7 +122,7 @@ const roadmapData: FeatureCategory[] = [
       { name: "Report Generation (PDF/CSV)", completed: true },
       { name: "Audit Logs", completed: true },
       { name: "Real-time Dashboard Updates", completed: true },
-      { name: "Bulk Operations", completed: false, priority: "low" },
+      { name: "Bulk Operations", completed: true },
     ],
   },
   {
