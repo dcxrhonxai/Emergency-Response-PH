@@ -44,25 +44,27 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Suspense fallback={<PageLoadingFallback />}>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/admin" element={<Admin />} />
-              <Route path="/community-services" element={<CommunityServices />} />
-              <Route path="/integrations" element={<Integrations />} />
-              <Route path="/roadmap" element={<Roadmap />} />
-              <Route path="/medical-records" element={<MedicalRecords />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/notification-history" element={<NotificationHistory />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
-        </BrowserRouter>
+        <ErrorBoundary>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Suspense fallback={<PageLoadingFallback />}>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/admin" element={<Admin />} />
+                <Route path="/community-services" element={<CommunityServices />} />
+                <Route path="/integrations" element={<Integrations />} />
+                <Route path="/roadmap" element={<Roadmap />} />
+                <Route path="/medical-records" element={<MedicalRecords />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/notification-history" element={<NotificationHistory />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+          </BrowserRouter>
+        </ErrorBoundary>
       </TooltipProvider>
     </QueryClientProvider>
   );
