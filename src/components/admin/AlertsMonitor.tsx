@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -7,6 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { AlertTriangle, MapPin, Clock, User, CheckCircle, Trash2, CheckCheck } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { LoadingSpinner, EmptyState } from '@/components/ui/loading-states';
 
 interface Alert {
   id: string;
@@ -51,38 +52,45 @@ const AlertsMonitor = () => {
     setSelectedIds(new Set());
   }, [filter]);
 
-  const loadAlerts = async () => {
+  const loadAlerts = useCallback(async () => {
     setLoading(true);
-    let query = supabase
-      .from('emergency_alerts')
-      .select('*')
-      .order('created_at', { ascending: false });
+    try {
+      let query = supabase
+        .from('emergency_alerts')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100);
 
-    if (filter === 'active') query = query.eq('status', 'active');
-    else if (filter === 'resolved') query = query.eq('status', 'resolved');
+      if (filter === 'active') query = query.eq('status', 'active');
+      else if (filter === 'resolved') query = query.eq('status', 'resolved');
 
-    const { data, error } = await query;
+      const { data, error } = await query;
 
-    if (error) {
+      if (error) {
+        toast.error('Failed to load alerts');
+        setLoading(false);
+        return;
+      }
+
+      // Batch profile lookup instead of N+1 queries
+      const userIds = [...new Set((data || []).map(a => a.user_id))];
+      const { data: profiles } = userIds.length > 0
+        ? await supabase.from('profiles').select('id, full_name, phone_number').in('id', userIds)
+        : { data: [] };
+
+      const profileMap = new Map((profiles || []).map(p => [p.id, p]));
+
+      const alertsWithProfiles = (data || []).map(alert => ({
+        ...alert,
+        profiles: profileMap.get(alert.user_id) || null,
+      }));
+
+      setAlerts(alertsWithProfiles as Alert[]);
+    } catch {
       toast.error('Failed to load alerts');
-      setLoading(false);
-      return;
     }
-
-    const alertsWithProfiles = await Promise.all(
-      (data || []).map(async (alert) => {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('full_name, phone_number')
-          .eq('id', alert.user_id)
-          .maybeSingle();
-        return { ...alert, profiles: profile };
-      })
-    );
-
-    setAlerts(alertsWithProfiles as Alert[]);
     setLoading(false);
-  };
+  }, [filter]);
 
   const toggleSelect = (id: string) => {
     setSelectedIds(prev => {
@@ -153,7 +161,7 @@ const AlertsMonitor = () => {
   };
 
   if (loading) {
-    return <div className="text-center py-8">Loading alerts...</div>;
+    return <LoadingSpinner message="Loading emergency alerts..." />;
   }
 
   const allSelected = alerts.length > 0 && selectedIds.size === alerts.length;

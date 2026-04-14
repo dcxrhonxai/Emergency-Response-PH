@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
@@ -26,12 +26,12 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useRealtimeAlerts } from "@/hooks/useRealtimeAlerts";
-import { useEmergencyNotifications } from "@/hooks/useEmergencyNotifications";
 import { useAlertEscalation } from "@/hooks/useAlertEscalation";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
 import { useBackgroundLocation } from "@/hooks/useBackgroundLocation";
-import { useHapticFeedback } from "@/hooks/useHapticFeedback";
-import type { Session } from "@supabase/supabase-js";
+import { useAuth } from "@/hooks/useAuth";
+import { useEmergencyActions } from "@/hooks/useEmergencyActions";
+import { LoadingSpinner } from "@/components/ui/loading-states";
 
 export interface EmergencyContact {
   id: string;
@@ -45,7 +45,8 @@ export interface EmergencyContact {
 const Index = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const [session, setSession] = useState<Session | null>(null);
+  const { session, loading: authLoading, handleLogout } = useAuth();
+
   const [showEmergency, setShowEmergency] = useState(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [emergencyType, setEmergencyType] = useState("");
@@ -55,20 +56,56 @@ const Index = () => {
   const [showMedicalID, setShowMedicalID] = useState(false);
   const [isPulling, setIsPulling] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
+
   const { alerts, isLoading: alertsLoading } = useRealtimeAlerts(session?.user?.id);
-  const { sendNotifications } = useEmergencyNotifications();
   const { isOnline } = useOfflineSync();
   const { quietHours, updateQuietHours, getQuietHoursStatus } = useNotificationFilter();
   const quietStatus = getQuietHoursStatus();
-  // Enable alert escalation checking
+
   useAlertEscalation();
 
-  // Enable background location tracking for active alerts
-  const hasActiveAlert = alerts.some((alert: any) => alert.status === 'active');
-  useBackgroundLocation({ 
-    alertId: currentAlertId, 
-    isActive: hasActiveAlert && showEmergency 
+  const hasActiveAlert = useMemo(
+    () => alerts.some((alert: any) => alert.status === 'active'),
+    [alerts]
+  );
+
+  useBackgroundLocation({
+    alertId: currentAlertId,
+    isActive: hasActiveAlert && showEmergency,
   });
+
+  const {
+    createAlert,
+    handleQuickSOS,
+    handleSilentPanic,
+    resolveAlert,
+    triggerImpact,
+  } = useEmergencyActions({
+    userId: session?.user?.id,
+    userEmail: session?.user?.email,
+    onAlertCreated: useCallback((alertId: string) => {
+      setCurrentAlertId(alertId);
+      setShowEmergency(true);
+    }, []),
+    onLocationSet: useCallback((location: { lat: number; lng: number }) => {
+      setUserLocation(location);
+    }, []),
+  });
+
+  const handleEmergencyClick = useCallback(async (type: string, description: string, evidenceFiles?: any[]) => {
+    setEmergencyType(type);
+    setSituation(description);
+    await createAlert(type, description, evidenceFiles);
+  }, [createAlert]);
+
+  const handleBack = useCallback(async () => {
+    if (currentAlertId) {
+      await resolveAlert(currentAlertId);
+    }
+    setShowEmergency(false);
+    setUserLocation(null);
+    setCurrentAlertId(null);
+  }, [currentAlertId, resolveAlert]);
 
   // Pull to refresh
   useEffect(() => {
@@ -76,15 +113,12 @@ const Index = () => {
     const threshold = 80;
 
     const handleTouchStart = (e: TouchEvent) => {
-      if (window.scrollY === 0) {
-        startY = e.touches[0].clientY;
-      }
+      if (window.scrollY === 0) startY = e.touches[0].clientY;
     };
 
     const handleTouchMove = (e: TouchEvent) => {
       if (window.scrollY === 0 && startY > 0) {
-        const currentY = e.touches[0].clientY;
-        const distance = currentY - startY;
+        const distance = e.touches[0].clientY - startY;
         if (distance > 0 && distance < 150) {
           setPullDistance(distance);
           setIsPulling(true);
@@ -93,9 +127,7 @@ const Index = () => {
     };
 
     const handleTouchEnd = () => {
-      if (pullDistance > threshold) {
-        window.location.reload();
-      }
+      if (pullDistance > threshold) window.location.reload();
       setPullDistance(0);
       setIsPulling(false);
       startY = 0;
@@ -112,164 +144,34 @@ const Index = () => {
     };
   }, [pullDistance]);
 
-  useEffect(() => {
-    // Check auth
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (!session) {
-        navigate("/auth");
-      }
+  const escalatedAlert = useMemo(
+    () => alerts?.find((alert: any) => alert.status === 'escalated'),
+    [alerts]
+  );
+
+  const handleTabChange = useCallback((val: string) => {
+    triggerImpact('light');
+    setActiveTab(val);
+  }, [triggerImpact]);
+
+  const toggleDnd = useCallback(() => {
+    updateQuietHours({ enabled: !quietHours.enabled });
+    toast(quietHours.enabled ? 'Do Not Disturb disabled' : 'Do Not Disturb enabled', {
+      description: quietHours.enabled
+        ? 'You will receive all notifications'
+        : `Non-critical notifications muted ${quietHours.startTime} - ${quietHours.endTime}`,
     });
+  }, [quietHours, updateQuietHours]);
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      if (!session) {
-        navigate("/auth");
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
-
-  const { triggerImpact, triggerNotification } = useHapticFeedback();
-
-  const handleQuickSOS = async () => {
-    await triggerImpact('heavy');
-    const quickType = "🚨 EMERGENCY - SOS";
-    const quickSituation = "Quick SOS activated - Immediate help needed";
-    handleEmergencyClick(quickType, quickSituation);
-    await triggerNotification('warning');
-  };
-
-  const handleEmergencyClick = async (type: string, description: string, evidenceFiles?: any[]) => {
-    setEmergencyType(type);
-    setSituation(description);
-    setShowEmergency(true);
-    
-    // Get user's location with high accuracy
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const location = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          };
-          setUserLocation(location);
-          
-          console.log('Location accuracy:', position.coords.accuracy, 'meters');
-          if (position.coords.accuracy > 50) {
-            toast.warning(`Location accuracy: ±${Math.round(position.coords.accuracy)}m`);
-          }
-
-          // Save alert to database
-          if (session?.user) {
-            const { data, error } = await supabase
-              .from('emergency_alerts')
-              .insert({
-                user_id: session.user.id,
-                emergency_type: type,
-                situation: description,
-                latitude: location.lat,
-                longitude: location.lng,
-                evidence_files: evidenceFiles || [],
-              })
-              .select()
-              .single();
-
-            if (data) {
-              setCurrentAlertId(data.id);
-
-              // Get user's emergency contacts
-              const { data: contacts } = await supabase
-                .from("personal_contacts")
-                .select("name, phone")
-                .eq("user_id", session.user.id);
-
-              if (contacts && contacts.length > 0) {
-                // Get profile for email if available
-                const { data: profile } = await supabase
-                  .from("profiles")
-                  .select("full_name")
-                  .eq("id", session.user.id)
-                  .single();
-
-                // Format contacts with email if they provided it
-                const formattedContacts = contacts.map(c => ({
-                  name: c.name,
-                  phone: c.phone,
-                  email: session.user.email ? session.user.email : undefined,
-                }));
-
-                // Send email notifications
-                await sendNotifications(
-                  data.id,
-                  formattedContacts,
-                  type,
-                  description,
-                  location,
-                  evidenceFiles?.map(f => ({ url: f.url, type: f.type }))
-                );
-              }
-            }
-            if (error) {
-              console.error("Error saving alert:", error);
-            }
-          }
-        },
-        (error) => {
-          console.error("Error getting location:", error);
-          // Default to Manila coordinates if location access denied
-          const defaultLocation = { lat: 14.5995, lng: 120.9842 };
-          setUserLocation(defaultLocation);
-          toast.warning("Could not access your location. Using default location.");
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0
-        }
-      );
-    } else {
-      // Default to Manila coordinates if geolocation not supported
-      setUserLocation({ lat: 14.5995, lng: 120.9842 });
-      toast.warning("Geolocation not supported. Using default location.");
-    }
-  };
-
-  const handleBack = async () => {
-    // Mark alert as resolved
-    if (currentAlertId) {
-      await supabase
-        .from('emergency_alerts')
-        .update({ 
-          status: 'resolved',
-          resolved_at: new Date().toISOString()
-        })
-        .eq('id', currentAlertId);
-    }
-    
-    setShowEmergency(false);
-    setUserLocation(null);
-    setCurrentAlertId(null);
-  };
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    toast.success("Logged out successfully");
-  };
-
-  if (!session) {
-    return null; // Will redirect to auth
+  if (authLoading || !session) {
+    return <LoadingSpinner message="Checking authentication..." size="lg" className="min-h-screen" />;
   }
-
-  // Find if there's an escalated alert
-  const escalatedAlert = alerts?.find((alert: any) => alert.status === 'escalated');
 
   return (
     <div className="min-h-screen bg-background">
       {/* Pull to refresh indicator */}
       {isPulling && (
-        <div 
+        <div
           className="fixed top-0 left-0 right-0 flex justify-center pt-2 z-50 transition-opacity"
           style={{ opacity: pullDistance / 80 }}
         >
@@ -311,12 +213,7 @@ const Index = () => {
               variant="ghost"
               size="icon"
               className={`h-8 w-8 ${quietHours.enabled ? 'text-orange-400 hover:bg-orange-400/20' : 'text-primary-foreground hover:bg-primary-foreground/10'}`}
-              onClick={() => {
-                updateQuietHours({ enabled: !quietHours.enabled });
-                toast(quietHours.enabled ? 'Do Not Disturb disabled' : 'Do Not Disturb enabled', {
-                  description: quietHours.enabled ? 'You will receive all notifications' : `Non-critical notifications muted ${quietHours.startTime} - ${quietHours.endTime}`,
-                });
-              }}
+              onClick={toggleDnd}
               title={quietStatus.message}
             >
               {quietHours.enabled ? <BellOff className="w-5 h-5" /> : <Bell className="w-5 h-5" />}
@@ -325,8 +222,8 @@ const Index = () => {
             <InAppNotifications userId={session.user.id} />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   size="icon"
                   className="text-primary-foreground hover:bg-primary-foreground/10 h-8 w-8"
                 >
@@ -352,8 +249,8 @@ const Index = () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               size="icon"
               onClick={handleLogout}
               className="text-primary-foreground hover:bg-primary-foreground/10 h-8 w-8"
@@ -393,7 +290,7 @@ const Index = () => {
       {/* Main Content */}
       <main className="container mx-auto px-3 py-3 max-w-2xl pb-20">
         {!showEmergency ? (
-          <Tabs value={activeTab} onValueChange={(val) => { triggerImpact('light'); setActiveTab(val); }} className="space-y-3">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-3">
             <TabsList className="grid w-full grid-cols-5 h-auto">
               <TabsTrigger value="emergency" className="flex flex-col items-center gap-1 py-2 text-xs">
                 <Shield className="w-4 h-4" />
@@ -436,7 +333,7 @@ const Index = () => {
                   )}
                 </div>
               )}
-              
+
               {/* Quick SOS Button */}
               <div className="mb-3">
                 <Button
@@ -453,74 +350,7 @@ const Index = () => {
               {/* Silent Panic Button */}
               <div className="mb-3">
                 <Button
-                  onClick={async () => {
-                    if (!session?.user) return;
-                    triggerImpact('heavy');
-                    
-                    // Get location silently
-                    if (navigator.geolocation) {
-                      navigator.geolocation.getCurrentPosition(
-                        async (position) => {
-                          const location = {
-                            lat: position.coords.latitude,
-                            lng: position.coords.longitude,
-                          };
-
-                          // Create silent alert
-                          const { data, error } = await supabase
-                            .from('emergency_alerts')
-                            .insert({
-                              user_id: session.user.id,
-                              emergency_type: '🔇 Silent Panic',
-                              situation: 'Silent panic alert activated - Send help discreetly',
-                              latitude: location.lat,
-                              longitude: location.lng,
-                            })
-                            .select()
-                            .single();
-
-                          if (data) {
-                            triggerNotification('warning');
-                            setCurrentAlertId(data.id);
-                            
-                            // Send notifications to contacts silently
-                            const { data: contacts } = await supabase
-                              .from("personal_contacts")
-                              .select("name, phone")
-                              .eq("user_id", session.user.id);
-
-                            if (contacts && contacts.length > 0) {
-                              const formattedContacts = contacts.map(c => ({
-                                name: c.name,
-                                phone: c.phone,
-                                email: session.user.email,
-                              }));
-
-                              await sendNotifications(
-                                data.id,
-                                formattedContacts,
-                                '🔇 Silent Panic',
-                                'Silent panic alert - Send help discreetly',
-                                location
-                              );
-                            }
-                          }
-
-                          if (error) {
-                            console.error("Error creating silent alert:", error);
-                          }
-                        },
-                        (error) => {
-                          console.error("Error getting location:", error);
-                        },
-                        {
-                          enableHighAccuracy: true,
-                          timeout: 10000,
-                          maximumAge: 0
-                        }
-                      );
-                    }
-                  }}
+                  onClick={handleSilentPanic}
                   variant="outline"
                   className="w-full h-12 text-base font-semibold border-2 border-muted-foreground hover:bg-muted"
                 >
@@ -578,7 +408,7 @@ const Index = () => {
 
             {/* Emergency Directions & Routing */}
             {userLocation && (
-              <EmergencyDirections 
+              <EmergencyDirections
                 userLocation={userLocation}
                 emergencyType={emergencyType}
               />
@@ -587,9 +417,9 @@ const Index = () => {
             {/* Emergency Contacts */}
             <ContactList emergencyType={emergencyType} userLocation={userLocation} />
 
-            {/* Emergency Chat - Now supports group messaging */}
+            {/* Emergency Chat */}
             {currentAlertId && session?.user && (
-              <EmergencyChat 
+              <EmergencyChat
                 alertId={currentAlertId}
                 userId={session.user.id}
                 userName={session.user.email || 'User'}
@@ -599,7 +429,7 @@ const Index = () => {
 
             {/* Share Location */}
             {session?.user && userLocation && (
-              <ShareLocation 
+              <ShareLocation
                 userId={session.user.id}
                 location={userLocation}
                 situation={situation}
