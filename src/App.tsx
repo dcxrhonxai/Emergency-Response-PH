@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { PageLoadingFallback } from "@/components/LazyLoadWrapper";
 import { usePerformanceMonitor } from "@/hooks/usePerformanceMonitor";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 // Eagerly loaded routes (critical path)
 import Index from "./pages/Index";
