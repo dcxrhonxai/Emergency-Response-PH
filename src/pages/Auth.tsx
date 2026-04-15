@@ -128,6 +128,8 @@ const Auth = () => {
       }
     }
     setLoading(false);
+  };
+
   const handleGoogleLogin = async () => {
     setGoogleLoading(true);
     try {
