@@ -9,6 +9,8 @@ import { Shield, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import type { Session } from "@supabase/supabase-js";
 import { authSchema } from "@/lib/validation";
+import { lovable } from "@/integrations/lovable/index";
+import { Separator } from "@/components/ui/separator";
 
 const Auth = () => {
   const navigate = useNavigate();
