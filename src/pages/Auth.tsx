@@ -16,6 +16,7 @@ const Auth = () => {
   const navigate = useNavigate();
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   // Login form state
   const [loginEmail, setLoginEmail] = useState("");
@@ -127,6 +128,28 @@ const Auth = () => {
       }
     }
     setLoading(false);
+  const handleGoogleLogin = async () => {
+    setGoogleLoading(true);
+    try {
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
+      });
+
+      if (result.error) {
+        toast.error("Google sign-in failed. Please try again.");
+        return;
+      }
+
+      if (result.redirected) {
+        return;
+      }
+
+      toast.success("Signed in with Google!");
+    } catch {
+      toast.error("Google sign-in failed. Please try again.");
+    } finally {
+      setGoogleLoading(false);
+    }
   };
 
   return (
