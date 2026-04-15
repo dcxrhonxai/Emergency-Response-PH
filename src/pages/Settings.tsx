@@ -38,6 +38,7 @@ import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { WebhookManager } from '@/components/WebhookManager';
 import { PremiumSubscription } from '@/components/PremiumSubscription';
 import { GDPRSettings } from '@/components/GDPRSettings';
+import { CloudBackup } from '@/components/CloudBackup';
 import { useGooglePlayBilling } from '@/hooks/useGooglePlayBilling';
 import { useHighContrastMode } from '@/hooks/useHighContrastMode';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
@@ -821,7 +822,8 @@ const Settings = () => {
           </TabsContent>
 
           {/* Privacy Settings */}
-          <TabsContent value="privacy">
+          <TabsContent value="privacy" className="space-y-6">
+            <CloudBackup />
             <GDPRSettings />
           </TabsContent>
         </Tabs>
