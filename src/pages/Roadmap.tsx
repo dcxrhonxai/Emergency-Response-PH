@@ -53,7 +53,7 @@ const roadmapData: FeatureCategory[] = [
       { name: "Secure Storage (RLS)", completed: true },
       { name: "Live Video Streaming", completed: true },
       { name: "Automatic Evidence Upload", completed: true },
-      { name: "Cloud Backup", completed: false, priority: "low" },
+      { name: "Cloud Backup", completed: true },
     ],
   },
   {
