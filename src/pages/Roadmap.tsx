@@ -24,7 +24,7 @@ const roadmapData: FeatureCategory[] = [
       { name: "Admin Role Management", completed: true },
       { name: "Two-Factor Authentication", completed: true },
       { name: "Biometric Authentication", completed: true },
-      { name: "Social Login (Google/Facebook)", completed: false, priority: "low" },
+      { name: "Social Login (Google)", completed: true },
     ],
   },
   {
