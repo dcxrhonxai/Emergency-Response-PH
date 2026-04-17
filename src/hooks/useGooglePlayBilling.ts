@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { useToast } from '@/hooks/use-toast';
+import { useSubscription } from '@/hooks/useSubscription';
 
 // Product IDs for premium features
 export const PRODUCT_IDS = {
@@ -28,10 +29,10 @@ interface Purchase {
 
 export const useGooglePlayBilling = () => {
   const { toast } = useToast();
+  const { isPremium, validatePurchase, refresh: refreshSubscription } = useSubscription();
   const [isAvailable, setIsAvailable] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [purchases, setPurchases] = useState<Purchase[]>([]);
-  const [isPremium, setIsPremium] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   // Check if running on Android with Capacitor
@@ -43,10 +44,8 @@ export const useGooglePlayBilling = () => {
     const initBilling = async () => {
       if (!isAndroid || !isNativePlatform) {
         console.log('Google Play Billing is only available on native Android');
+        await loadMockProducts();
         setIsLoading(false);
-        // Check local premium status for web/iOS platforms
-        const storedPremium = localStorage.getItem('isPremiumUser');
-        setIsPremium(storedPremium === 'true');
         return;
       }
 
@@ -107,23 +106,10 @@ export const useGooglePlayBilling = () => {
   }, []);
 
   const checkExistingPurchases = useCallback(async () => {
-    // In production, query Google Play for existing purchases
-    // For now, check localStorage for premium status
-    const storedPremium = localStorage.getItem('isPremiumUser');
-    const hasPremium = storedPremium === 'true';
-    setIsPremium(hasPremium);
-    
-    if (hasPremium) {
-      const storedPurchases = localStorage.getItem('purchases');
-      if (storedPurchases) {
-        try {
-          setPurchases(JSON.parse(storedPurchases));
-        } catch {
-          setPurchases([]);
-        }
-      }
-    }
-  }, []);
+    // Premium status now comes from the server-validated `subscriptions` table
+    // via useSubscription. Just refresh it here.
+    await refreshSubscription();
+  }, [refreshSubscription]);
 
   const queryProducts = useCallback(async () => {
     if (!isAndroid || !isNativePlatform) return;
@@ -165,24 +151,22 @@ export const useGooglePlayBilling = () => {
     }
 
     try {
-      // In production, this would launch the Google Play billing flow
       console.log(`Launching billing flow for: ${productId}`);
-      
-      // Simulate successful purchase for development
+
+      // In production, the real Google Play purchase flow returns a token here.
+      const purchaseToken = `mock_token_${Date.now()}`;
+
+      // Server-side validation — the edge function writes to the
+      // `subscriptions` table which is the source of truth for premium status.
+      await validatePurchase(productId, purchaseToken, 'android');
+
       const newPurchase: Purchase = {
         productId,
-        purchaseToken: `mock_token_${Date.now()}`,
+        purchaseToken,
         purchaseTime: Date.now(),
         acknowledged: true,
       };
-
-      const updatedPurchases = [...purchases, newPurchase];
-      setPurchases(updatedPurchases);
-      setIsPremium(true);
-      
-      // Store in localStorage for persistence
-      localStorage.setItem('isPremiumUser', 'true');
-      localStorage.setItem('purchases', JSON.stringify(updatedPurchases));
+      setPurchases((prev) => [...prev, newPurchase]);
 
       toast({
         title: 'Purchase Successful',
@@ -199,7 +183,7 @@ export const useGooglePlayBilling = () => {
       });
       return false;
     }
-  }, [isAndroid, isNativePlatform, isAvailable, products, purchases, toast]);
+  }, [isAndroid, isNativePlatform, isAvailable, products, validatePurchase, toast]);
 
   const restorePurchases = useCallback(async (): Promise<boolean> => {
     if (!isAndroid || !isNativePlatform) {
