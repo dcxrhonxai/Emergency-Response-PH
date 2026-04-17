@@ -183,7 +183,7 @@ export const useGooglePlayBilling = () => {
       });
       return false;
     }
-  }, [isAndroid, isNativePlatform, isAvailable, products, purchases, toast]);
+  }, [isAndroid, isNativePlatform, isAvailable, products, validatePurchase, toast]);
 
   const restorePurchases = useCallback(async (): Promise<boolean> => {
     if (!isAndroid || !isNativePlatform) {
