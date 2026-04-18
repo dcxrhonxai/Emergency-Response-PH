@@ -154,7 +154,7 @@ serve(async (req) => {
           last_validated_at: new Date().toISOString(),
           metadata: { last_event: event.type, environment: event.environment, store: event.store },
         },
-        { onConflict: 'user_id,product_id' }
+        { onConflict: 'user_id' }
       );
 
     if (upsertError) {
