@@ -18,6 +18,17 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 const PREMIUM_FEATURES = [
   { icon: Shield, label: 'Priority Emergency Response', description: 'Get faster response times during emergencies' },
@@ -111,14 +122,32 @@ const ManageSubscriptionButton = ({ activeProductId }: { activeProductId?: strin
     ? `https://play.google.com/store/account/subscriptions?sku=${activeProductId}&package=${PLAY_PACKAGE_NAME}`
     : `https://play.google.com/store/account/subscriptions?package=${PLAY_PACKAGE_NAME}`;
   return (
-    <Button
-      variant="outline"
-      className="w-full"
-      onClick={() => window.open(url, '_blank', 'noopener,noreferrer')}
-    >
-      <ExternalLink className="h-4 w-4 mr-2" />
-      Manage Subscription on Google Play
-    </Button>
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button variant="outline" className="w-full">
+          <ExternalLink className="h-4 w-4 mr-2" />
+          Manage Subscription on Google Play
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Open Google Play?</AlertDialogTitle>
+          <AlertDialogDescription>
+            You'll be redirected to the Google Play Store to manage your subscription.
+            From there you can change plans, update payment methods, or cancel your
+            subscription at any time.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={() => window.open(url, '_blank', 'noopener,noreferrer')}
+          >
+            Continue to Google Play
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 };
 
