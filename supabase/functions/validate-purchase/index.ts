@@ -87,7 +87,7 @@ Deno.serve(async (req) => {
           expires_at: expiresAt,
           last_validated_at: new Date().toISOString(),
         },
-        { onConflict: "user_id" }
+        { onConflict: "user_id,product_id" }
       )
       .select()
       .single();
