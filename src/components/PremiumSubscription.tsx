@@ -131,37 +131,41 @@ export const PremiumSubscription = () => {
 
   if (isPremium) {
     return (
-      <Card className="border-primary/50 bg-gradient-to-br from-primary/5 to-primary/10">
-        <CardHeader className="text-center">
-          <div className="mx-auto w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-4">
-            <Crown className="h-8 w-8 text-primary" />
-          </div>
-          <CardTitle className="text-2xl">Premium Active</CardTitle>
-          <CardDescription>
-            You have full access to all premium features
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {PREMIUM_FEATURES.map((feature) => (
-              <div key={feature.label} className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                  <feature.icon className="h-4 w-4 text-primary" />
+      <div className="space-y-6">
+        <Card className="border-primary/50 bg-gradient-to-br from-primary/5 to-primary/10">
+          <CardHeader className="text-center">
+            <div className="mx-auto w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-4">
+              <Crown className="h-8 w-8 text-primary" />
+            </div>
+            <CardTitle className="text-2xl">Premium Active</CardTitle>
+            <CardDescription>
+              You have full access to all premium features
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {PREMIUM_FEATURES.map((feature) => (
+                <div key={feature.label} className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                    <feature.icon className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-medium">{feature.label}</p>
+                    <p className="text-sm text-muted-foreground">{feature.description}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-medium">{feature.label}</p>
-                  <p className="text-sm text-muted-foreground">{feature.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+        <SubscriptionHistory rows={subscriptions} />
+      </div>
     );
   }
 
   return (
     <div className="space-y-6">
+      <SubscriptionHistory rows={subscriptions} />
       {/* Premium Benefits */}
       <Card>
         <CardHeader className="text-center">
