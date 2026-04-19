@@ -115,6 +115,7 @@ export const PremiumSubscription = () => {
     purchaseProduct,
     restorePurchases,
   } = useGooglePlayBilling();
+  const { subscriptions } = useSubscription();
 
   const monthlyProduct = products.find(p => p.productId === PRODUCT_IDS.PREMIUM_MONTHLY);
   const yearlyProduct = products.find(p => p.productId === PRODUCT_IDS.PREMIUM_YEARLY);
