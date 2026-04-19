@@ -1,18 +1,20 @@
 import { useTranslation } from 'react-i18next';
 import { useGooglePlayBilling, PRODUCT_IDS } from '@/hooks/useGooglePlayBilling';
+import { useSubscription } from '@/hooks/useSubscription';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { 
-  Crown, 
-  Check, 
-  Star, 
-  Zap, 
-  Shield, 
+import {
+  Crown,
+  Check,
+  Star,
+  Zap,
+  Shield,
   RefreshCw,
   Smartphone,
-  AlertTriangle
+  AlertTriangle,
+  Calendar,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -22,6 +24,84 @@ const PREMIUM_FEATURES = [
   { icon: Star, label: 'Advanced Analytics', description: 'Detailed insights on your safety metrics' },
   { icon: Crown, label: 'Premium Support', description: '24/7 priority customer support' },
 ];
+
+const PRODUCT_LABELS: Record<string, string> = {
+  premium_monthly: 'Monthly',
+  premium_yearly: 'Yearly',
+  premium_lifetime: 'Lifetime',
+};
+
+const STATUS_VARIANTS: Record<
+  string,
+  { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }
+> = {
+  active: { label: 'Active', variant: 'default' },
+  cancelled: { label: 'Cancelled', variant: 'secondary' },
+  expired: { label: 'Expired', variant: 'outline' },
+  billing_issue: { label: 'Billing Issue', variant: 'destructive' },
+  paused: { label: 'Paused', variant: 'secondary' },
+};
+
+const formatDate = (iso: string | null) => {
+  if (!iso) return 'Never (Lifetime)';
+  return new Date(iso).toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+};
+
+interface SubscriptionRow {
+  id: string;
+  product_id: string;
+  status: string;
+  is_premium: boolean;
+  expires_at: string | null;
+  purchased_at: string;
+}
+
+const SubscriptionHistory = ({ rows }: { rows: SubscriptionRow[] }) => {
+  if (rows.length === 0) return null;
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <Calendar className="h-5 w-5 text-primary" />
+          Your Subscriptions
+        </CardTitle>
+        <CardDescription>All purchased products and their status</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          {rows.map((row) => {
+            const status = STATUS_VARIANTS[row.status] ?? { label: row.status, variant: 'outline' as const };
+            const label = PRODUCT_LABELS[row.product_id] ?? row.product_id;
+            return (
+              <div
+                key={row.id}
+                className="flex flex-col gap-2 rounded-lg border p-3 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{label}</span>
+                    <Badge variant={status.variant}>{status.label}</Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Purchased {formatDate(row.purchased_at)}
+                  </p>
+                </div>
+                <div className="text-sm text-right">
+                  <p className="text-muted-foreground text-xs">Expires</p>
+                  <p className="font-medium">{formatDate(row.expires_at)}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
 
 export const PremiumSubscription = () => {
   const { t } = useTranslation();
@@ -35,6 +115,7 @@ export const PremiumSubscription = () => {
     purchaseProduct,
     restorePurchases,
   } = useGooglePlayBilling();
+  const { subscriptions } = useSubscription();
 
   const monthlyProduct = products.find(p => p.productId === PRODUCT_IDS.PREMIUM_MONTHLY);
   const yearlyProduct = products.find(p => p.productId === PRODUCT_IDS.PREMIUM_YEARLY);
@@ -50,37 +131,41 @@ export const PremiumSubscription = () => {
 
   if (isPremium) {
     return (
-      <Card className="border-primary/50 bg-gradient-to-br from-primary/5 to-primary/10">
-        <CardHeader className="text-center">
-          <div className="mx-auto w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-4">
-            <Crown className="h-8 w-8 text-primary" />
-          </div>
-          <CardTitle className="text-2xl">Premium Active</CardTitle>
-          <CardDescription>
-            You have full access to all premium features
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {PREMIUM_FEATURES.map((feature) => (
-              <div key={feature.label} className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                  <feature.icon className="h-4 w-4 text-primary" />
+      <div className="space-y-6">
+        <Card className="border-primary/50 bg-gradient-to-br from-primary/5 to-primary/10">
+          <CardHeader className="text-center">
+            <div className="mx-auto w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-4">
+              <Crown className="h-8 w-8 text-primary" />
+            </div>
+            <CardTitle className="text-2xl">Premium Active</CardTitle>
+            <CardDescription>
+              You have full access to all premium features
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {PREMIUM_FEATURES.map((feature) => (
+                <div key={feature.label} className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                    <feature.icon className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-medium">{feature.label}</p>
+                    <p className="text-sm text-muted-foreground">{feature.description}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-medium">{feature.label}</p>
-                  <p className="text-sm text-muted-foreground">{feature.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+        <SubscriptionHistory rows={subscriptions} />
+      </div>
     );
   }
 
   return (
     <div className="space-y-6">
+      <SubscriptionHistory rows={subscriptions} />
       {/* Premium Benefits */}
       <Card>
         <CardHeader className="text-center">
