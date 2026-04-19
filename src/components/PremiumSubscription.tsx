@@ -15,6 +15,7 @@ import {
   Smartphone,
   AlertTriangle,
   Calendar,
+  ExternalLink,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -103,6 +104,24 @@ const SubscriptionHistory = ({ rows }: { rows: SubscriptionRow[] }) => {
   );
 };
 
+const PLAY_PACKAGE_NAME = 'com.dcxrhonx.emergencyresponseph';
+
+const ManageSubscriptionButton = ({ activeProductId }: { activeProductId?: string }) => {
+  const url = activeProductId
+    ? `https://play.google.com/store/account/subscriptions?sku=${activeProductId}&package=${PLAY_PACKAGE_NAME}`
+    : `https://play.google.com/store/account/subscriptions?package=${PLAY_PACKAGE_NAME}`;
+  return (
+    <Button
+      variant="outline"
+      className="w-full"
+      onClick={() => window.open(url, '_blank', 'noopener,noreferrer')}
+    >
+      <ExternalLink className="h-4 w-4 mr-2" />
+      Manage Subscription on Google Play
+    </Button>
+  );
+};
+
 export const PremiumSubscription = () => {
   const { t } = useTranslation();
   const {
@@ -159,6 +178,7 @@ export const PremiumSubscription = () => {
           </CardContent>
         </Card>
         <SubscriptionHistory rows={subscriptions} />
+        <ManageSubscriptionButton activeProductId={subscriptions.find(s => s.status === 'active')?.product_id} />
       </div>
     );
   }
