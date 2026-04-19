@@ -1,18 +1,20 @@
 import { useTranslation } from 'react-i18next';
 import { useGooglePlayBilling, PRODUCT_IDS } from '@/hooks/useGooglePlayBilling';
+import { useSubscription } from '@/hooks/useSubscription';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { 
-  Crown, 
-  Check, 
-  Star, 
-  Zap, 
-  Shield, 
+import {
+  Crown,
+  Check,
+  Star,
+  Zap,
+  Shield,
   RefreshCw,
   Smartphone,
-  AlertTriangle
+  AlertTriangle,
+  Calendar,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -22,6 +24,84 @@ const PREMIUM_FEATURES = [
   { icon: Star, label: 'Advanced Analytics', description: 'Detailed insights on your safety metrics' },
   { icon: Crown, label: 'Premium Support', description: '24/7 priority customer support' },
 ];
+
+const PRODUCT_LABELS: Record<string, string> = {
+  premium_monthly: 'Monthly',
+  premium_yearly: 'Yearly',
+  premium_lifetime: 'Lifetime',
+};
+
+const STATUS_VARIANTS: Record<
+  string,
+  { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }
+> = {
+  active: { label: 'Active', variant: 'default' },
+  cancelled: { label: 'Cancelled', variant: 'secondary' },
+  expired: { label: 'Expired', variant: 'outline' },
+  billing_issue: { label: 'Billing Issue', variant: 'destructive' },
+  paused: { label: 'Paused', variant: 'secondary' },
+};
+
+const formatDate = (iso: string | null) => {
+  if (!iso) return 'Never (Lifetime)';
+  return new Date(iso).toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+};
+
+interface SubscriptionRow {
+  id: string;
+  product_id: string;
+  status: string;
+  is_premium: boolean;
+  expires_at: string | null;
+  purchased_at: string;
+}
+
+const SubscriptionHistory = ({ rows }: { rows: SubscriptionRow[] }) => {
+  if (rows.length === 0) return null;
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <Calendar className="h-5 w-5 text-primary" />
+          Your Subscriptions
+        </CardTitle>
+        <CardDescription>All purchased products and their status</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          {rows.map((row) => {
+            const status = STATUS_VARIANTS[row.status] ?? { label: row.status, variant: 'outline' as const };
+            const label = PRODUCT_LABELS[row.product_id] ?? row.product_id;
+            return (
+              <div
+                key={row.id}
+                className="flex flex-col gap-2 rounded-lg border p-3 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{label}</span>
+                    <Badge variant={status.variant}>{status.label}</Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Purchased {formatDate(row.purchased_at)}
+                  </p>
+                </div>
+                <div className="text-sm text-right">
+                  <p className="text-muted-foreground text-xs">Expires</p>
+                  <p className="font-medium">{formatDate(row.expires_at)}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
 
 export const PremiumSubscription = () => {
   const { t } = useTranslation();
