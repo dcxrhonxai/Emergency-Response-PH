@@ -10,12 +10,18 @@ interface Subscription {
   purchased_at: string;
 }
 
+const isActive = (s: Pick<Subscription, "is_premium" | "status" | "expires_at">) =>
+  s.is_premium &&
+  s.status === "active" &&
+  (!s.expires_at || new Date(s.expires_at) > new Date());
+
 /**
- * Server-validated subscription status. Replaces localStorage-based premium
- * gating. Reads from the `subscriptions` table (RLS: own row only).
+ * Server-validated subscription status. Aggregates across multiple subscription
+ * rows per user (one per product). User is premium if ANY row is active.
  */
 export const useSubscription = () => {
-  const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+  const [activeSubscription, setActiveSubscription] = useState<Subscription | null>(null);
   const [isPremium, setIsPremium] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -23,7 +29,8 @@ export const useSubscription = () => {
     setIsLoading(true);
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) {
-      setSubscription(null);
+      setSubscriptions([]);
+      setActiveSubscription(null);
       setIsPremium(false);
       setIsLoading(false);
       return;
@@ -33,22 +40,27 @@ export const useSubscription = () => {
       .from("subscriptions")
       .select("id, product_id, status, is_premium, expires_at, purchased_at")
       .eq("user_id", userData.user.id)
-      .maybeSingle();
+      .order("purchased_at", { ascending: false });
 
     if (error) {
-      console.error("Failed to load subscription:", error);
-      setSubscription(null);
+      console.error("Failed to load subscriptions:", error);
+      setSubscriptions([]);
+      setActiveSubscription(null);
       setIsPremium(false);
-    } else if (data) {
-      const active =
-        data.is_premium &&
-        data.status === "active" &&
-        (!data.expires_at || new Date(data.expires_at) > new Date());
-      setSubscription(data);
-      setIsPremium(active);
     } else {
-      setSubscription(null);
-      setIsPremium(false);
+      const rows = data ?? [];
+      const activeRows = rows.filter(isActive);
+      // Prefer lifetime (no expiry), then furthest expiry
+      const best =
+        activeRows.find((r) => !r.expires_at) ??
+        activeRows.sort(
+          (a, b) =>
+            new Date(b.expires_at!).getTime() - new Date(a.expires_at!).getTime()
+        )[0] ??
+        null;
+      setSubscriptions(rows);
+      setActiveSubscription(best);
+      setIsPremium(activeRows.length > 0);
     }
     setIsLoading(false);
   }, []);
@@ -73,5 +85,12 @@ export const useSubscription = () => {
     [refresh]
   );
 
-  return { subscription, isPremium, isLoading, refresh, validatePurchase };
+  return {
+    subscription: activeSubscription,
+    subscriptions,
+    isPremium,
+    isLoading,
+    refresh,
+    validatePurchase,
+  };
 };
