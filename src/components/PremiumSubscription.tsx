@@ -160,6 +160,7 @@ export const PremiumSubscription = () => {
           </CardContent>
         </Card>
         <SubscriptionHistory rows={subscriptions} />
+        <ManageSubscriptionButton activeProductId={subscriptions.find(s => s.status === 'active')?.product_id} />
       </div>
     );
   }
