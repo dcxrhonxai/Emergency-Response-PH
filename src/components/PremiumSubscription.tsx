@@ -159,8 +159,34 @@ const ManageSubscriptionButton = ({ activeProductId }: { activeProductId?: strin
   );
 };
 
-const CancelSubscriptionGuide = () => {
+const CancelSubscriptionGuide = ({ subscriptions }: { subscriptions: SubscriptionRow[] }) => {
   const url = `https://play.google.com/store/account/subscriptions?package=${PLAY_PACKAGE_NAME}`;
+  const appVersion = '1.0.0'; // In a real app, read from manifest or env
+
+  const activeProduct = subscriptions.find(s => s.status === 'active');
+  const purchaseType = activeProduct ? PRODUCT_LABELS[activeProduct.product_id] || activeProduct.product_id : 'None';
+  const purchaseStatus = activeProduct?.status || 'No active subscription';
+  const purchaseExpiry = activeProduct?.expires_at
+    ? new Date(activeProduct.expires_at).toLocaleDateString()
+    : activeProduct ? 'Lifetime' : 'N/A';
+
+  const emailBody = `Dear Support Team,
+
+I need help with my Emergency Response PH subscription.
+
+Subscription Details:
+- Purchase Type: ${purchaseType}
+- Status: ${purchaseStatus}
+- Expiry: ${purchaseExpiry}
+- App Version: ${appVersion}
+
+Issue/Question:
+[Please describe your issue here]
+
+Best regards`;
+
+  const mailtoUrl = `mailto:support@emergencyresponse.ph?subject=Subscription Help&body=${encodeURIComponent(emailBody)}`;
+
   return (
     <Card>
       <CardHeader>
@@ -220,7 +246,7 @@ const CancelSubscriptionGuide = () => {
                 variant="secondary"
                 size="sm"
                 className="w-full mt-3"
-                onClick={() => window.open('mailto:support@emergencyresponse.ph?subject=Subscription Help', '_blank')}
+                onClick={() => window.open(mailtoUrl, '_blank')}
               >
                 <HelpCircle className="h-4 w-4 mr-2" />
                 Contact Support
