@@ -26,11 +26,43 @@ export const useEmergencyActions = ({
   const { triggerImpact, triggerNotification } = useHapticFeedback();
   const { sendNotifications } = useEmergencyNotifications();
 
-  const getLocation = useCallback((): Promise<EmergencyLocation> => {
-    return new Promise((resolve, reject) => {
+  const requestLocationPermission = useCallback(async (): Promise<PermissionState | 'unsupported'> => {
+    if (!navigator.permissions || !navigator.permissions.query) {
+      logEvent('location_permission_result', { result: 'unsupported', reason: 'permissions_api_missing' });
+      return 'unsupported';
+    }
+
+    try {
+      const status = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
+
+      if (status.state === 'prompt') {
+        toast.info('Location access needed', {
+          description: 'We use your location to send responders to you and find the nearest emergency services. Please allow location access on the next prompt.',
+          duration: 5000,
+        });
+      } else if (status.state === 'denied') {
+        toast.warning('Location is blocked', {
+          description: 'Enable location in your browser settings so responders can find you. Using default location for now.',
+          duration: 6000,
+        });
+      }
+
+      logEvent('location_permission_result', { result: status.state });
+      return status.state;
+    } catch (err) {
+      logEvent('location_permission_result', { result: 'error', reason: (err as Error).message });
+      return 'unsupported';
+    }
+  }, []);
+
+  const getLocation = useCallback(async (): Promise<EmergencyLocation> => {
+    const permission = await requestLocationPermission();
+
+    return new Promise((resolve) => {
       if (!navigator.geolocation) {
         const fallback = { lat: 14.5995, lng: 120.9842 };
         toast.warning("Geolocation not supported. Using default location.");
+        logEvent('location_detection_result', { result: 'unsupported', permission });
         resolve(fallback);
         return;
       }
@@ -44,17 +76,28 @@ export const useEmergencyActions = ({
           if (position.coords.accuracy > 50) {
             toast.warning(`Location accuracy: ±${Math.round(position.coords.accuracy)}m`);
           }
+          logEvent('location_detection_result', {
+            result: 'success',
+            permission,
+            accuracy: Math.round(position.coords.accuracy),
+          });
           resolve(location);
         },
-        () => {
+        (err) => {
           const fallback = { lat: 14.5995, lng: 120.9842 };
           toast.warning("Could not access your location. Using default location.");
+          logEvent('location_detection_result', {
+            result: 'error',
+            permission,
+            error_code: err.code,
+            error_message: err.message,
+          });
           resolve(fallback);
         },
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     });
-  }, []);
+  }, [requestLocationPermission]);
 
   const notifyContacts = useCallback(async (
     alertId: string,
