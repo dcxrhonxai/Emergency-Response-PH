@@ -16,7 +16,15 @@ import {
   AlertTriangle,
   Calendar,
   ExternalLink,
+  HelpCircle,
+  XCircle,
 } from 'lucide-react';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { cn } from '@/lib/utils';
 import {
   AlertDialog,
