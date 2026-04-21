@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { useEmergencyNotifications } from "@/hooks/useEmergencyNotifications";
+import { logEvent } from "@/lib/firebase";
 
 interface EmergencyLocation {
   lat: number;
