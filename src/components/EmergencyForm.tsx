@@ -39,6 +39,7 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
   const [emergencyType, setEmergencyType] = useState("");
   const [showMediaCapture, setShowMediaCapture] = useState(false);
   const [evidenceFiles, setEvidenceFiles] = useState<UploadedFile[]>([]);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const { isOnline, pendingCount } = useOfflineSync();
   const { triggerImpact } = useHapticFeedback();
 
