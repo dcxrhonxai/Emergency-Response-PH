@@ -316,7 +316,7 @@ export const PremiumSubscription = () => {
         </Card>
         <SubscriptionHistory rows={subscriptions} />
         <ManageSubscriptionButton activeProductId={subscriptions.find(s => s.status === 'active')?.product_id} />
-        <CancelSubscriptionGuide />
+        <CancelSubscriptionGuide subscriptions={subscriptions} />
       </div>
     );
   }
