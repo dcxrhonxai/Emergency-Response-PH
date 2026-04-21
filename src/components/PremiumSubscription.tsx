@@ -16,7 +16,15 @@ import {
   AlertTriangle,
   Calendar,
   ExternalLink,
+  HelpCircle,
+  XCircle,
 } from 'lucide-react';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { cn } from '@/lib/utils';
 import {
   AlertDialog,
@@ -151,6 +159,70 @@ const ManageSubscriptionButton = ({ activeProductId }: { activeProductId?: strin
   );
 };
 
+const CancelSubscriptionGuide = () => {
+  const url = `https://play.google.com/store/account/subscriptions?package=${PLAY_PACKAGE_NAME}`;
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <HelpCircle className="h-5 w-5 text-primary" />
+          How to Cancel Your Subscription
+        </CardTitle>
+        <CardDescription>
+          Step-by-step guide to cancel through Google Play
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="steps" className="border-b-0">
+            <AccordionTrigger>View cancellation steps</AccordionTrigger>
+            <AccordionContent>
+              <ol className="space-y-3 text-sm list-decimal list-inside">
+                <li>
+                  Open the <span className="font-medium">Google Play Store</span> app on your Android device.
+                </li>
+                <li>
+                  Tap your <span className="font-medium">profile icon</span> in the top-right corner.
+                </li>
+                <li>
+                  Select <span className="font-medium">Payments &amp; subscriptions</span>, then tap <span className="font-medium">Subscriptions</span>.
+                </li>
+                <li>
+                  Find and tap <span className="font-medium">Emergency Response PH</span> in your subscription list.
+                </li>
+                <li>
+                  Tap <span className="font-medium">Cancel subscription</span> and follow the on-screen prompts.
+                </li>
+                <li>
+                  You'll keep premium access until the end of your current billing period.
+                </li>
+              </ol>
+              <div className="mt-4 rounded-lg border border-destructive/30 bg-destructive/5 p-3">
+                <div className="flex items-start gap-2">
+                  <AlertTriangle className="h-4 w-4 text-destructive flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-muted-foreground">
+                    Lifetime purchases cannot be cancelled — they are one-time payments
+                    with permanent access.
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full mt-4"
+                onClick={() => window.open(url, '_blank', 'noopener,noreferrer')}
+              >
+                <XCircle className="h-4 w-4 mr-2" />
+                Go to Google Play Subscriptions
+              </Button>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </CardContent>
+    </Card>
+  );
+};
+
 export const PremiumSubscription = () => {
   const { t } = useTranslation();
   const {
@@ -208,6 +280,7 @@ export const PremiumSubscription = () => {
         </Card>
         <SubscriptionHistory rows={subscriptions} />
         <ManageSubscriptionButton activeProductId={subscriptions.find(s => s.status === 'active')?.product_id} />
+        <CancelSubscriptionGuide />
       </div>
     );
   }
