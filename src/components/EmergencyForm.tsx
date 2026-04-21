@@ -205,6 +205,34 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
       <div className="h-12 bg-muted/20 rounded-lg flex items-center justify-center border border-dashed border-muted-foreground/30">
         <span className="text-xs text-muted-foreground">Ad Space</span>
       </div>
+
+      {/* Location Permission Confirmation Modal */}
+      <AlertDialog open={showConfirmModal} onOpenChange={setShowConfirmModal}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-primary" />
+              Location Access Required
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p>
+                To find the nearest emergency contacts and services for you, we need access to your location.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Your location will only be used to identify nearby emergency services and will be shared with responders when you send an alert.
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowConfirmModal(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmEmergency}>
+              Allow & Send Alert
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
