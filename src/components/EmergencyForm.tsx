@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AlertCircle, Flame, Activity, Car, Home, Users, Camera, Wifi, WifiOff } from "lucide-react";
+import { AlertCircle, Flame, Activity, Car, Home, Users, Camera, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { emergencyFormSchema } from "@/lib/validation";
 import { MediaCapture } from "./MediaCapture";
