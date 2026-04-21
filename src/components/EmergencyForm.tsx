@@ -71,6 +71,12 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
       return;
     }
 
+    // Show confirmation modal instead of immediately triggering
+    setShowConfirmModal(true);
+  };
+
+  const handleConfirmEmergency = () => {
+    setShowConfirmModal(false);
     onEmergencyClick(emergencyType, situation.trim(), evidenceFiles);
   };
 
