@@ -26,6 +26,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { cn } from '@/lib/utils';
+import { logEvent } from '@/lib/firebase';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -246,7 +247,16 @@ Best regards`;
                 variant="secondary"
                 size="sm"
                 className="w-full mt-3"
-                onClick={() => window.open(mailtoUrl, '_blank')}
+                onClick={() => {
+                  logEvent('contact_support_clicked', {
+                    purchase_type: purchaseType,
+                    subscription_status: purchaseStatus,
+                    subscription_expiry: purchaseExpiry,
+                    app_version: appVersion,
+                    has_active_subscription: !!activeProduct,
+                  });
+                  window.open(mailtoUrl, '_blank');
+                }}
               >
                 <HelpCircle className="h-4 w-4 mr-2" />
                 Contact Support
