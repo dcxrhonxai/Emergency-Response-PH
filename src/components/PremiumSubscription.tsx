@@ -215,6 +215,16 @@ const CancelSubscriptionGuide = () => {
                 <XCircle className="h-4 w-4 mr-2" />
                 Go to Google Play Subscriptions
               </Button>
+
+              <Button
+                variant="secondary"
+                size="sm"
+                className="w-full mt-3"
+                onClick={() => window.open('mailto:support@emergencyresponse.ph?subject=Subscription Help', '_blank')}
+              >
+                <HelpCircle className="h-4 w-4 mr-2" />
+                Contact Support
+              </Button>
             </AccordionContent>
           </AccordionItem>
         </Accordion>
