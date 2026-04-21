@@ -161,7 +161,7 @@ const ManageSubscriptionButton = ({ activeProductId }: { activeProductId?: strin
 
 const CancelSubscriptionGuide = ({ subscriptions }: { subscriptions: SubscriptionRow[] }) => {
   const url = `https://play.google.com/store/account/subscriptions?package=${PLAY_PACKAGE_NAME}`;
-  const appVersion = '1.0.0'; // In a real app, read from manifest or env
+  const appVersion = import.meta.env.VITE_APP_VERSION || '1.0.0';
 
   const activeProduct = subscriptions.find(s => s.status === 'active');
   const purchaseType = activeProduct ? PRODUCT_LABELS[activeProduct.product_id] || activeProduct.product_id : 'None';
