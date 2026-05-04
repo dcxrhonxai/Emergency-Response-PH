@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/integrations/supabase/client";
+import { calculateDistance, formatDistance } from "@/lib/distance";
+import { logEvent } from "@/lib/firebase";
+import { Loader2 } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -40,6 +44,9 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
   const [showMediaCapture, setShowMediaCapture] = useState(false);
   const [evidenceFiles, setEvidenceFiles] = useState<UploadedFile[]>([]);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [previewLocation, setPreviewLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [previewContacts, setPreviewContacts] = useState<Array<{ id: string; name: string; type: string; phone: string; distance: string }>>([]);
+  const [loadingLocation, setLoadingLocation] = useState(false);
   const { isOnline, pendingCount } = useOfflineSync();
   const { triggerImpact } = useHapticFeedback();
 
@@ -78,6 +85,89 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
   const handleConfirmEmergency = () => {
     setShowConfirmModal(false);
     onEmergencyClick(emergencyType, situation.trim(), evidenceFiles);
+  };
+
+  const handleUseMyLocation = async () => {
+    triggerImpact('light');
+    if (!navigator.geolocation) {
+      toast.error("Geolocation is not supported by this browser");
+      return;
+    }
+
+    setLoadingLocation(true);
+    try {
+      // Permission check + explanation
+      if (navigator.permissions) {
+        try {
+          const status = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
+          logEvent('use_my_location_permission', { state: status.state });
+          if (status.state === 'prompt') {
+            toast.info("We need your location to preview the nearest emergency contacts.");
+          } else if (status.state === 'denied') {
+            toast.warning("Location is blocked. Please enable it in your browser settings.");
+            setLoadingLocation(false);
+            return;
+          }
+        } catch {
+          // ignore
+        }
+      }
+
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 60000,
+        });
+      });
+
+      const loc = { lat: position.coords.latitude, lng: position.coords.longitude };
+      setPreviewLocation(loc);
+
+      const { data, error } = await supabase
+        .from('emergency_services')
+        .select('*')
+        .eq('is_national', false);
+
+      if (error) throw error;
+
+      const filtered = (data || []).filter((s: any) =>
+        !emergencyType || emergencyType === 'other' || s.type === emergencyType || s.type === 'all'
+      );
+
+      const withDistance = filtered
+        .map((s: any) => {
+          const distKm = calculateDistance(loc.lat, loc.lng, parseFloat(s.latitude), parseFloat(s.longitude));
+          return {
+            id: s.id,
+            name: s.name,
+            type: s.type,
+            phone: s.phone,
+            distanceKm: distKm,
+            distance: formatDistance(distKm),
+          };
+        })
+        .sort((a, b) => a.distanceKm - b.distanceKm)
+        .slice(0, 3);
+
+      setPreviewContacts(withDistance);
+      logEvent('use_my_location_preview', {
+        emergency_type: emergencyType || 'unspecified',
+        contacts_found: withDistance.length,
+      });
+
+      if (withDistance.length === 0) {
+        toast.info("No nearby services found. National contacts will still be available.");
+      } else {
+        toast.success(`Found ${withDistance.length} nearby contact(s).`);
+      }
+    } catch (err: any) {
+      console.error(err);
+      logEvent('use_my_location_error', { code: err?.code, message: err?.message });
+      toast.error(err?.message || "Could not detect your location");
+    } finally {
+      setLoadingLocation(false);
+    }
   };
 
   return (
@@ -174,6 +264,60 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
           isEmergencyActive={isEmergencyActive}
           onFilesChange={(files) => setEvidenceFiles(files)}
         />
+
+        {/* Use My Location - Preview */}
+        <div className="space-y-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleUseMyLocation}
+            disabled={loadingLocation}
+            className="w-full h-10 text-sm"
+          >
+            {loadingLocation ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <MapPin className="w-4 h-4 mr-2" />
+            )}
+            {loadingLocation ? "Detecting location..." : "Use my location"}
+          </Button>
+
+          {previewLocation && (
+            <div className="bg-muted/40 border border-border rounded-lg p-3 space-y-2">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <MapPin className="w-3 h-3" />
+                <span>
+                  Detected: {previewLocation.lat.toFixed(4)}, {previewLocation.lng.toFixed(4)}
+                </span>
+              </div>
+              {previewContacts.length > 0 ? (
+                <div className="space-y-1.5">
+                  <p className="text-xs font-semibold text-foreground">Nearest contacts:</p>
+                  <ul className="space-y-1">
+                    {previewContacts.map((c) => (
+                      <li
+                        key={c.id}
+                        className="flex items-center justify-between text-xs bg-card rounded px-2 py-1.5"
+                      >
+                        <div className="min-w-0">
+                          <p className="font-medium text-foreground truncate">{c.name}</p>
+                          <p className="text-muted-foreground truncate">{c.phone}</p>
+                        </div>
+                        <Badge variant="secondary" className="text-xs shrink-0 ml-2">
+                          {c.distance}
+                        </Badge>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  No nearby services in our directory. National contacts will still be shown.
+                </p>
+              )}
+            </div>
+          )}
+        </div>
 
         {/* Emergency Button */}
         <Button
