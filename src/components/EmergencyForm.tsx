@@ -357,6 +357,41 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
               )}
             </div>
           )}
+
+          {showNationalFallback && nationalContacts.length > 0 && (
+            <div className="bg-primary/5 border border-primary/30 rounded-lg p-3 space-y-2">
+              <div className="flex items-center gap-2">
+                <Phone className="w-3.5 h-3.5 text-primary" />
+                <p className="text-xs font-semibold text-foreground">
+                  National Emergency Contacts
+                </p>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {previewLocation
+                  ? "No nearby services found — use these instead."
+                  : "Location unavailable — these national hotlines work anywhere."}
+              </p>
+              <ul className="space-y-1">
+                {nationalContacts.map((c) => (
+                  <li
+                    key={c.id}
+                    className="flex items-center justify-between text-xs bg-card rounded px-2 py-1.5"
+                  >
+                    <div className="min-w-0">
+                      <p className="font-medium text-foreground truncate">{c.name}</p>
+                      <p className="text-muted-foreground truncate">{c.phone}</p>
+                    </div>
+                    <a
+                      href={`tel:${c.phone}`}
+                      className="text-primary font-semibold shrink-0 ml-2"
+                    >
+                      Call
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
 
         {/* Emergency Button */}
