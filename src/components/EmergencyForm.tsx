@@ -46,6 +46,8 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [previewLocation, setPreviewLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [previewContacts, setPreviewContacts] = useState<Array<{ id: string; name: string; type: string; phone: string; distance: string }>>([]);
+  const [nationalContacts, setNationalContacts] = useState<Array<{ id: string; name: string; type: string; phone: string }>>([]);
+  const [showNationalFallback, setShowNationalFallback] = useState(false);
   const [loadingLocation, setLoadingLocation] = useState(false);
   const { isOnline, pendingCount } = useOfflineSync();
   const { triggerImpact } = useHapticFeedback();
