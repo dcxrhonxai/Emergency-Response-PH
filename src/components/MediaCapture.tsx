@@ -7,6 +7,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { compressVideo, formatFileSize, getVideoSize } from "@/lib/videoCompression";
 import { uploadEvidence, UploadedFile } from "@/lib/storage";
+import {
+  EVIDENCE_LIMITS,
+  validateSingleEvidence,
+  validateEvidenceCollection,
+} from "@/lib/evidenceValidation";
 import { Loader2, Trash2, Upload } from "lucide-react";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 
@@ -46,28 +51,43 @@ export const MediaCapture = ({ userId, onFilesUploaded }: MediaCaptureProps) => 
       });
     }
 
-    setCapturedMedia((prev) => [
-      ...prev,
-      {
-        type,
-        data: finalData,
-        timestamp: new Date(),
-        size,
-      },
-    ]);
+    const single = validateSingleEvidence({ type, size, data: finalData });
+    if (!single.valid) {
+      toast({ title: "File rejected", description: single.error, variant: "destructive" });
+      return;
+    }
+
+    const next = [...capturedMedia, { type, data: finalData, timestamp: new Date(), size }];
+    const collection = validateEvidenceCollection(
+      [...next, ...uploadedFiles.map((f) => ({ type: f.type }))]
+    );
+    if (!collection.valid) {
+      toast({ title: "Upload limit reached", description: collection.error, variant: "destructive" });
+      return;
+    }
+
+    setCapturedMedia(next);
   };
 
   const handleAudioCapture = (audioData: string) => {
     const size = getVideoSize(audioData);
-    setCapturedMedia((prev) => [
-      ...prev,
-      {
-        type: 'audio',
-        data: audioData,
-        timestamp: new Date(),
-        size,
-      },
-    ]);
+
+    const single = validateSingleEvidence({ type: 'audio', size, data: audioData });
+    if (!single.valid) {
+      toast({ title: "Audio rejected", description: single.error, variant: "destructive" });
+      return;
+    }
+
+    const next = [...capturedMedia, { type: 'audio' as const, data: audioData, timestamp: new Date(), size }];
+    const collection = validateEvidenceCollection(
+      [...next, ...uploadedFiles.map((f) => ({ type: f.type }))]
+    );
+    if (!collection.valid) {
+      toast({ title: "Upload limit reached", description: collection.error, variant: "destructive" });
+      return;
+    }
+
+    setCapturedMedia(next);
   };
 
   const handleUploadAll = async () => {
@@ -110,6 +130,9 @@ export const MediaCapture = ({ userId, onFilesUploaded }: MediaCaptureProps) => 
 
   return (
     <div className="space-y-4">
+      <div className="text-xs text-muted-foreground bg-muted/40 rounded px-2 py-1.5">
+        Limits: up to {EVIDENCE_LIMITS.maxFiles} files, {EVIDENCE_LIMITS.maxFileSizeBytes / 1024 / 1024} MB each, {EVIDENCE_LIMITS.maxTotalSizeBytes / 1024 / 1024} MB total. Photos, videos, audio only.
+      </div>
       <Tabs defaultValue="camera" className="w-full" onValueChange={() => triggerImpact('light')}>
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="camera">Camera</TabsTrigger>

@@ -31,6 +31,7 @@ import { UploadedFile } from "@/lib/storage";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
 import { Badge } from "./ui/badge";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
+import { validateEvidenceCollection, EVIDENCE_LIMITS } from "@/lib/evidenceValidation";
 
 interface EmergencyFormProps {
   onEmergencyClick: (type: string, situation: string, evidenceFiles?: UploadedFile[]) => void;
@@ -395,13 +396,28 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
         </div>
 
         {/* Emergency Button */}
-        <Button
-          onClick={handleSubmit}
-          className="w-full h-12 text-base font-bold bg-primary hover:bg-primary/90 shadow-lg"
-        >
-          <AlertCircle className="w-4 h-4 mr-2" />
-          NEED HELP NOW
-        </Button>
+        {(() => {
+          const evidenceCheck = validateEvidenceCollection(evidenceFiles.map((f) => ({ type: f.type })));
+          const formValid = situation.trim().length > 0 && !!emergencyType && evidenceCheck.valid;
+          return (
+            <>
+              {!evidenceCheck.valid && (
+                <p className="text-xs text-destructive text-center">{evidenceCheck.error}</p>
+              )}
+              <Button
+                onClick={handleSubmit}
+                disabled={!formValid}
+                className="w-full h-12 text-base font-bold bg-primary hover:bg-primary/90 shadow-lg disabled:opacity-50"
+              >
+                <AlertCircle className="w-4 h-4 mr-2" />
+                NEED HELP NOW
+              </Button>
+              <p className="text-[10px] text-muted-foreground text-center">
+                Evidence: {evidenceFiles.length}/{EVIDENCE_LIMITS.maxFiles} files attached
+              </p>
+            </>
+          );
+        })()}
 
         {/* Info Text */}
         <div className="text-center space-y-1 text-xs text-muted-foreground">
