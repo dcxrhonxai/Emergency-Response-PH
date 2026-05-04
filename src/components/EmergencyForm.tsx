@@ -22,7 +22,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { AlertCircle, Flame, Activity, Car, Home, Users, Camera, MapPin } from "lucide-react";
+import { AlertCircle, Flame, Activity, Car, Home, Users, Camera, MapPin, Phone } from "lucide-react";
 import { toast } from "sonner";
 import { emergencyFormSchema } from "@/lib/validation";
 import { MediaCapture } from "./MediaCapture";
@@ -46,6 +46,8 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [previewLocation, setPreviewLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [previewContacts, setPreviewContacts] = useState<Array<{ id: string; name: string; type: string; phone: string; distance: string }>>([]);
+  const [nationalContacts, setNationalContacts] = useState<Array<{ id: string; name: string; type: string; phone: string }>>([]);
+  const [showNationalFallback, setShowNationalFallback] = useState(false);
   const [loadingLocation, setLoadingLocation] = useState(false);
   const { isOnline, pendingCount } = useOfflineSync();
   const { triggerImpact } = useHapticFeedback();
@@ -87,10 +89,39 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
     onEmergencyClick(emergencyType, situation.trim(), evidenceFiles);
   };
 
+  const loadNationalContacts = async () => {
+    const { data, error } = await supabase
+      .from('emergency_services')
+      .select('*')
+      .eq('is_national', true);
+
+    if (error) {
+      console.error(error);
+      return [];
+    }
+
+    const filtered = (data || []).filter((s: any) =>
+      !emergencyType || emergencyType === 'other' || s.type === emergencyType || s.type === 'all'
+    );
+
+    const mapped = filtered.map((s: any) => ({
+      id: s.id,
+      name: s.name,
+      type: s.type,
+      phone: s.phone,
+    }));
+
+    setNationalContacts(mapped);
+    setShowNationalFallback(true);
+    return mapped;
+  };
+
   const handleUseMyLocation = async () => {
     triggerImpact('light');
     if (!navigator.geolocation) {
       toast.error("Geolocation is not supported by this browser");
+      const nat = await loadNationalContacts();
+      logEvent('national_fallback_shown', { reason: 'unsupported', contacts: nat.length });
       return;
     }
 
@@ -104,7 +135,9 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
           if (status.state === 'prompt') {
             toast.info("We need your location to preview the nearest emergency contacts.");
           } else if (status.state === 'denied') {
-            toast.warning("Location is blocked. Please enable it in your browser settings.");
+            toast.warning("Location is blocked. Showing national emergency contacts instead.");
+            const nat = await loadNationalContacts();
+            logEvent('national_fallback_shown', { reason: 'permission_denied', contacts: nat.length });
             setLoadingLocation(false);
             return;
           }
@@ -157,14 +190,21 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
       });
 
       if (withDistance.length === 0) {
-        toast.info("No nearby services found. National contacts will still be available.");
+        toast.info("No nearby services found. Showing national emergency contacts.");
+        const nat = await loadNationalContacts();
+        logEvent('national_fallback_shown', { reason: 'empty_preview', contacts: nat.length });
       } else {
+        setShowNationalFallback(false);
         toast.success(`Found ${withDistance.length} nearby contact(s).`);
       }
     } catch (err: any) {
       console.error(err);
       logEvent('use_my_location_error', { code: err?.code, message: err?.message });
-      toast.error(err?.message || "Could not detect your location");
+      // Permission denied error code is 1
+      const reason = err?.code === 1 ? 'permission_denied' : 'location_error';
+      toast.error((err?.message || "Could not detect your location") + ". Showing national contacts.");
+      const nat = await loadNationalContacts();
+      logEvent('national_fallback_shown', { reason, contacts: nat.length });
     } finally {
       setLoadingLocation(false);
     }
@@ -315,6 +355,41 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
                   No nearby services in our directory. National contacts will still be shown.
                 </p>
               )}
+            </div>
+          )}
+
+          {showNationalFallback && nationalContacts.length > 0 && (
+            <div className="bg-primary/5 border border-primary/30 rounded-lg p-3 space-y-2">
+              <div className="flex items-center gap-2">
+                <Phone className="w-3.5 h-3.5 text-primary" />
+                <p className="text-xs font-semibold text-foreground">
+                  National Emergency Contacts
+                </p>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {previewLocation
+                  ? "No nearby services found — use these instead."
+                  : "Location unavailable — these national hotlines work anywhere."}
+              </p>
+              <ul className="space-y-1">
+                {nationalContacts.map((c) => (
+                  <li
+                    key={c.id}
+                    className="flex items-center justify-between text-xs bg-card rounded px-2 py-1.5"
+                  >
+                    <div className="min-w-0">
+                      <p className="font-medium text-foreground truncate">{c.name}</p>
+                      <p className="text-muted-foreground truncate">{c.phone}</p>
+                    </div>
+                    <a
+                      href={`tel:${c.phone}`}
+                      className="text-primary font-semibold shrink-0 ml-2"
+                    >
+                      Call
+                    </a>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
         </div>
