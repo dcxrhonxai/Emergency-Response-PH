@@ -44,6 +44,9 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
   const [showMediaCapture, setShowMediaCapture] = useState(false);
   const [evidenceFiles, setEvidenceFiles] = useState<UploadedFile[]>([]);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [previewLocation, setPreviewLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [previewContacts, setPreviewContacts] = useState<Array<{ id: string; name: string; type: string; phone: string; distance: string }>>([]);
+  const [loadingLocation, setLoadingLocation] = useState(false);
   const { isOnline, pendingCount } = useOfflineSync();
   const { triggerImpact } = useHapticFeedback();
 
