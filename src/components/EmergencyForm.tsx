@@ -265,6 +265,60 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
           onFilesChange={(files) => setEvidenceFiles(files)}
         />
 
+        {/* Use My Location - Preview */}
+        <div className="space-y-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleUseMyLocation}
+            disabled={loadingLocation}
+            className="w-full h-10 text-sm"
+          >
+            {loadingLocation ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <MapPin className="w-4 h-4 mr-2" />
+            )}
+            {loadingLocation ? "Detecting location..." : "Use my location"}
+          </Button>
+
+          {previewLocation && (
+            <div className="bg-muted/40 border border-border rounded-lg p-3 space-y-2">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <MapPin className="w-3 h-3" />
+                <span>
+                  Detected: {previewLocation.lat.toFixed(4)}, {previewLocation.lng.toFixed(4)}
+                </span>
+              </div>
+              {previewContacts.length > 0 ? (
+                <div className="space-y-1.5">
+                  <p className="text-xs font-semibold text-foreground">Nearest contacts:</p>
+                  <ul className="space-y-1">
+                    {previewContacts.map((c) => (
+                      <li
+                        key={c.id}
+                        className="flex items-center justify-between text-xs bg-card rounded px-2 py-1.5"
+                      >
+                        <div className="min-w-0">
+                          <p className="font-medium text-foreground truncate">{c.name}</p>
+                          <p className="text-muted-foreground truncate">{c.phone}</p>
+                        </div>
+                        <Badge variant="secondary" className="text-xs shrink-0 ml-2">
+                          {c.distance}
+                        </Badge>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  No nearby services in our directory. National contacts will still be shown.
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+
         {/* Emergency Button */}
         <Button
           onClick={handleSubmit}
