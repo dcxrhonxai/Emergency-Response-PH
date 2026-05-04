@@ -51,28 +51,43 @@ export const MediaCapture = ({ userId, onFilesUploaded }: MediaCaptureProps) => 
       });
     }
 
-    setCapturedMedia((prev) => [
-      ...prev,
-      {
-        type,
-        data: finalData,
-        timestamp: new Date(),
-        size,
-      },
-    ]);
+    const single = validateSingleEvidence({ type, size, data: finalData });
+    if (!single.valid) {
+      toast({ title: "File rejected", description: single.error, variant: "destructive" });
+      return;
+    }
+
+    const next = [...capturedMedia, { type, data: finalData, timestamp: new Date(), size }];
+    const collection = validateEvidenceCollection(
+      [...next, ...uploadedFiles.map((f) => ({ type: f.type }))]
+    );
+    if (!collection.valid) {
+      toast({ title: "Upload limit reached", description: collection.error, variant: "destructive" });
+      return;
+    }
+
+    setCapturedMedia(next);
   };
 
   const handleAudioCapture = (audioData: string) => {
     const size = getVideoSize(audioData);
-    setCapturedMedia((prev) => [
-      ...prev,
-      {
-        type: 'audio',
-        data: audioData,
-        timestamp: new Date(),
-        size,
-      },
-    ]);
+
+    const single = validateSingleEvidence({ type: 'audio', size, data: audioData });
+    if (!single.valid) {
+      toast({ title: "Audio rejected", description: single.error, variant: "destructive" });
+      return;
+    }
+
+    const next = [...capturedMedia, { type: 'audio' as const, data: audioData, timestamp: new Date(), size }];
+    const collection = validateEvidenceCollection(
+      [...next, ...uploadedFiles.map((f) => ({ type: f.type }))]
+    );
+    if (!collection.valid) {
+      toast({ title: "Upload limit reached", description: collection.error, variant: "destructive" });
+      return;
+    }
+
+    setCapturedMedia(next);
   };
 
   const handleUploadAll = async () => {
