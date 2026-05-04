@@ -130,6 +130,9 @@ export const MediaCapture = ({ userId, onFilesUploaded }: MediaCaptureProps) => 
 
   return (
     <div className="space-y-4">
+      <div className="text-xs text-muted-foreground bg-muted/40 rounded px-2 py-1.5">
+        Limits: up to {EVIDENCE_LIMITS.maxFiles} files, {EVIDENCE_LIMITS.maxFileSizeBytes / 1024 / 1024} MB each, {EVIDENCE_LIMITS.maxTotalSizeBytes / 1024 / 1024} MB total. Photos, videos, audio only.
+      </div>
       <Tabs defaultValue="camera" className="w-full" onValueChange={() => triggerImpact('light')}>
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="camera">Camera</TabsTrigger>
