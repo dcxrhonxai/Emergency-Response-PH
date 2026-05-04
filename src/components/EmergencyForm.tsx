@@ -87,6 +87,89 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
     onEmergencyClick(emergencyType, situation.trim(), evidenceFiles);
   };
 
+  const handleUseMyLocation = async () => {
+    triggerImpact('light');
+    if (!navigator.geolocation) {
+      toast.error("Geolocation is not supported by this browser");
+      return;
+    }
+
+    setLoadingLocation(true);
+    try {
+      // Permission check + explanation
+      if (navigator.permissions) {
+        try {
+          const status = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
+          logEvent('use_my_location_permission', { state: status.state });
+          if (status.state === 'prompt') {
+            toast.info("We need your location to preview the nearest emergency contacts.");
+          } else if (status.state === 'denied') {
+            toast.warning("Location is blocked. Please enable it in your browser settings.");
+            setLoadingLocation(false);
+            return;
+          }
+        } catch {
+          // ignore
+        }
+      }
+
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 60000,
+        });
+      });
+
+      const loc = { lat: position.coords.latitude, lng: position.coords.longitude };
+      setPreviewLocation(loc);
+
+      const { data, error } = await supabase
+        .from('emergency_services')
+        .select('*')
+        .eq('is_national', false);
+
+      if (error) throw error;
+
+      const filtered = (data || []).filter((s: any) =>
+        !emergencyType || emergencyType === 'other' || s.type === emergencyType || s.type === 'all'
+      );
+
+      const withDistance = filtered
+        .map((s: any) => {
+          const distKm = calculateDistance(loc.lat, loc.lng, parseFloat(s.latitude), parseFloat(s.longitude));
+          return {
+            id: s.id,
+            name: s.name,
+            type: s.type,
+            phone: s.phone,
+            distanceKm: distKm,
+            distance: formatDistance(distKm),
+          };
+        })
+        .sort((a, b) => a.distanceKm - b.distanceKm)
+        .slice(0, 3);
+
+      setPreviewContacts(withDistance);
+      logEvent('use_my_location_preview', {
+        emergency_type: emergencyType || 'unspecified',
+        contacts_found: withDistance.length,
+      });
+
+      if (withDistance.length === 0) {
+        toast.info("No nearby services found. National contacts will still be available.");
+      } else {
+        toast.success(`Found ${withDistance.length} nearby contact(s).`);
+      }
+    } catch (err: any) {
+      console.error(err);
+      logEvent('use_my_location_error', { code: err?.code, message: err?.message });
+      toast.error(err?.message || "Could not detect your location");
+    } finally {
+      setLoadingLocation(false);
+    }
+  };
+
   return (
     <div className="space-y-3">
       {/* Status Banner */}
