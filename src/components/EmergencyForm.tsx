@@ -89,10 +89,39 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
     onEmergencyClick(emergencyType, situation.trim(), evidenceFiles);
   };
 
+  const loadNationalContacts = async () => {
+    const { data, error } = await supabase
+      .from('emergency_services')
+      .select('*')
+      .eq('is_national', true);
+
+    if (error) {
+      console.error(error);
+      return [];
+    }
+
+    const filtered = (data || []).filter((s: any) =>
+      !emergencyType || emergencyType === 'other' || s.type === emergencyType || s.type === 'all'
+    );
+
+    const mapped = filtered.map((s: any) => ({
+      id: s.id,
+      name: s.name,
+      type: s.type,
+      phone: s.phone,
+    }));
+
+    setNationalContacts(mapped);
+    setShowNationalFallback(true);
+    return mapped;
+  };
+
   const handleUseMyLocation = async () => {
     triggerImpact('light');
     if (!navigator.geolocation) {
       toast.error("Geolocation is not supported by this browser");
+      const nat = await loadNationalContacts();
+      logEvent('national_fallback_shown', { reason: 'unsupported', contacts: nat.length });
       return;
     }
 
@@ -106,7 +135,9 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
           if (status.state === 'prompt') {
             toast.info("We need your location to preview the nearest emergency contacts.");
           } else if (status.state === 'denied') {
-            toast.warning("Location is blocked. Please enable it in your browser settings.");
+            toast.warning("Location is blocked. Showing national emergency contacts instead.");
+            const nat = await loadNationalContacts();
+            logEvent('national_fallback_shown', { reason: 'permission_denied', contacts: nat.length });
             setLoadingLocation(false);
             return;
           }
@@ -159,14 +190,21 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
       });
 
       if (withDistance.length === 0) {
-        toast.info("No nearby services found. National contacts will still be available.");
+        toast.info("No nearby services found. Showing national emergency contacts.");
+        const nat = await loadNationalContacts();
+        logEvent('national_fallback_shown', { reason: 'empty_preview', contacts: nat.length });
       } else {
+        setShowNationalFallback(false);
         toast.success(`Found ${withDistance.length} nearby contact(s).`);
       }
     } catch (err: any) {
       console.error(err);
       logEvent('use_my_location_error', { code: err?.code, message: err?.message });
-      toast.error(err?.message || "Could not detect your location");
+      // Permission denied error code is 1
+      const reason = err?.code === 1 ? 'permission_denied' : 'location_error';
+      toast.error((err?.message || "Could not detect your location") + ". Showing national contacts.");
+      const nat = await loadNationalContacts();
+      logEvent('national_fallback_shown', { reason, contacts: nat.length });
     } finally {
       setLoadingLocation(false);
     }
