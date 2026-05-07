@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { calculateDistance, formatDistance } from "@/lib/distance";
+import { formatFileSize } from "@/lib/videoCompression";
 import { logEvent } from "@/lib/firebase";
 import { Loader2 } from "lucide-react";
 import {
