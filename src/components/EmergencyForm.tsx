@@ -423,13 +423,21 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
 
         {/* Emergency Button */}
         {(() => {
-          const evidenceCheck = validateEvidenceCollection(evidenceFiles.map((f) => ({ type: f.type })));
+          const evidenceCheck = validateEvidenceCollection(evidenceFiles.map((f) => ({ type: f.type, size: f.size })));
+          const totalSize = evidenceFiles.reduce((sum, f) => sum + (f.size || 0), 0);
+          const remainingFiles = Math.max(0, EVIDENCE_LIMITS.maxFiles - evidenceFiles.length);
+          const remainingBytes = Math.max(0, EVIDENCE_LIMITS.maxTotalSizeBytes - totalSize);
+          const remainingMB = (remainingBytes / (1024 * 1024)).toFixed(0);
           const formValid = situation.trim().length > 0 && !!emergencyType && evidenceCheck.valid;
           return (
             <>
               {!evidenceCheck.valid && (
                 <p className="text-xs text-destructive text-center">{evidenceCheck.error}</p>
               )}
+              <div className="flex items-center justify-between text-[10px] text-muted-foreground px-1">
+                <span>Remaining capacity: {remainingFiles} files • {remainingMB} MB</span>
+                <span>{evidenceFiles.length}/{EVIDENCE_LIMITS.maxFiles}</span>
+              </div>
               <Button
                 onClick={handleSubmit}
                 disabled={!formValid}
@@ -438,9 +446,6 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
                 <AlertCircle className="w-4 h-4 mr-2" />
                 NEED HELP NOW
               </Button>
-              <p className="text-[10px] text-muted-foreground text-center">
-                Evidence: {evidenceFiles.length}/{EVIDENCE_LIMITS.maxFiles} files attached
-              </p>
             </>
           );
         })()}
