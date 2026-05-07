@@ -298,9 +298,30 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
             <MediaCapture userId={userId} onFilesUploaded={handleFilesUploaded} />
           )}
           {evidenceFiles.length > 0 && !showMediaCapture && (
-            <p className="text-xs text-green-600">
-              {evidenceFiles.length} file(s) attached
-            </p>
+            <div className="space-y-1.5">
+              {evidenceFiles.map((file, index) => {
+                const FileIcon = file.type === 'photo' ? FileImage : file.type === 'video' ? FileVideo : FileAudio;
+                return (
+                  <div key={`${file.path}-${index}`} className="flex items-center justify-between text-xs bg-muted/40 rounded px-2 py-1.5">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <FileIcon className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                      <span className="truncate capitalize">{file.type}</span>
+                      {file.size && (
+                        <span className="text-muted-foreground">({formatFileSize(file.size)})</span>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveEvidence(index)}
+                      className="text-muted-foreground hover:text-destructive shrink-0 ml-2"
+                      aria-label={`Remove ${file.type} evidence`}
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
           )}
         </div>
 
