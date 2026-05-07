@@ -12,6 +12,7 @@ import {
   validateSingleEvidence,
   validateEvidenceCollection,
 } from "@/lib/evidenceValidation";
+import { hashEvidence } from "@/lib/evidenceHash";
 import { Loader2, Trash2, Upload } from "lucide-react";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 
@@ -26,11 +27,16 @@ export const MediaCapture = ({ userId, onFilesUploaded }: MediaCaptureProps) => 
     data: string;
     timestamp: Date;
     size?: number;
+    hash: string;
   }>>([]);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const [uploadedHashes, setUploadedHashes] = useState<Set<string>>(new Set());
   const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
   const { triggerImpact, triggerNotification } = useHapticFeedback();
+
+  const isDuplicateHash = (hash: string) =>
+    capturedMedia.some((m) => m.hash === hash) || uploadedHashes.has(hash);
 
   const handleCameraCapture = async (imageData: string, type: 'photo' | 'video') => {
     let finalData = imageData;
@@ -57,7 +63,13 @@ export const MediaCapture = ({ userId, onFilesUploaded }: MediaCaptureProps) => 
       return;
     }
 
-    const next = [...capturedMedia, { type, data: finalData, timestamp: new Date(), size }];
+    const hash = await hashEvidence(finalData);
+    if (isDuplicateHash(hash)) {
+      toast({ title: "Duplicate file", description: "This file is already in your evidence list.", variant: "destructive" });
+      return;
+    }
+
+    const next = [...capturedMedia, { type, data: finalData, timestamp: new Date(), size, hash }];
     const collection = validateEvidenceCollection(
       [...next, ...uploadedFiles.map((f) => ({ type: f.type, size: f.size }))]
     );
@@ -69,7 +81,7 @@ export const MediaCapture = ({ userId, onFilesUploaded }: MediaCaptureProps) => 
     setCapturedMedia(next);
   };
 
-  const handleAudioCapture = (audioData: string) => {
+  const handleAudioCapture = async (audioData: string) => {
     const size = getVideoSize(audioData);
 
     const single = validateSingleEvidence({ type: 'audio', size, data: audioData });
@@ -78,7 +90,13 @@ export const MediaCapture = ({ userId, onFilesUploaded }: MediaCaptureProps) => 
       return;
     }
 
-    const next = [...capturedMedia, { type: 'audio' as const, data: audioData, timestamp: new Date(), size }];
+    const hash = await hashEvidence(audioData);
+    if (isDuplicateHash(hash)) {
+      toast({ title: "Duplicate audio", description: "This recording is already in your evidence list.", variant: "destructive" });
+      return;
+    }
+
+    const next = [...capturedMedia, { type: 'audio' as const, data: audioData, timestamp: new Date(), size, hash }];
     const collection = validateEvidenceCollection(
       [...next, ...uploadedFiles.map((f) => ({ type: f.type, size: f.size }))]
     );
@@ -110,19 +128,43 @@ export const MediaCapture = ({ userId, onFilesUploaded }: MediaCaptureProps) => 
       return;
     }
 
+    // Final dedupe pass against already-uploaded hashes
+    const seen = new Set(uploadedHashes);
+    const toUpload = capturedMedia.filter((m) => {
+      if (seen.has(m.hash)) return false;
+      seen.add(m.hash);
+      return true;
+    });
+    if (toUpload.length < capturedMedia.length) {
+      toast({
+        title: "Duplicates skipped",
+        description: `${capturedMedia.length - toUpload.length} duplicate file(s) were not uploaded.`,
+      });
+    }
+    if (toUpload.length === 0) {
+      return;
+    }
+
     triggerImpact('heavy');
     setIsUploading(true);
     const uploaded: UploadedFile[] = [];
+    const newHashes: string[] = [];
 
-    for (const media of capturedMedia) {
+    for (const media of toUpload) {
       const result = await uploadEvidence(userId, media.data, media.type);
       if (result) {
         uploaded.push(result);
+        newHashes.push(media.hash);
       }
     }
 
     if (uploaded.length > 0) {
       setUploadedFiles((prev) => [...prev, ...uploaded]);
+      setUploadedHashes((prev) => {
+        const updated = new Set(prev);
+        newHashes.forEach((h) => updated.add(h));
+        return updated;
+      });
       setCapturedMedia([]);
       toast({
         title: "Upload complete",
