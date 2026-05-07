@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { calculateDistance, formatDistance } from "@/lib/distance";
+import { formatFileSize } from "@/lib/videoCompression";
 import { logEvent } from "@/lib/firebase";
 import { Loader2 } from "lucide-react";
 import {
@@ -22,7 +23,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { AlertCircle, Flame, Activity, Car, Home, Users, Camera, MapPin, Phone } from "lucide-react";
+import { AlertCircle, Flame, Activity, Car, Home, Users, Camera, MapPin, Phone, X, FileImage, FileAudio, FileVideo } from "lucide-react";
 import { toast } from "sonner";
 import { emergencyFormSchema } from "@/lib/validation";
 import { MediaCapture } from "./MediaCapture";
@@ -64,6 +65,10 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
 
   const handleFilesUploaded = (files: UploadedFile[]) => {
     setEvidenceFiles(prev => [...prev, ...files]);
+  };
+
+  const handleRemoveEvidence = (index: number) => {
+    setEvidenceFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = () => {
@@ -293,9 +298,30 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
             <MediaCapture userId={userId} onFilesUploaded={handleFilesUploaded} />
           )}
           {evidenceFiles.length > 0 && !showMediaCapture && (
-            <p className="text-xs text-green-600">
-              {evidenceFiles.length} file(s) attached
-            </p>
+            <div className="space-y-1.5">
+              {evidenceFiles.map((file, index) => {
+                const FileIcon = file.type === 'photo' ? FileImage : file.type === 'video' ? FileVideo : FileAudio;
+                return (
+                  <div key={`${file.path}-${index}`} className="flex items-center justify-between text-xs bg-muted/40 rounded px-2 py-1.5">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <FileIcon className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                      <span className="truncate capitalize">{file.type}</span>
+                      {file.size && (
+                        <span className="text-muted-foreground">({formatFileSize(file.size)})</span>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveEvidence(index)}
+                      className="text-muted-foreground hover:text-destructive shrink-0 ml-2"
+                      aria-label={`Remove ${file.type} evidence`}
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
           )}
         </div>
 
@@ -397,13 +423,21 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
 
         {/* Emergency Button */}
         {(() => {
-          const evidenceCheck = validateEvidenceCollection(evidenceFiles.map((f) => ({ type: f.type })));
+          const evidenceCheck = validateEvidenceCollection(evidenceFiles.map((f) => ({ type: f.type, size: f.size })));
+          const totalSize = evidenceFiles.reduce((sum, f) => sum + (f.size || 0), 0);
+          const remainingFiles = Math.max(0, EVIDENCE_LIMITS.maxFiles - evidenceFiles.length);
+          const remainingBytes = Math.max(0, EVIDENCE_LIMITS.maxTotalSizeBytes - totalSize);
+          const remainingMB = (remainingBytes / (1024 * 1024)).toFixed(0);
           const formValid = situation.trim().length > 0 && !!emergencyType && evidenceCheck.valid;
           return (
             <>
               {!evidenceCheck.valid && (
                 <p className="text-xs text-destructive text-center">{evidenceCheck.error}</p>
               )}
+              <div className="flex items-center justify-between text-[10px] text-muted-foreground px-1">
+                <span>Remaining capacity: {remainingFiles} files • {remainingMB} MB</span>
+                <span>{evidenceFiles.length}/{EVIDENCE_LIMITS.maxFiles}</span>
+              </div>
               <Button
                 onClick={handleSubmit}
                 disabled={!formValid}
@@ -412,9 +446,6 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
                 <AlertCircle className="w-4 h-4 mr-2" />
                 NEED HELP NOW
               </Button>
-              <p className="text-[10px] text-muted-foreground text-center">
-                Evidence: {evidenceFiles.length}/{EVIDENCE_LIMITS.maxFiles} files attached
-              </p>
             </>
           );
         })()}

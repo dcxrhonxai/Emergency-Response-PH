@@ -4,6 +4,7 @@ export interface UploadedFile {
   path: string;
   url: string;
   type: 'photo' | 'video' | 'audio';
+  size?: number;
 }
 
 export const uploadEvidence = async (
@@ -60,7 +61,8 @@ export const uploadEvidence = async (
     return {
       path: data.path,
       url: signedUrlData.signedUrl,
-      type
+      type,
+      size: blob.size
     };
   } catch (error) {
     console.error('Error uploading evidence:', error);
