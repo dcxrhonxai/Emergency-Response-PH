@@ -67,6 +67,10 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
     setEvidenceFiles(prev => [...prev, ...files]);
   };
 
+  const handleRemoveEvidence = (index: number) => {
+    setEvidenceFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = () => {
     triggerImpact('heavy');
 
