@@ -128,19 +128,43 @@ export const MediaCapture = ({ userId, onFilesUploaded }: MediaCaptureProps) => 
       return;
     }
 
+    // Final dedupe pass against already-uploaded hashes
+    const seen = new Set(uploadedHashes);
+    const toUpload = capturedMedia.filter((m) => {
+      if (seen.has(m.hash)) return false;
+      seen.add(m.hash);
+      return true;
+    });
+    if (toUpload.length < capturedMedia.length) {
+      toast({
+        title: "Duplicates skipped",
+        description: `${capturedMedia.length - toUpload.length} duplicate file(s) were not uploaded.`,
+      });
+    }
+    if (toUpload.length === 0) {
+      return;
+    }
+
     triggerImpact('heavy');
     setIsUploading(true);
     const uploaded: UploadedFile[] = [];
+    const newHashes: string[] = [];
 
-    for (const media of capturedMedia) {
+    for (const media of toUpload) {
       const result = await uploadEvidence(userId, media.data, media.type);
       if (result) {
         uploaded.push(result);
+        newHashes.push(media.hash);
       }
     }
 
     if (uploaded.length > 0) {
       setUploadedFiles((prev) => [...prev, ...uploaded]);
+      setUploadedHashes((prev) => {
+        const updated = new Set(prev);
+        newHashes.forEach((h) => updated.add(h));
+        return updated;
+      });
       setCapturedMedia([]);
       toast({
         title: "Upload complete",
