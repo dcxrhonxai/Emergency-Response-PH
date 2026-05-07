@@ -12,6 +12,7 @@ import {
   validateSingleEvidence,
   validateEvidenceCollection,
 } from "@/lib/evidenceValidation";
+import { hashEvidence } from "@/lib/evidenceHash";
 import { Loader2, Trash2, Upload } from "lucide-react";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 
@@ -26,11 +27,16 @@ export const MediaCapture = ({ userId, onFilesUploaded }: MediaCaptureProps) => 
     data: string;
     timestamp: Date;
     size?: number;
+    hash: string;
   }>>([]);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const [uploadedHashes, setUploadedHashes] = useState<Set<string>>(new Set());
   const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
   const { triggerImpact, triggerNotification } = useHapticFeedback();
+
+  const isDuplicateHash = (hash: string) =>
+    capturedMedia.some((m) => m.hash === hash) || uploadedHashes.has(hash);
 
   const handleCameraCapture = async (imageData: string, type: 'photo' | 'video') => {
     let finalData = imageData;
