@@ -59,7 +59,7 @@ export const MediaCapture = ({ userId, onFilesUploaded }: MediaCaptureProps) => 
 
     const next = [...capturedMedia, { type, data: finalData, timestamp: new Date(), size }];
     const collection = validateEvidenceCollection(
-      [...next, ...uploadedFiles.map((f) => ({ type: f.type }))]
+      [...next, ...uploadedFiles.map((f) => ({ type: f.type, size: f.size }))]
     );
     if (!collection.valid) {
       toast({ title: "Upload limit reached", description: collection.error, variant: "destructive" });
