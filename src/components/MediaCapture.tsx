@@ -92,8 +92,25 @@ export const MediaCapture = ({ userId, onFilesUploaded }: MediaCaptureProps) => 
 
   const handleUploadAll = async () => {
     if (capturedMedia.length === 0) return;
-    triggerImpact('heavy');
 
+    // Hard block: re-validate every item and the full collection before uploading
+    for (const media of capturedMedia) {
+      const single = validateSingleEvidence({ type: media.type, size: media.size, data: media.data });
+      if (!single.valid) {
+        toast({ title: "Upload blocked", description: single.error, variant: "destructive" });
+        return;
+      }
+    }
+    const collectionCheck = validateEvidenceCollection([
+      ...capturedMedia.map((m) => ({ type: m.type, size: m.size })),
+      ...uploadedFiles.map((f) => ({ type: f.type, size: f.size })),
+    ]);
+    if (!collectionCheck.valid) {
+      toast({ title: "Upload blocked", description: collectionCheck.error, variant: "destructive" });
+      return;
+    }
+
+    triggerImpact('heavy');
     setIsUploading(true);
     const uploaded: UploadedFile[] = [];
 
