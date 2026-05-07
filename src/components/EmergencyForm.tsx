@@ -22,7 +22,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { AlertCircle, Flame, Activity, Car, Home, Users, Camera, MapPin, Phone } from "lucide-react";
+import { AlertCircle, Flame, Activity, Car, Home, Users, Camera, MapPin, Phone, X, FileImage, FileAudio, FileVideo } from "lucide-react";
 import { toast } from "sonner";
 import { emergencyFormSchema } from "@/lib/validation";
 import { MediaCapture } from "./MediaCapture";
