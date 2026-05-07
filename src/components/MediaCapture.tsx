@@ -63,7 +63,13 @@ export const MediaCapture = ({ userId, onFilesUploaded }: MediaCaptureProps) => 
       return;
     }
 
-    const next = [...capturedMedia, { type, data: finalData, timestamp: new Date(), size }];
+    const hash = await hashEvidence(finalData);
+    if (isDuplicateHash(hash)) {
+      toast({ title: "Duplicate file", description: "This file is already in your evidence list.", variant: "destructive" });
+      return;
+    }
+
+    const next = [...capturedMedia, { type, data: finalData, timestamp: new Date(), size, hash }];
     const collection = validateEvidenceCollection(
       [...next, ...uploadedFiles.map((f) => ({ type: f.type, size: f.size }))]
     );
@@ -75,7 +81,7 @@ export const MediaCapture = ({ userId, onFilesUploaded }: MediaCaptureProps) => 
     setCapturedMedia(next);
   };
 
-  const handleAudioCapture = (audioData: string) => {
+  const handleAudioCapture = async (audioData: string) => {
     const size = getVideoSize(audioData);
 
     const single = validateSingleEvidence({ type: 'audio', size, data: audioData });
@@ -84,7 +90,13 @@ export const MediaCapture = ({ userId, onFilesUploaded }: MediaCaptureProps) => 
       return;
     }
 
-    const next = [...capturedMedia, { type: 'audio' as const, data: audioData, timestamp: new Date(), size }];
+    const hash = await hashEvidence(audioData);
+    if (isDuplicateHash(hash)) {
+      toast({ title: "Duplicate audio", description: "This recording is already in your evidence list.", variant: "destructive" });
+      return;
+    }
+
+    const next = [...capturedMedia, { type: 'audio' as const, data: audioData, timestamp: new Date(), size, hash }];
     const collection = validateEvidenceCollection(
       [...next, ...uploadedFiles.map((f) => ({ type: f.type, size: f.size }))]
     );
