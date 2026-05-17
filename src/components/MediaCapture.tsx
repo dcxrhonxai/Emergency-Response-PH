@@ -43,6 +43,7 @@ export const MediaCapture = ({ userId, onFilesUploaded, onClearAll }: MediaCaptu
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [uploadedHashes, setUploadedHashes] = useState<Set<string>>(new Set());
   const [isUploading, setIsUploading] = useState(false);
+  const [isClearDialogOpen, setIsClearDialogOpen] = useState(false);
   const { toast } = useToast();
   const { triggerImpact, triggerNotification } = useHapticFeedback();
 
