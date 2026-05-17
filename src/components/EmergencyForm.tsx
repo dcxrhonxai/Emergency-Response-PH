@@ -63,6 +63,10 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
     { value: "other", label: "Other Emergency", icon: Users },
   ];
 
+  const handleFilesUploaded = (files: UploadedFile[]) => {
+    setEvidenceFiles(prev => [...prev, ...files]);
+  };
+
   const handleClearAllEvidence = () => {
     setEvidenceFiles([]);
     toast.info("All evidence cleared");
