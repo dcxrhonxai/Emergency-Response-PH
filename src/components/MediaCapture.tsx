@@ -19,9 +19,10 @@ import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 interface MediaCaptureProps {
   userId: string;
   onFilesUploaded?: (files: UploadedFile[]) => void;
+  onClearAll?: () => void;
 }
 
-export const MediaCapture = ({ userId, onFilesUploaded }: MediaCaptureProps) => {
+export const MediaCapture = ({ userId, onFilesUploaded, onClearAll }: MediaCaptureProps) => {
   const [capturedMedia, setCapturedMedia] = useState<Array<{
     type: 'photo' | 'video' | 'audio';
     data: string;
@@ -187,6 +188,18 @@ export const MediaCapture = ({ userId, onFilesUploaded }: MediaCaptureProps) => 
     setCapturedMedia((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const handleClearAll = () => {
+    triggerImpact('heavy');
+    setCapturedMedia([]);
+    setUploadedFiles([]);
+    setUploadedHashes(new Set());
+    onClearAll?.();
+    toast({
+      title: "Evidence cleared",
+      description: "All captured and uploaded evidence has been removed.",
+    });
+  };
+
   return (
     <div className="space-y-4">
       <div className="text-xs text-muted-foreground bg-muted/40 rounded px-2 py-1.5">
@@ -211,23 +224,34 @@ export const MediaCapture = ({ userId, onFilesUploaded }: MediaCaptureProps) => 
         <Card className="p-4">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold">Captured Media ({capturedMedia.length})</h3>
-            <Button 
-              onClick={handleUploadAll} 
-              disabled={isUploading}
-              size="sm"
-            >
-              {isUploading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Uploading...
-                </>
-              ) : (
-                <>
-                  <Upload className="w-4 h-4 mr-2" />
-                  Upload All
-                </>
-              )}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClearAll}
+                className="text-destructive hover:text-destructive"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Clear all
+              </Button>
+              <Button
+                onClick={handleUploadAll}
+                disabled={isUploading}
+                size="sm"
+              >
+                {isUploading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-4 h-4 mr-2" />
+                    Upload All
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
           <div className="space-y-2">
             {capturedMedia.map((media, index) => (

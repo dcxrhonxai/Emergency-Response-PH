@@ -23,7 +23,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { AlertCircle, Flame, Activity, Car, Home, Users, Camera, MapPin, Phone, X, FileImage, FileAudio, FileVideo } from "lucide-react";
+import { AlertCircle, Flame, Activity, Car, Home, Users, Camera, MapPin, Phone, X, FileImage, FileAudio, FileVideo, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { emergencyFormSchema } from "@/lib/validation";
 import { MediaCapture } from "./MediaCapture";
@@ -65,6 +65,11 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
 
   const handleFilesUploaded = (files: UploadedFile[]) => {
     setEvidenceFiles(prev => [...prev, ...files]);
+  };
+
+  const handleClearAllEvidence = () => {
+    setEvidenceFiles([]);
+    toast.info("All evidence cleared");
   };
 
   const handleRemoveEvidence = (index: number) => {
@@ -295,7 +300,7 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
             </Button>
           </div>
           {showMediaCapture && (
-            <MediaCapture userId={userId} onFilesUploaded={handleFilesUploaded} />
+            <MediaCapture userId={userId} onFilesUploaded={handleFilesUploaded} onClearAll={handleClearAllEvidence} />
           )}
           {evidenceFiles.length > 0 && !showMediaCapture && (
             <div className="space-y-1.5">
@@ -310,18 +315,26 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
                         <span className="text-muted-foreground">({formatFileSize(file.size)})</span>
                       )}
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveEvidence(index)}
-                      className="text-muted-foreground hover:text-destructive shrink-0 ml-2"
-                      aria-label={`Remove ${file.type} evidence`}
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                );
-              })}
+              <button
+                type="button"
+                onClick={() => handleRemoveEvidence(index)}
+                className="text-muted-foreground hover:text-destructive shrink-0 ml-2"
+                aria-label={`Remove ${file.type} evidence`}
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
             </div>
+          );
+        })}
+        <button
+          type="button"
+          onClick={handleClearAllEvidence}
+          className="flex items-center justify-center gap-1.5 w-full text-xs text-destructive hover:text-destructive/80 py-1"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+          Clear all evidence
+        </button>
+      </div>
           )}
         </div>
 
