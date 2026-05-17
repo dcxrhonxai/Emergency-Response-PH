@@ -518,6 +518,24 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Clear Evidence Confirmation Modal */}
+      <AlertDialog open={showClearDialog} onOpenChange={setShowClearDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Clear all evidence?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove all evidence files. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowClearDialog(false)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmClearAllEvidence} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Clear All
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
