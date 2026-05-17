@@ -15,6 +15,16 @@ import {
 import { hashEvidence } from "@/lib/evidenceHash";
 import { Loader2, Trash2, Upload } from "lucide-react";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface MediaCaptureProps {
   userId: string;
