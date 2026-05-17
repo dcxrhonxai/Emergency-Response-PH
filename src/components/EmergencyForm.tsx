@@ -46,6 +46,7 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
   const [showMediaCapture, setShowMediaCapture] = useState(false);
   const [evidenceFiles, setEvidenceFiles] = useState<UploadedFile[]>([]);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showClearDialog, setShowClearDialog] = useState(false);
   const [previewLocation, setPreviewLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [previewContacts, setPreviewContacts] = useState<Array<{ id: string; name: string; type: string; phone: string; distance: string }>>([]);
   const [nationalContacts, setNationalContacts] = useState<Array<{ id: string; name: string; type: string; phone: string }>>([]);
@@ -68,7 +69,12 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
   };
 
   const handleClearAllEvidence = () => {
+    setShowClearDialog(true);
+  };
+
+  const confirmClearAllEvidence = () => {
     setEvidenceFiles([]);
+    setShowClearDialog(false);
     toast.info("All evidence cleared");
   };
 
@@ -508,6 +514,24 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
             </AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmEmergency}>
               Allow & Send Alert
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Clear Evidence Confirmation Modal */}
+      <AlertDialog open={showClearDialog} onOpenChange={setShowClearDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Clear all evidence?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove all evidence files. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowClearDialog(false)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmClearAllEvidence} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Clear All
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

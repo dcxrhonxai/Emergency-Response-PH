@@ -15,6 +15,16 @@ import {
 import { hashEvidence } from "@/lib/evidenceHash";
 import { Loader2, Trash2, Upload } from "lucide-react";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface MediaCaptureProps {
   userId: string;
@@ -33,6 +43,7 @@ export const MediaCapture = ({ userId, onFilesUploaded, onClearAll }: MediaCaptu
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [uploadedHashes, setUploadedHashes] = useState<Set<string>>(new Set());
   const [isUploading, setIsUploading] = useState(false);
+  const [isClearDialogOpen, setIsClearDialogOpen] = useState(false);
   const { toast } = useToast();
   const { triggerImpact, triggerNotification } = useHapticFeedback();
 
@@ -190,9 +201,14 @@ export const MediaCapture = ({ userId, onFilesUploaded, onClearAll }: MediaCaptu
 
   const handleClearAll = () => {
     triggerImpact('heavy');
+    setIsClearDialogOpen(true);
+  };
+
+  const confirmClearAll = () => {
     setCapturedMedia([]);
     setUploadedFiles([]);
     setUploadedHashes(new Set());
+    setIsClearDialogOpen(false);
     onClearAll?.();
     toast({
       title: "Evidence cleared",
@@ -294,6 +310,23 @@ export const MediaCapture = ({ userId, onFilesUploaded, onClearAll }: MediaCaptu
           </div>
         </Card>
       )}
+
+      <AlertDialog open={isClearDialogOpen} onOpenChange={setIsClearDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Clear all evidence?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove all captured and uploaded evidence. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setIsClearDialogOpen(false)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmClearAll} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Clear All
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
