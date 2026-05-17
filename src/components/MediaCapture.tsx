@@ -19,6 +19,7 @@ import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 interface MediaCaptureProps {
   userId: string;
   onFilesUploaded?: (files: UploadedFile[]) => void;
+  onClearAll?: () => void;
 }
 
 export const MediaCapture = ({ userId, onFilesUploaded }: MediaCaptureProps) => {
