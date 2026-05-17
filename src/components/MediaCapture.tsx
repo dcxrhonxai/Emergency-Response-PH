@@ -22,7 +22,7 @@ interface MediaCaptureProps {
   onClearAll?: () => void;
 }
 
-export const MediaCapture = ({ userId, onFilesUploaded }: MediaCaptureProps) => {
+export const MediaCapture = ({ userId, onFilesUploaded, onClearAll }: MediaCaptureProps) => {
   const [capturedMedia, setCapturedMedia] = useState<Array<{
     type: 'photo' | 'video' | 'audio';
     data: string;
