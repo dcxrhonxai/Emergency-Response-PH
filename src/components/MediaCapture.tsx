@@ -224,23 +224,34 @@ export const MediaCapture = ({ userId, onFilesUploaded, onClearAll }: MediaCaptu
         <Card className="p-4">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold">Captured Media ({capturedMedia.length})</h3>
-            <Button 
-              onClick={handleUploadAll} 
-              disabled={isUploading}
-              size="sm"
-            >
-              {isUploading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Uploading...
-                </>
-              ) : (
-                <>
-                  <Upload className="w-4 h-4 mr-2" />
-                  Upload All
-                </>
-              )}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClearAll}
+                className="text-destructive hover:text-destructive"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Clear all
+              </Button>
+              <Button
+                onClick={handleUploadAll}
+                disabled={isUploading}
+                size="sm"
+              >
+                {isUploading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-4 h-4 mr-2" />
+                    Upload All
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
           <div className="space-y-2">
             {capturedMedia.map((media, index) => (
