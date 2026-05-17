@@ -300,7 +300,7 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
             </Button>
           </div>
           {showMediaCapture && (
-            <MediaCapture userId={userId} onFilesUploaded={handleFilesUploaded} />
+            <MediaCapture userId={userId} onFilesUploaded={handleFilesUploaded} onClearAll={handleClearAllEvidence} />
           )}
           {evidenceFiles.length > 0 && !showMediaCapture && (
             <div className="space-y-1.5">
