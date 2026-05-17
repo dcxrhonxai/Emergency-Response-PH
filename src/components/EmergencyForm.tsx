@@ -46,6 +46,7 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
   const [showMediaCapture, setShowMediaCapture] = useState(false);
   const [evidenceFiles, setEvidenceFiles] = useState<UploadedFile[]>([]);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showClearDialog, setShowClearDialog] = useState(false);
   const [previewLocation, setPreviewLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [previewContacts, setPreviewContacts] = useState<Array<{ id: string; name: string; type: string; phone: string; distance: string }>>([]);
   const [nationalContacts, setNationalContacts] = useState<Array<{ id: string; name: string; type: string; phone: string }>>([]);
@@ -68,7 +69,12 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
   };
 
   const handleClearAllEvidence = () => {
+    setShowClearDialog(true);
+  };
+
+  const confirmClearAllEvidence = () => {
     setEvidenceFiles([]);
+    setShowClearDialog(false);
     toast.info("All evidence cleared");
   };
 
