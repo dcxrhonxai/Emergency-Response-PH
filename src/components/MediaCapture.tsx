@@ -188,6 +188,18 @@ export const MediaCapture = ({ userId, onFilesUploaded, onClearAll }: MediaCaptu
     setCapturedMedia((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const handleClearAll = () => {
+    triggerImpact('heavy');
+    setCapturedMedia([]);
+    setUploadedFiles([]);
+    setUploadedHashes(new Set());
+    onClearAll?.();
+    toast({
+      title: "Evidence cleared",
+      description: "All captured and uploaded evidence has been removed.",
+    });
+  };
+
   return (
     <div className="space-y-4">
       <div className="text-xs text-muted-foreground bg-muted/40 rounded px-2 py-1.5">
