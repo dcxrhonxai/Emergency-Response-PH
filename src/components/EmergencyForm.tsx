@@ -315,18 +315,26 @@ const EmergencyForm = ({ onEmergencyClick, userId, isEmergencyActive = false }: 
                         <span className="text-muted-foreground">({formatFileSize(file.size)})</span>
                       )}
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveEvidence(index)}
-                      className="text-muted-foreground hover:text-destructive shrink-0 ml-2"
-                      aria-label={`Remove ${file.type} evidence`}
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                );
-              })}
+              <button
+                type="button"
+                onClick={() => handleRemoveEvidence(index)}
+                className="text-muted-foreground hover:text-destructive shrink-0 ml-2"
+                aria-label={`Remove ${file.type} evidence`}
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
             </div>
+          );
+        })}
+        <button
+          type="button"
+          onClick={handleClearAllEvidence}
+          className="flex items-center justify-center gap-1.5 w-full text-xs text-destructive hover:text-destructive/80 py-1"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+          Clear all evidence
+        </button>
+      </div>
           )}
         </div>
 
