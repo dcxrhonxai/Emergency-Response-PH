@@ -201,9 +201,14 @@ export const MediaCapture = ({ userId, onFilesUploaded, onClearAll }: MediaCaptu
 
   const handleClearAll = () => {
     triggerImpact('heavy');
+    setIsClearDialogOpen(true);
+  };
+
+  const confirmClearAll = () => {
     setCapturedMedia([]);
     setUploadedFiles([]);
     setUploadedHashes(new Set());
+    setIsClearDialogOpen(false);
     onClearAll?.();
     toast({
       title: "Evidence cleared",
