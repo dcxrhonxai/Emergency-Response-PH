@@ -26,3 +26,7 @@ verify_jwt = false
 
 [functions.test-revenuecat-webhook]
 verify_jwt = false
+
+[functions.third-party-api-call]
+verify_jwt = true
+

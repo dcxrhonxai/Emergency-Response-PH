@@ -607,6 +607,54 @@ export type Database = {
         }
         Relationships: []
       }
+      third_party_integrations: {
+        Row: {
+          auth_header_name: string | null
+          auth_type: string
+          base_url: string
+          created_at: string
+          credential: string | null
+          default_headers: Json
+          id: string
+          is_active: boolean
+          last_test_status: string | null
+          last_tested_at: string | null
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auth_header_name?: string | null
+          auth_type?: string
+          base_url: string
+          created_at?: string
+          credential?: string | null
+          default_headers?: Json
+          id?: string
+          is_active?: boolean
+          last_test_status?: string | null
+          last_tested_at?: string | null
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auth_header_name?: string | null
+          auth_type?: string
+          base_url?: string
+          created_at?: string
+          credential?: string | null
+          default_headers?: Json
+          id?: string
+          is_active?: boolean
+          last_test_status?: string | null
+          last_tested_at?: string | null
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null

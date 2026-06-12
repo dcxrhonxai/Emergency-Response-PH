@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Webhook, Key, Link as LinkIcon, Bell, Mail, MessageSquare } from "lucide-react";
+import { ArrowLeft, Webhook, Key, Link as LinkIcon, Bell, Mail, MessageSquare, Plug } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
+import ThirdPartyApiIntegrations from "@/components/ThirdPartyApiIntegrations";
 
 const Integrations = () => {
   const navigate = useNavigate();
@@ -154,10 +155,11 @@ const Integrations = () => {
           </div>
 
           <Tabs defaultValue="webhooks" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="webhooks">Webhooks</TabsTrigger>
               <TabsTrigger value="apis">APIs</TabsTrigger>
               <TabsTrigger value="services">Services</TabsTrigger>
+              <TabsTrigger value="third-party"><Plug className="h-4 w-4 mr-1" />Third-Party</TabsTrigger>
             </TabsList>
 
             <TabsContent value="webhooks" className="space-y-4">
@@ -379,6 +381,10 @@ const Integrations = () => {
                   )}
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            <TabsContent value="third-party" className="space-y-4">
+              <ThirdPartyApiIntegrations />
             </TabsContent>
           </Tabs>
         </div>

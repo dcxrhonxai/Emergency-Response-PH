@@ -152,7 +152,7 @@ const roadmapData: FeatureCategory[] = [
       { name: "Firebase Cloud Messaging", completed: true },
       { name: "Google Play Billing", completed: true },
       { name: "Webhook Support", completed: true },
-      { name: "Third-Party API Integration", completed: false, priority: "low" },
+      { name: "Third-Party API Integration", completed: true },
     ],
   },
   {
