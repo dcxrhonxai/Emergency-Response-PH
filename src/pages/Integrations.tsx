@@ -382,6 +382,10 @@ const Integrations = () => {
                 </CardContent>
               </Card>
             </TabsContent>
+
+            <TabsContent value="third-party" className="space-y-4">
+              <ThirdPartyApiIntegrations />
+            </TabsContent>
           </Tabs>
         </div>
       </div>
