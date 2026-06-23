@@ -6,6 +6,7 @@ import { Button } from "./ui/button";
 import { Progress } from "./ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+import { toast as sonnerToast } from "sonner";
 import { compressVideo, formatFileSize, getVideoSize } from "@/lib/videoCompression";
 import {
   uploadEvidenceWithProgress,
