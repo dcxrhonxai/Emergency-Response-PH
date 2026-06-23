@@ -31,6 +31,7 @@ import { useOfflineSync } from "@/hooks/useOfflineSync";
 import { useBackgroundLocation } from "@/hooks/useBackgroundLocation";
 import { useAuth } from "@/hooks/useAuth";
 import { useEmergencyActions } from "@/hooks/useEmergencyActions";
+import { useEvidenceAutoCleanup } from "@/hooks/useEvidenceAutoCleanup";
 import { LoadingSpinner } from "@/components/ui/loading-states";
 
 export interface EmergencyContact {
@@ -46,6 +47,7 @@ const Index = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { session, loading: authLoading, handleLogout } = useAuth();
+  useEvidenceAutoCleanup();
 
   const [showEmergency, setShowEmergency] = useState(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);

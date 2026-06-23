@@ -39,6 +39,7 @@ import { WebhookManager } from '@/components/WebhookManager';
 import { PremiumSubscription } from '@/components/PremiumSubscription';
 import { GDPRSettings } from '@/components/GDPRSettings';
 import { CloudBackup } from '@/components/CloudBackup';
+import { EvidenceRetentionSettings } from '@/components/EvidenceRetentionSettings';
 import { useGooglePlayBilling } from '@/hooks/useGooglePlayBilling';
 import { useHighContrastMode } from '@/hooks/useHighContrastMode';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
@@ -824,6 +825,7 @@ const Settings = () => {
           {/* Privacy Settings */}
           <TabsContent value="privacy" className="space-y-6">
             <CloudBackup />
+            <EvidenceRetentionSettings />
             <GDPRSettings />
           </TabsContent>
         </Tabs>

@@ -30,3 +30,6 @@ verify_jwt = false
 [functions.third-party-api-call]
 verify_jwt = true
 
+[functions.cleanup-expired-evidence]
+verify_jwt = true
+

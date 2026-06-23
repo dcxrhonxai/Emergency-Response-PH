@@ -54,6 +54,7 @@ const roadmapData: FeatureCategory[] = [
       { name: "Live Video Streaming", completed: true },
       { name: "Automatic Evidence Upload", completed: true },
       { name: "Cloud Backup", completed: true },
+      { name: "Evidence Retention & Auto-Cleanup", completed: true },
     ],
   },
   {
