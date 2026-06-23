@@ -47,6 +47,7 @@ const Index = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { session, loading: authLoading, handleLogout } = useAuth();
+  useEvidenceAutoCleanup();
 
   const [showEmergency, setShowEmergency] = useState(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
