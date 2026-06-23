@@ -279,6 +279,30 @@ export type Database = {
         }
         Relationships: []
       }
+      evidence_retention_settings: {
+        Row: {
+          created_at: string
+          last_cleanup_at: string | null
+          retention_days: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          last_cleanup_at?: string | null
+          retention_days?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          last_cleanup_at?: string | null
+          retention_days?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       in_app_notifications: {
         Row: {
           action_url: string | null
