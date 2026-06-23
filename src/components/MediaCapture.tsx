@@ -305,28 +305,23 @@ export const MediaCapture = ({ userId, onFilesUploaded, onClearAll }: MediaCaptu
       pendingDeletesRef.current.set(id, timer);
     }
 
-    toast({
-      title: 'Removed',
-      description: `${item.type.charAt(0).toUpperCase() + item.type.slice(1)} evidence removed.`,
-      action: (
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={() => {
+    sonnerToast(
+      `${item.type.charAt(0).toUpperCase() + item.type.slice(1)} evidence removed`,
+      {
+        duration: UNDO_WINDOW_MS,
+        action: {
+          label: 'Undo',
+          onClick: () => {
             const t = pendingDeletesRef.current.get(id);
             if (t) {
               clearTimeout(t);
               pendingDeletesRef.current.delete(id);
             }
             setItems((prev) => (prev.some((p) => p.id === id) ? prev : [...prev, item]));
-          }}
-        >
-          <Undo2 className="w-3.5 h-3.5 mr-1" />
-          Undo
-        </Button>
-      ),
-      duration: UNDO_WINDOW_MS,
-    });
+          },
+        },
+      }
+    );
   };
 
   const handleMove = (id: string, direction: -1 | 1) => {
