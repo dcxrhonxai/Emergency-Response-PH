@@ -31,6 +31,7 @@ import { useOfflineSync } from "@/hooks/useOfflineSync";
 import { useBackgroundLocation } from "@/hooks/useBackgroundLocation";
 import { useAuth } from "@/hooks/useAuth";
 import { useEmergencyActions } from "@/hooks/useEmergencyActions";
+import { useEvidenceAutoCleanup } from "@/hooks/useEvidenceAutoCleanup";
 import { LoadingSpinner } from "@/components/ui/loading-states";
 
 export interface EmergencyContact {
