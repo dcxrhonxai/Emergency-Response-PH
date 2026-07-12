@@ -82,7 +82,41 @@ async function cleanupForUser(userId: string, retentionDays: number): Promise<Cl
     .update({ last_cleanup_at: new Date().toISOString() })
     .eq("user_id", userId);
 
+  await admin.from("evidence_cleanup_history").insert({
+    user_id: userId,
+    retention_days: retentionDays,
+    deleted_count: result.deletedCount,
+    buckets: result.buckets,
+    cutoff: result.cutoff,
+    skipped: false,
+  });
+
   return result;
+}
+
+async function logSkipped(userId: string, reason: string) {
+  const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+    auth: { persistSession: false },
+  });
+  await admin.from("evidence_cleanup_history").insert({
+    user_id: userId,
+    retention_days: null,
+    deleted_count: 0,
+    skipped: true,
+    reason,
+  });
+}
+
+async function logError(userId: string, error: string) {
+  const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+    auth: { persistSession: false },
+  });
+  await admin.from("evidence_cleanup_history").insert({
+    user_id: userId,
+    deleted_count: 0,
+    skipped: false,
+    error,
+  });
 }
 
 Deno.serve(async (req) => {
