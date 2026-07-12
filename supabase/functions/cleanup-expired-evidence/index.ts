@@ -195,36 +195,57 @@ Deno.serve(async (req) => {
     }
     userId = userData.user.id;
 
-    // Read this user's retention setting (RLS-scoped via their JWT).
-    const { data: settings, error: settingsError } = await userClient
-      .from("evidence_retention_settings")
-      .select("retention_days")
-      .eq("user_id", userId)
-      .maybeSingle();
-
-    if (settingsError) {
-      await logError(userId, settingsError.message);
-      return new Response(JSON.stringify({ error: settingsError.message }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    // Parse optional { dryRun, retentionDays } body — dry runs may preview
+    // a different window than the one that's saved.
+    let dryRun = false;
+    let overrideDays: number | null = null;
+    if (req.method === "POST") {
+      try {
+        const body = await req.json();
+        dryRun = body?.dryRun === true;
+        if (typeof body?.retentionDays === "number" && body.retentionDays > 0) {
+          overrideDays = Math.floor(body.retentionDays);
+        }
+      } catch {
+        // no body — fine
+      }
     }
 
-    const retentionDays = settings?.retention_days ?? null;
+    let retentionDays: number | null = overrideDays;
+    if (retentionDays === null) {
+      const { data: settings, error: settingsError } = await userClient
+        .from("evidence_retention_settings")
+        .select("retention_days")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (settingsError) {
+        if (!dryRun) await logError(userId, settingsError.message);
+        return new Response(JSON.stringify({ error: settingsError.message }), {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      retentionDays = settings?.retention_days ?? null;
+    }
+
     if (!retentionDays || retentionDays <= 0) {
-      await logSkipped(userId, "No retention window configured");
+      if (!dryRun) await logSkipped(userId, "No retention window configured");
       return new Response(
         JSON.stringify({
           retentionDays: null,
           deletedCount: 0,
           skipped: true,
+          dryRun,
           reason: "No retention window configured",
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const result = await cleanupForUser(userId, retentionDays);
+    const result = dryRun
+      ? await previewForUser(userId, retentionDays)
+      : await cleanupForUser(userId, retentionDays);
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
