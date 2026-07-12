@@ -40,6 +40,7 @@ import { PremiumSubscription } from '@/components/PremiumSubscription';
 import { GDPRSettings } from '@/components/GDPRSettings';
 import { CloudBackup } from '@/components/CloudBackup';
 import { EvidenceRetentionSettings } from '@/components/EvidenceRetentionSettings';
+import { EvidenceCleanupHistory } from '@/components/EvidenceCleanupHistory';
 import { useGooglePlayBilling } from '@/hooks/useGooglePlayBilling';
 import { useHighContrastMode } from '@/hooks/useHighContrastMode';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
@@ -826,6 +827,7 @@ const Settings = () => {
           <TabsContent value="privacy" className="space-y-6">
             <CloudBackup />
             <EvidenceRetentionSettings />
+            <EvidenceCleanupHistory />
             <GDPRSettings />
           </TabsContent>
         </Tabs>

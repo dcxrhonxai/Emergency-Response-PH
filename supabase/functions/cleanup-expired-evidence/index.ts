@@ -82,7 +82,41 @@ async function cleanupForUser(userId: string, retentionDays: number): Promise<Cl
     .update({ last_cleanup_at: new Date().toISOString() })
     .eq("user_id", userId);
 
+  await admin.from("evidence_cleanup_history").insert({
+    user_id: userId,
+    retention_days: retentionDays,
+    deleted_count: result.deletedCount,
+    buckets: result.buckets,
+    cutoff: result.cutoff,
+    skipped: false,
+  });
+
   return result;
+}
+
+async function logSkipped(userId: string, reason: string) {
+  const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+    auth: { persistSession: false },
+  });
+  await admin.from("evidence_cleanup_history").insert({
+    user_id: userId,
+    retention_days: null,
+    deleted_count: 0,
+    skipped: true,
+    reason,
+  });
+}
+
+async function logError(userId: string, error: string) {
+  const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+    auth: { persistSession: false },
+  });
+  await admin.from("evidence_cleanup_history").insert({
+    user_id: userId,
+    deleted_count: 0,
+    skipped: false,
+    error,
+  });
 }
 
 Deno.serve(async (req) => {
@@ -90,6 +124,7 @@ Deno.serve(async (req) => {
     return new Response("ok", { headers: corsHeaders });
   }
 
+  let userId: string | null = null;
   try {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
@@ -111,7 +146,7 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    const userId = userData.user.id;
+    userId = userData.user.id;
 
     // Read this user's retention setting (RLS-scoped via their JWT).
     const { data: settings, error: settingsError } = await userClient
@@ -121,6 +156,7 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     if (settingsError) {
+      await logError(userId, settingsError.message);
       return new Response(JSON.stringify({ error: settingsError.message }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -129,6 +165,7 @@ Deno.serve(async (req) => {
 
     const retentionDays = settings?.retention_days ?? null;
     if (!retentionDays || retentionDays <= 0) {
+      await logSkipped(userId, "No retention window configured");
       return new Response(
         JSON.stringify({
           retentionDays: null,
@@ -146,7 +183,9 @@ Deno.serve(async (req) => {
     });
   } catch (err) {
     console.error("cleanup-expired-evidence error", err);
-    return new Response(JSON.stringify({ error: (err as Error).message }), {
+    const message = (err as Error).message;
+    if (userId) await logError(userId, message).catch(() => {});
+    return new Response(JSON.stringify({ error: message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
