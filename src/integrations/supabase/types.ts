@@ -279,6 +279,48 @@ export type Database = {
         }
         Relationships: []
       }
+      evidence_cleanup_history: {
+        Row: {
+          buckets: Json | null
+          created_at: string
+          cutoff: string | null
+          deleted_count: number
+          error: string | null
+          id: string
+          ran_at: string
+          reason: string | null
+          retention_days: number | null
+          skipped: boolean
+          user_id: string
+        }
+        Insert: {
+          buckets?: Json | null
+          created_at?: string
+          cutoff?: string | null
+          deleted_count?: number
+          error?: string | null
+          id?: string
+          ran_at?: string
+          reason?: string | null
+          retention_days?: number | null
+          skipped?: boolean
+          user_id: string
+        }
+        Update: {
+          buckets?: Json | null
+          created_at?: string
+          cutoff?: string | null
+          deleted_count?: number
+          error?: string | null
+          id?: string
+          ran_at?: string
+          reason?: string | null
+          retention_days?: number | null
+          skipped?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       evidence_retention_settings: {
         Row: {
           created_at: string
