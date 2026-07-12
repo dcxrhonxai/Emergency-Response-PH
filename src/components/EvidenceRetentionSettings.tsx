@@ -48,10 +48,38 @@ const presetForDays = (days: number | null): string => {
   return match ? match.value : "custom";
 };
 
+interface PreviewItem {
+  bucket: string;
+  path: string;
+  name: string;
+  createdAt: string | null;
+  size: number | null;
+}
+
+interface PreviewResult {
+  retentionDays: number | null;
+  deletedCount: number;
+  cutoff: string | null;
+  buckets: Record<string, number>;
+  items: PreviewItem[];
+  skipped?: boolean;
+  reason?: string;
+}
+
+const formatSize = (bytes: number | null): string => {
+  if (bytes === null || !Number.isFinite(bytes)) return "—";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+};
+
 export const EvidenceRetentionSettings = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [cleaning, setCleaning] = useState(false);
+  const [previewing, setPreviewing] = useState(false);
+  const [preview, setPreview] = useState<PreviewResult | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [retentionDays, setRetentionDays] = useState<number | null>(null);
   const [lastCleanupAt, setLastCleanupAt] = useState<string | null>(null);
 
