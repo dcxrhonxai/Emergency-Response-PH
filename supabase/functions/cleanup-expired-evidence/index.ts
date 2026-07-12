@@ -8,30 +8,36 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const BUCKETS = ["emergency-photos", "emergency-videos", "emergency-audio"];
 const PAGE_SIZE = 1000;
 
+interface EvidenceItem {
+  bucket: string;
+  path: string;
+  name: string;
+  createdAt: string | null;
+  size: number | null;
+}
+
 interface CleanupResult {
   retentionDays: number | null;
   deletedCount: number;
   cutoff: string | null;
   buckets: Record<string, number>;
+  dryRun?: boolean;
+  items?: EvidenceItem[];
 }
 
-async function cleanupForUser(userId: string, retentionDays: number): Promise<CleanupResult> {
+async function collectExpiredForUser(
+  userId: string,
+  retentionDays: number
+): Promise<{ cutoff: Date; buckets: Record<string, EvidenceItem[]> }> {
   const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
     auth: { persistSession: false },
   });
-
   const cutoff = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000);
-  const result: CleanupResult = {
-    retentionDays,
-    deletedCount: 0,
-    cutoff: cutoff.toISOString(),
-    buckets: {},
-  };
+  const buckets: Record<string, EvidenceItem[]> = {};
 
   for (const bucket of BUCKETS) {
+    const expired: EvidenceItem[] = [];
     let offset = 0;
-    let bucketDeleted = 0;
-
     while (true) {
       const { data, error } = await admin.storage.from(bucket).list(userId, {
         limit: PAGE_SIZE,
@@ -44,10 +50,7 @@ async function cleanupForUser(userId: string, retentionDays: number): Promise<Cl
       }
       if (!data || data.length === 0) break;
 
-      const toDelete: string[] = [];
       for (const obj of data) {
-        // Storage objects expose `created_at`; fall back to name-encoded
-        // timestamp (we save files as `${userId}/${Date.now()}-rand.ext`).
         let createdAt: Date | null = null;
         if (obj.created_at) {
           createdAt = new Date(obj.created_at);
@@ -56,23 +59,67 @@ async function cleanupForUser(userId: string, retentionDays: number): Promise<Cl
           if (Number.isFinite(ts)) createdAt = new Date(ts);
         }
         if (createdAt && createdAt < cutoff) {
-          toDelete.push(`${userId}/${obj.name}`);
-        }
-      }
-
-      if (toDelete.length > 0) {
-        const { error: removeError } = await admin.storage.from(bucket).remove(toDelete);
-        if (removeError) {
-          console.error(`remove ${bucket} failed`, removeError);
-        } else {
-          bucketDeleted += toDelete.length;
+          expired.push({
+            bucket,
+            path: `${userId}/${obj.name}`,
+            name: obj.name,
+            createdAt: createdAt.toISOString(),
+            size: (obj.metadata as { size?: number } | null)?.size ?? null,
+          });
         }
       }
 
       if (data.length < PAGE_SIZE) break;
       offset += PAGE_SIZE;
     }
+    buckets[bucket] = expired;
+  }
 
+  return { cutoff, buckets };
+}
+
+async function previewForUser(userId: string, retentionDays: number): Promise<CleanupResult> {
+  const { cutoff, buckets } = await collectExpiredForUser(userId, retentionDays);
+  const result: CleanupResult = {
+    retentionDays,
+    deletedCount: 0,
+    cutoff: cutoff.toISOString(),
+    buckets: {},
+    dryRun: true,
+    items: [],
+  };
+  for (const [bucket, items] of Object.entries(buckets)) {
+    result.buckets[bucket] = items.length;
+    result.deletedCount += items.length;
+    result.items!.push(...items);
+  }
+  return result;
+}
+
+async function cleanupForUser(userId: string, retentionDays: number): Promise<CleanupResult> {
+  const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+    auth: { persistSession: false },
+  });
+  const { cutoff, buckets } = await collectExpiredForUser(userId, retentionDays);
+  const result: CleanupResult = {
+    retentionDays,
+    deletedCount: 0,
+    cutoff: cutoff.toISOString(),
+    buckets: {},
+  };
+
+  for (const [bucket, items] of Object.entries(buckets)) {
+    let bucketDeleted = 0;
+    if (items.length > 0) {
+      const { error: removeError } = await admin.storage
+        .from(bucket)
+        .remove(items.map((i) => i.path));
+      if (removeError) {
+        console.error(`remove ${bucket} failed`, removeError);
+      } else {
+        bucketDeleted = items.length;
+      }
+    }
     result.buckets[bucket] = bucketDeleted;
     result.deletedCount += bucketDeleted;
   }
