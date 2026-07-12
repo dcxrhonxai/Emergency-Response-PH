@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Clock, Loader2, Trash2 } from "lucide-react";
+import { Clock, Eye, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   Card,
@@ -17,6 +17,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 
 interface RetentionRow {
