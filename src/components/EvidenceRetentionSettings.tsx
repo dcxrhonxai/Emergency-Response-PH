@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Clock, Loader2, Trash2 } from "lucide-react";
+import { Clock, Eye, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   Card,
@@ -17,6 +17,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 
 interface RetentionRow {
@@ -39,10 +48,38 @@ const presetForDays = (days: number | null): string => {
   return match ? match.value : "custom";
 };
 
+interface PreviewItem {
+  bucket: string;
+  path: string;
+  name: string;
+  createdAt: string | null;
+  size: number | null;
+}
+
+interface PreviewResult {
+  retentionDays: number | null;
+  deletedCount: number;
+  cutoff: string | null;
+  buckets: Record<string, number>;
+  items: PreviewItem[];
+  skipped?: boolean;
+  reason?: string;
+}
+
+const formatSize = (bytes: number | null): string => {
+  if (bytes === null || !Number.isFinite(bytes)) return "—";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+};
+
 export const EvidenceRetentionSettings = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [cleaning, setCleaning] = useState(false);
+  const [previewing, setPreviewing] = useState(false);
+  const [preview, setPreview] = useState<PreviewResult | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [retentionDays, setRetentionDays] = useState<number | null>(null);
   const [lastCleanupAt, setLastCleanupAt] = useState<string | null>(null);
 
@@ -129,6 +166,28 @@ export const EvidenceRetentionSettings = () => {
     }
   };
 
+  const runDryRun = async () => {
+    setPreviewing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke<PreviewResult>(
+        "cleanup-expired-evidence",
+        { body: { dryRun: true } }
+      );
+      if (error) {
+        toast.error(`Preview failed: ${error.message}`);
+        return;
+      }
+      if (data?.skipped) {
+        toast.info(data.reason || "No retention window configured.");
+        return;
+      }
+      setPreview(data ?? null);
+      setPreviewOpen(true);
+    } finally {
+      setPreviewing(false);
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -171,32 +230,112 @@ export const EvidenceRetentionSettings = () => {
           </p>
         </div>
 
-        <div className="flex items-center justify-between border-t pt-4">
+        <div className="flex items-center justify-between border-t pt-4 gap-2 flex-wrap">
           <div className="text-xs text-muted-foreground">
             {lastCleanupAt
               ? `Last cleanup: ${new Date(lastCleanupAt).toLocaleString()}`
               : "Cleanup has not run yet."}
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={runCleanupNow}
-            disabled={cleaning || retentionDays === null}
-          >
-            {cleaning ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Cleaning…
-              </>
-            ) : (
-              <>
-                <Trash2 className="w-4 h-4 mr-2" />
-                Run cleanup now
-              </>
-            )}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={runDryRun}
+              disabled={previewing || retentionDays === null}
+            >
+              {previewing ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Previewing…
+                </>
+              ) : (
+                <>
+                  <Eye className="w-4 h-4 mr-2" />
+                  Preview (dry run)
+                </>
+              )}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={runCleanupNow}
+              disabled={cleaning || retentionDays === null}
+            >
+              {cleaning ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Cleaning…
+                </>
+              ) : (
+                <>
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Run cleanup now
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </CardContent>
+
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Dry run preview</DialogTitle>
+            <DialogDescription>
+              {preview
+                ? preview.deletedCount === 0
+                  ? "Nothing would be deleted — no evidence is past your retention window."
+                  : `${preview.deletedCount} file(s) would be deleted with your current ${preview.retentionDays}-day window. Nothing has been removed.`
+                : "Loading preview…"}
+            </DialogDescription>
+          </DialogHeader>
+
+          {preview && preview.items.length > 0 && (
+            <ScrollArea className="h-[360px] pr-2">
+              <div className="space-y-1.5">
+                {preview.items.map((item) => (
+                  <div
+                    key={`${item.bucket}/${item.path}`}
+                    className="flex items-center justify-between gap-2 text-sm border rounded-md px-3 py-2"
+                  >
+                    <div className="min-w-0">
+                      <p className="font-mono text-xs truncate">{item.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {item.bucket.replace("emergency-", "")} ·{" "}
+                        {item.createdAt
+                          ? new Date(item.createdAt).toLocaleString()
+                          : "unknown date"}
+                      </p>
+                    </div>
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">
+                      {formatSize(item.size)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          )}
+
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => setPreviewOpen(false)}>
+              Close
+            </Button>
+            {preview && preview.deletedCount > 0 && (
+              <Button
+                variant="destructive"
+                onClick={async () => {
+                  setPreviewOpen(false);
+                  await runCleanupNow();
+                }}
+                disabled={cleaning}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete these now
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 };
