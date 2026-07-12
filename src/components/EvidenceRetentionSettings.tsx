@@ -166,6 +166,28 @@ export const EvidenceRetentionSettings = () => {
     }
   };
 
+  const runDryRun = async () => {
+    setPreviewing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke<PreviewResult>(
+        "cleanup-expired-evidence",
+        { body: { dryRun: true } }
+      );
+      if (error) {
+        toast.error(`Preview failed: ${error.message}`);
+        return;
+      }
+      if (data?.skipped) {
+        toast.info(data.reason || "No retention window configured.");
+        return;
+      }
+      setPreview(data ?? null);
+      setPreviewOpen(true);
+    } finally {
+      setPreviewing(false);
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
