@@ -827,6 +827,7 @@ const Settings = () => {
           <TabsContent value="privacy" className="space-y-6">
             <CloudBackup />
             <EvidenceRetentionSettings />
+            <EvidenceCleanupHistory />
             <GDPRSettings />
           </TabsContent>
         </Tabs>
