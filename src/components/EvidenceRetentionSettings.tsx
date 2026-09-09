@@ -95,7 +95,21 @@ export const EvidenceRetentionSettings = () => {
   const [preview, setPreview] = useState<PreviewResult | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [retentionDays, setRetentionDays] = useState<number | null>(null);
+  const [typeDays, setTypeDays] = useState<Record<TypeKey, number | null | undefined>>({
+    photo: undefined,
+    video: undefined,
+    audio: undefined,
+  });
   const [lastCleanupAt, setLastCleanupAt] = useState<string | null>(null);
+
+  const effectiveDays = (key: TypeKey): number | null => {
+    const v = typeDays[key];
+    return v === undefined ? retentionDays : v;
+  };
+  const anyWindowSet = TYPE_FIELDS.some((f) => {
+    const d = effectiveDays(f.key);
+    return d !== null && d > 0;
+  });
 
   useEffect(() => {
     let cancelled = false;
