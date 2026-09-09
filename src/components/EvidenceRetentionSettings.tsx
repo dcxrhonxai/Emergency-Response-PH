@@ -304,6 +304,57 @@ export const EvidenceRetentionSettings = () => {
           </p>
         </div>
 
+        <div className="space-y-3 border-t pt-4">
+          <div>
+            <Label>Per-type windows</Label>
+            <p className="text-xs text-muted-foreground">
+              Set a different window for each kind of evidence. "Follow overall
+              setting" keeps using the window above.
+            </p>
+          </div>
+          {TYPE_FIELDS.map((field) => {
+            const current = typeDays[field.key];
+            const effective = effectiveDays(field.key);
+            return (
+              <div key={field.key} className="space-y-1">
+                <Label htmlFor={`retention-${field.key}`} className="text-sm font-normal">
+                  {field.label}
+                </Label>
+                <Select
+                  value={loading ? undefined : typePresetValue(current)}
+                  onValueChange={(value) => {
+                    if (value === "default") {
+                      saveTypeRetention(field.key, field.column, undefined);
+                      return;
+                    }
+                    const preset = PRESETS.find((p) => p.value === value);
+                    if (preset) saveTypeRetention(field.key, field.column, preset.days);
+                  }}
+                  disabled={loading || saving}
+                >
+                  <SelectTrigger id={`retention-${field.key}`}>
+                    <SelectValue placeholder={loading ? "Loading…" : "Follow overall setting"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="default">Follow overall setting</SelectItem>
+                    {PRESETS.map((p) => (
+                      <SelectItem key={p.value} value={p.value}>
+                        {p.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  {effective === null
+                    ? "Kept indefinitely."
+                    : `Removed after ${effective} day(s).`}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+
+
         <div className="flex items-center justify-between border-t pt-4 gap-2 flex-wrap">
           <div className="text-xs text-muted-foreground">
             {lastCleanupAt
