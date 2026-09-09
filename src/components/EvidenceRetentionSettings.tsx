@@ -30,6 +30,9 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface RetentionRow {
   retention_days: number | null;
+  photo_retention_days: number | null;
+  video_retention_days: number | null;
+  audio_retention_days: number | null;
   last_cleanup_at: string | null;
 }
 
@@ -47,6 +50,17 @@ const presetForDays = (days: number | null): string => {
   const match = PRESETS.find((p) => p.days === days);
   return match ? match.value : "custom";
 };
+
+type TypeKey = "photo" | "video" | "audio";
+
+const TYPE_FIELDS: Array<{ key: TypeKey; label: string; column: keyof RetentionRow }> = [
+  { key: "photo", label: "Photos", column: "photo_retention_days" },
+  { key: "video", label: "Videos", column: "video_retention_days" },
+  { key: "audio", label: "Audio recordings", column: "audio_retention_days" },
+];
+
+const typePresetValue = (days: number | null | undefined): string =>
+  days === null || days === undefined ? "default" : presetForDays(days);
 
 interface PreviewItem {
   bucket: string;
