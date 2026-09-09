@@ -121,12 +121,19 @@ export const EvidenceRetentionSettings = () => {
       }
       const { data, error } = await supabase
         .from("evidence_retention_settings")
-        .select("retention_days, last_cleanup_at")
+        .select(
+          "retention_days, photo_retention_days, video_retention_days, audio_retention_days, last_cleanup_at"
+        )
         .eq("user_id", user.id)
         .maybeSingle<RetentionRow>();
       if (!cancelled) {
         if (!error && data) {
           setRetentionDays(data.retention_days);
+          setTypeDays({
+            photo: data.photo_retention_days ?? undefined,
+            video: data.video_retention_days ?? undefined,
+            audio: data.audio_retention_days ?? undefined,
+          });
           setLastCleanupAt(data.last_cleanup_at);
         }
         setLoading(false);
