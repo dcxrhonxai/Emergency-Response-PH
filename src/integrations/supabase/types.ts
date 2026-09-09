@@ -289,6 +289,7 @@ export type Database = {
           id: string
           ran_at: string
           reason: string | null
+          retention_by_type: Json | null
           retention_days: number | null
           skipped: boolean
           user_id: string
@@ -302,6 +303,7 @@ export type Database = {
           id?: string
           ran_at?: string
           reason?: string | null
+          retention_by_type?: Json | null
           retention_days?: number | null
           skipped?: boolean
           user_id: string
@@ -315,6 +317,7 @@ export type Database = {
           id?: string
           ran_at?: string
           reason?: string | null
+          retention_by_type?: Json | null
           retention_days?: number | null
           skipped?: boolean
           user_id?: string
@@ -323,25 +326,34 @@ export type Database = {
       }
       evidence_retention_settings: {
         Row: {
+          audio_retention_days: number | null
           created_at: string
           last_cleanup_at: string | null
+          photo_retention_days: number | null
           retention_days: number | null
           updated_at: string
           user_id: string
+          video_retention_days: number | null
         }
         Insert: {
+          audio_retention_days?: number | null
           created_at?: string
           last_cleanup_at?: string | null
+          photo_retention_days?: number | null
           retention_days?: number | null
           updated_at?: string
           user_id: string
+          video_retention_days?: number | null
         }
         Update: {
+          audio_retention_days?: number | null
           created_at?: string
           last_cleanup_at?: string | null
+          photo_retention_days?: number | null
           retention_days?: number | null
           updated_at?: string
           user_id?: string
+          video_retention_days?: number | null
         }
         Relationships: []
       }
