@@ -8,6 +8,8 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const BUCKETS = ["emergency-photos", "emergency-videos", "emergency-audio"];
 const PAGE_SIZE = 1000;
 
+type RetentionMap = Record<string, number>;
+
 interface EvidenceItem {
   bucket: string;
   path: string;
