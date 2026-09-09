@@ -95,15 +95,22 @@ async function collectExpiredForUser(
     buckets[bucket] = expired;
   }
 
-  return { cutoff, buckets };
+  return { cutoff, cutoffs, buckets };
 }
 
-async function previewForUser(userId: string, retentionDays: number): Promise<CleanupResult> {
-  const { cutoff, buckets } = await collectExpiredForUser(userId, retentionDays);
+const widestDays = (retention: RetentionMap): number | null => {
+  const days = Object.values(retention).filter((d) => typeof d === "number" && d > 0);
+  return days.length ? Math.max(...days) : null;
+};
+
+async function previewForUser(userId: string, retention: RetentionMap): Promise<CleanupResult> {
+  const { cutoff, cutoffs, buckets } = await collectExpiredForUser(userId, retention);
   const result: CleanupResult = {
-    retentionDays,
+    retentionDays: widestDays(retention),
+    retentionByType: retention,
     deletedCount: 0,
     cutoff: cutoff.toISOString(),
+    cutoffs,
     buckets: {},
     dryRun: true,
     items: [],
@@ -116,15 +123,17 @@ async function previewForUser(userId: string, retentionDays: number): Promise<Cl
   return result;
 }
 
-async function cleanupForUser(userId: string, retentionDays: number): Promise<CleanupResult> {
+async function cleanupForUser(userId: string, retention: RetentionMap): Promise<CleanupResult> {
   const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
     auth: { persistSession: false },
   });
-  const { cutoff, buckets } = await collectExpiredForUser(userId, retentionDays);
+  const { cutoff, cutoffs, buckets } = await collectExpiredForUser(userId, retention);
   const result: CleanupResult = {
-    retentionDays,
+    retentionDays: widestDays(retention),
+    retentionByType: retention,
     deletedCount: 0,
     cutoff: cutoff.toISOString(),
+    cutoffs,
     buckets: {},
   };
 
