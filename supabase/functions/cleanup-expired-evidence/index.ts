@@ -20,8 +20,10 @@ interface EvidenceItem {
 
 interface CleanupResult {
   retentionDays: number | null;
+  retentionByType?: RetentionMap;
   deletedCount: number;
   cutoff: string | null;
+  cutoffs?: Record<string, string>;
   buckets: Record<string, number>;
   dryRun?: boolean;
   items?: EvidenceItem[];
@@ -29,16 +31,32 @@ interface CleanupResult {
 
 async function collectExpiredForUser(
   userId: string,
-  retentionDays: number
-): Promise<{ cutoff: Date; buckets: Record<string, EvidenceItem[]> }> {
+  retention: RetentionMap
+): Promise<{
+  cutoff: Date;
+  cutoffs: Record<string, string>;
+  buckets: Record<string, EvidenceItem[]>;
+}> {
   const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
     auth: { persistSession: false },
   });
-  const cutoff = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000);
+  const activeDays = BUCKETS.map((b) => retention[b]).filter(
+    (d) => typeof d === "number" && d > 0
+  );
+  const widest = activeDays.length ? Math.max(...activeDays) : 0;
+  const cutoff = new Date(Date.now() - widest * 24 * 60 * 60 * 1000);
+  const cutoffs: Record<string, string> = {};
   const buckets: Record<string, EvidenceItem[]> = {};
 
   for (const bucket of BUCKETS) {
     const expired: EvidenceItem[] = [];
+    const days = retention[bucket];
+    if (!days || days <= 0) {
+      buckets[bucket] = expired;
+      continue;
+    }
+    const bucketCutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    cutoffs[bucket] = bucketCutoff.toISOString();
     let offset = 0;
     while (true) {
       const { data, error } = await admin.storage.from(bucket).list(userId, {
