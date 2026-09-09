@@ -129,10 +129,12 @@ export const EvidenceRetentionSettings = () => {
       if (!cancelled) {
         if (!error && data) {
           setRetentionDays(data.retention_days);
+          const fromColumn = (v: number | null) =>
+            v === null ? undefined : v === 0 ? null : v;
           setTypeDays({
-            photo: data.photo_retention_days ?? undefined,
-            video: data.video_retention_days ?? undefined,
-            audio: data.audio_retention_days ?? undefined,
+            photo: fromColumn(data.photo_retention_days),
+            video: fromColumn(data.video_retention_days),
+            audio: fromColumn(data.audio_retention_days),
           });
           setLastCleanupAt(data.last_cleanup_at);
         }
