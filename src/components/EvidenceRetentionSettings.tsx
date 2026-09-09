@@ -366,7 +366,7 @@ export const EvidenceRetentionSettings = () => {
               variant="ghost"
               size="sm"
               onClick={runDryRun}
-              disabled={previewing || retentionDays === null}
+              disabled={previewing || !anyWindowSet}
             >
               {previewing ? (
                 <>
@@ -384,7 +384,7 @@ export const EvidenceRetentionSettings = () => {
               variant="outline"
               size="sm"
               onClick={runCleanupNow}
-              disabled={cleaning || retentionDays === null}
+              disabled={cleaning || !anyWindowSet}
             >
               {cleaning ? (
                 <>
