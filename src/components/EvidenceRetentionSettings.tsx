@@ -30,6 +30,9 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface RetentionRow {
   retention_days: number | null;
+  photo_retention_days: number | null;
+  video_retention_days: number | null;
+  audio_retention_days: number | null;
   last_cleanup_at: string | null;
 }
 
@@ -47,6 +50,17 @@ const presetForDays = (days: number | null): string => {
   const match = PRESETS.find((p) => p.days === days);
   return match ? match.value : "custom";
 };
+
+type TypeKey = "photo" | "video" | "audio";
+
+const TYPE_FIELDS: Array<{ key: TypeKey; label: string; column: keyof RetentionRow }> = [
+  { key: "photo", label: "Photos", column: "photo_retention_days" },
+  { key: "video", label: "Videos", column: "video_retention_days" },
+  { key: "audio", label: "Audio recordings", column: "audio_retention_days" },
+];
+
+const typePresetValue = (days: number | null | undefined): string =>
+  days === null || days === undefined ? "default" : presetForDays(days);
 
 interface PreviewItem {
   bucket: string;
@@ -81,7 +95,21 @@ export const EvidenceRetentionSettings = () => {
   const [preview, setPreview] = useState<PreviewResult | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [retentionDays, setRetentionDays] = useState<number | null>(null);
+  const [typeDays, setTypeDays] = useState<Record<TypeKey, number | null | undefined>>({
+    photo: undefined,
+    video: undefined,
+    audio: undefined,
+  });
   const [lastCleanupAt, setLastCleanupAt] = useState<string | null>(null);
+
+  const effectiveDays = (key: TypeKey): number | null => {
+    const v = typeDays[key];
+    return v === undefined ? retentionDays : v;
+  };
+  const anyWindowSet = TYPE_FIELDS.some((f) => {
+    const d = effectiveDays(f.key);
+    return d !== null && d > 0;
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -93,12 +121,21 @@ export const EvidenceRetentionSettings = () => {
       }
       const { data, error } = await supabase
         .from("evidence_retention_settings")
-        .select("retention_days, last_cleanup_at")
+        .select(
+          "retention_days, photo_retention_days, video_retention_days, audio_retention_days, last_cleanup_at"
+        )
         .eq("user_id", user.id)
         .maybeSingle<RetentionRow>();
       if (!cancelled) {
         if (!error && data) {
           setRetentionDays(data.retention_days);
+          const fromColumn = (v: number | null) =>
+            v === null ? undefined : v === 0 ? null : v;
+          setTypeDays({
+            photo: fromColumn(data.photo_retention_days),
+            video: fromColumn(data.video_retention_days),
+            audio: fromColumn(data.audio_retention_days),
+          });
           setLastCleanupAt(data.last_cleanup_at);
         }
         setLoading(false);
@@ -132,6 +169,43 @@ export const EvidenceRetentionSettings = () => {
         nextDays === null
           ? "Evidence will be kept indefinitely."
           : `Evidence older than ${nextDays} day(s) will be deleted automatically.`
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const saveTypeRetention = async (
+    key: TypeKey,
+    column: keyof RetentionRow,
+    next: number | null | undefined
+  ) => {
+    setSaving(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("You must be signed in.");
+        return;
+      }
+      const columnValue = next === undefined ? null : next === null ? 0 : next;
+      const { error } = await supabase
+        .from("evidence_retention_settings")
+        .upsert(
+          { user_id: user.id, [column]: columnValue },
+          { onConflict: "user_id" }
+        );
+      if (error) {
+        toast.error(`Could not save: ${error.message}`);
+        return;
+      }
+      setTypeDays((prev) => ({ ...prev, [key]: next }));
+      const label = TYPE_FIELDS.find((f) => f.key === key)?.label ?? key;
+      toast.success(
+        next === undefined
+          ? `${label} now follow the overall window.`
+          : next === null
+            ? `${label} will be kept indefinitely.`
+            : `${label} older than ${next} day(s) will be deleted.`
       );
     } finally {
       setSaving(false);
@@ -230,6 +304,57 @@ export const EvidenceRetentionSettings = () => {
           </p>
         </div>
 
+        <div className="space-y-3 border-t pt-4">
+          <div>
+            <Label>Per-type windows</Label>
+            <p className="text-xs text-muted-foreground">
+              Set a different window for each kind of evidence. "Follow overall
+              setting" keeps using the window above.
+            </p>
+          </div>
+          {TYPE_FIELDS.map((field) => {
+            const current = typeDays[field.key];
+            const effective = effectiveDays(field.key);
+            return (
+              <div key={field.key} className="space-y-1">
+                <Label htmlFor={`retention-${field.key}`} className="text-sm font-normal">
+                  {field.label}
+                </Label>
+                <Select
+                  value={loading ? undefined : typePresetValue(current)}
+                  onValueChange={(value) => {
+                    if (value === "default") {
+                      saveTypeRetention(field.key, field.column, undefined);
+                      return;
+                    }
+                    const preset = PRESETS.find((p) => p.value === value);
+                    if (preset) saveTypeRetention(field.key, field.column, preset.days);
+                  }}
+                  disabled={loading || saving}
+                >
+                  <SelectTrigger id={`retention-${field.key}`}>
+                    <SelectValue placeholder={loading ? "Loading…" : "Follow overall setting"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="default">Follow overall setting</SelectItem>
+                    {PRESETS.map((p) => (
+                      <SelectItem key={p.value} value={p.value}>
+                        {p.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  {effective === null
+                    ? "Kept indefinitely."
+                    : `Removed after ${effective} day(s).`}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+
+
         <div className="flex items-center justify-between border-t pt-4 gap-2 flex-wrap">
           <div className="text-xs text-muted-foreground">
             {lastCleanupAt
@@ -241,7 +366,7 @@ export const EvidenceRetentionSettings = () => {
               variant="ghost"
               size="sm"
               onClick={runDryRun}
-              disabled={previewing || retentionDays === null}
+              disabled={previewing || !anyWindowSet}
             >
               {previewing ? (
                 <>
@@ -259,7 +384,7 @@ export const EvidenceRetentionSettings = () => {
               variant="outline"
               size="sm"
               onClick={runCleanupNow}
-              disabled={cleaning || retentionDays === null}
+              disabled={cleaning || !anyWindowSet}
             >
               {cleaning ? (
                 <>

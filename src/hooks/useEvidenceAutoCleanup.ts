@@ -27,11 +27,19 @@ export const useEvidenceAutoCleanup = () => {
         // burn an unnecessary function invocation on every cold start.
         const { data: settings } = await supabase
           .from("evidence_retention_settings")
-          .select("retention_days")
+          .select(
+            "retention_days, photo_retention_days, video_retention_days, audio_retention_days"
+          )
           .eq("user_id", user.id)
           .maybeSingle();
         if (cancelled) return;
-        if (!settings?.retention_days) {
+        const fallback = settings?.retention_days ?? null;
+        const effective = [
+          settings?.photo_retention_days ?? fallback,
+          settings?.video_retention_days ?? fallback,
+          settings?.audio_retention_days ?? fallback,
+        ];
+        if (!effective.some((d) => typeof d === "number" && d > 0)) {
           localStorage.setItem(STORAGE_KEY, String(Date.now()));
           return;
         }

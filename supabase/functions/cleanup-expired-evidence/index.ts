@@ -8,6 +8,8 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const BUCKETS = ["emergency-photos", "emergency-videos", "emergency-audio"];
 const PAGE_SIZE = 1000;
 
+type RetentionMap = Record<string, number>;
+
 interface EvidenceItem {
   bucket: string;
   path: string;
@@ -18,8 +20,10 @@ interface EvidenceItem {
 
 interface CleanupResult {
   retentionDays: number | null;
+  retentionByType?: RetentionMap;
   deletedCount: number;
   cutoff: string | null;
+  cutoffs?: Record<string, string>;
   buckets: Record<string, number>;
   dryRun?: boolean;
   items?: EvidenceItem[];
@@ -27,16 +31,32 @@ interface CleanupResult {
 
 async function collectExpiredForUser(
   userId: string,
-  retentionDays: number
-): Promise<{ cutoff: Date; buckets: Record<string, EvidenceItem[]> }> {
+  retention: RetentionMap
+): Promise<{
+  cutoff: Date;
+  cutoffs: Record<string, string>;
+  buckets: Record<string, EvidenceItem[]>;
+}> {
   const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
     auth: { persistSession: false },
   });
-  const cutoff = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000);
+  const activeDays = BUCKETS.map((b) => retention[b]).filter(
+    (d) => typeof d === "number" && d > 0
+  );
+  const widest = activeDays.length ? Math.max(...activeDays) : 0;
+  const cutoff = new Date(Date.now() - widest * 24 * 60 * 60 * 1000);
+  const cutoffs: Record<string, string> = {};
   const buckets: Record<string, EvidenceItem[]> = {};
 
   for (const bucket of BUCKETS) {
     const expired: EvidenceItem[] = [];
+    const days = retention[bucket];
+    if (!days || days <= 0) {
+      buckets[bucket] = expired;
+      continue;
+    }
+    const bucketCutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    cutoffs[bucket] = bucketCutoff.toISOString();
     let offset = 0;
     while (true) {
       const { data, error } = await admin.storage.from(bucket).list(userId, {
@@ -58,7 +78,7 @@ async function collectExpiredForUser(
           const ts = parseInt(obj.name.split("-")[0], 10);
           if (Number.isFinite(ts)) createdAt = new Date(ts);
         }
-        if (createdAt && createdAt < cutoff) {
+        if (createdAt && createdAt < bucketCutoff) {
           expired.push({
             bucket,
             path: `${userId}/${obj.name}`,
@@ -75,15 +95,22 @@ async function collectExpiredForUser(
     buckets[bucket] = expired;
   }
 
-  return { cutoff, buckets };
+  return { cutoff, cutoffs, buckets };
 }
 
-async function previewForUser(userId: string, retentionDays: number): Promise<CleanupResult> {
-  const { cutoff, buckets } = await collectExpiredForUser(userId, retentionDays);
+const widestDays = (retention: RetentionMap): number | null => {
+  const days = Object.values(retention).filter((d) => typeof d === "number" && d > 0);
+  return days.length ? Math.max(...days) : null;
+};
+
+async function previewForUser(userId: string, retention: RetentionMap): Promise<CleanupResult> {
+  const { cutoff, cutoffs, buckets } = await collectExpiredForUser(userId, retention);
   const result: CleanupResult = {
-    retentionDays,
+    retentionDays: widestDays(retention),
+    retentionByType: retention,
     deletedCount: 0,
     cutoff: cutoff.toISOString(),
+    cutoffs,
     buckets: {},
     dryRun: true,
     items: [],
@@ -96,15 +123,17 @@ async function previewForUser(userId: string, retentionDays: number): Promise<Cl
   return result;
 }
 
-async function cleanupForUser(userId: string, retentionDays: number): Promise<CleanupResult> {
+async function cleanupForUser(userId: string, retention: RetentionMap): Promise<CleanupResult> {
   const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
     auth: { persistSession: false },
   });
-  const { cutoff, buckets } = await collectExpiredForUser(userId, retentionDays);
+  const { cutoff, cutoffs, buckets } = await collectExpiredForUser(userId, retention);
   const result: CleanupResult = {
-    retentionDays,
+    retentionDays: widestDays(retention),
+    retentionByType: retention,
     deletedCount: 0,
     cutoff: cutoff.toISOString(),
+    cutoffs,
     buckets: {},
   };
 
@@ -131,7 +160,8 @@ async function cleanupForUser(userId: string, retentionDays: number): Promise<Cl
 
   await admin.from("evidence_cleanup_history").insert({
     user_id: userId,
-    retention_days: retentionDays,
+    retention_days: result.retentionDays,
+    retention_by_type: retention,
     deleted_count: result.deletedCount,
     buckets: result.buckets,
     cutoff: result.cutoff,
@@ -195,10 +225,11 @@ Deno.serve(async (req) => {
     }
     userId = userData.user.id;
 
-    // Parse optional { dryRun, retentionDays } body — dry runs may preview
-    // a different window than the one that's saved.
+    // Parse optional { dryRun, retentionDays, retentionByType } body — dry runs
+    // may preview different windows than the ones that are saved.
     let dryRun = false;
     let overrideDays: number | null = null;
+    let overrideByType: Partial<RetentionMap> | null = null;
     if (req.method === "POST") {
       try {
         const body = await req.json();
@@ -206,16 +237,29 @@ Deno.serve(async (req) => {
         if (typeof body?.retentionDays === "number" && body.retentionDays > 0) {
           overrideDays = Math.floor(body.retentionDays);
         }
+        if (body?.retentionByType && typeof body.retentionByType === "object") {
+          overrideByType = {};
+          for (const bucket of BUCKETS) {
+            const v = body.retentionByType[bucket];
+            if (typeof v === "number" && v > 0) overrideByType[bucket] = Math.floor(v);
+          }
+        }
       } catch {
         // no body — fine
       }
     }
 
-    let retentionDays: number | null = overrideDays;
-    if (retentionDays === null) {
+    const retention: RetentionMap = {};
+    if (overrideByType && Object.keys(overrideByType).length > 0) {
+      Object.assign(retention, overrideByType);
+    } else if (overrideDays !== null) {
+      for (const bucket of BUCKETS) retention[bucket] = overrideDays;
+    } else {
       const { data: settings, error: settingsError } = await userClient
         .from("evidence_retention_settings")
-        .select("retention_days")
+        .select(
+          "retention_days, photo_retention_days, video_retention_days, audio_retention_days"
+        )
         .eq("user_id", userId)
         .maybeSingle();
 
@@ -226,10 +270,20 @@ Deno.serve(async (req) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      retentionDays = settings?.retention_days ?? null;
+
+      const fallback = settings?.retention_days ?? null;
+      const perType: Record<string, number | null> = {
+        "emergency-photos": settings?.photo_retention_days ?? fallback,
+        "emergency-videos": settings?.video_retention_days ?? fallback,
+        "emergency-audio": settings?.audio_retention_days ?? fallback,
+      };
+      for (const bucket of BUCKETS) {
+        const days = perType[bucket];
+        if (days && days > 0) retention[bucket] = days;
+      }
     }
 
-    if (!retentionDays || retentionDays <= 0) {
+    if (Object.keys(retention).length === 0) {
       if (!dryRun) await logSkipped(userId, "No retention window configured");
       return new Response(
         JSON.stringify({
@@ -244,8 +298,8 @@ Deno.serve(async (req) => {
     }
 
     const result = dryRun
-      ? await previewForUser(userId, retentionDays)
-      : await cleanupForUser(userId, retentionDays);
+      ? await previewForUser(userId, retention)
+      : await cleanupForUser(userId, retention);
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
