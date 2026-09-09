@@ -175,6 +175,43 @@ export const EvidenceRetentionSettings = () => {
     }
   };
 
+  const saveTypeRetention = async (
+    key: TypeKey,
+    column: keyof RetentionRow,
+    next: number | null | undefined
+  ) => {
+    setSaving(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("You must be signed in.");
+        return;
+      }
+      const columnValue = next === undefined ? null : next === null ? 0 : next;
+      const { error } = await supabase
+        .from("evidence_retention_settings")
+        .upsert(
+          { user_id: user.id, [column]: columnValue },
+          { onConflict: "user_id" }
+        );
+      if (error) {
+        toast.error(`Could not save: ${error.message}`);
+        return;
+      }
+      setTypeDays((prev) => ({ ...prev, [key]: next }));
+      const label = TYPE_FIELDS.find((f) => f.key === key)?.label ?? key;
+      toast.success(
+        next === undefined
+          ? `${label} now follow the overall window.`
+          : next === null
+            ? `${label} will be kept indefinitely.`
+            : `${label} older than ${next} day(s) will be deleted.`
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const runCleanupNow = async () => {
     setCleaning(true);
     try {
