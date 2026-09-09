@@ -160,7 +160,8 @@ async function cleanupForUser(userId: string, retention: RetentionMap): Promise<
 
   await admin.from("evidence_cleanup_history").insert({
     user_id: userId,
-    retention_days: retentionDays,
+    retention_days: result.retentionDays,
+    retention_by_type: retention,
     deleted_count: result.deletedCount,
     buckets: result.buckets,
     cutoff: result.cutoff,
