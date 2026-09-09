@@ -78,7 +78,7 @@ async function collectExpiredForUser(
           const ts = parseInt(obj.name.split("-")[0], 10);
           if (Number.isFinite(ts)) createdAt = new Date(ts);
         }
-        if (createdAt && createdAt < cutoff) {
+        if (createdAt && createdAt < bucketCutoff) {
           expired.push({
             bucket,
             path: `${userId}/${obj.name}`,
