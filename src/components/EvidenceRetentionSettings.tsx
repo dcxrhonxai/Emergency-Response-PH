@@ -27,6 +27,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 
 interface RetentionRow {
@@ -35,6 +36,7 @@ interface RetentionRow {
   video_retention_days: number | null;
   audio_retention_days: number | null;
   last_cleanup_at: string | null;
+  notify_on_cleanup: boolean | null;
 }
 
 const PRESETS: Array<{ value: string; label: string; days: number | null }> = [
@@ -102,6 +104,7 @@ export const EvidenceRetentionSettings = () => {
     audio: undefined,
   });
   const [lastCleanupAt, setLastCleanupAt] = useState<string | null>(null);
+  const [notifyOnCleanup, setNotifyOnCleanup] = useState(true);
   const [cleanupProgress, setCleanupProgress] = useState(0);
   const [cleanupStatus, setCleanupStatus] = useState<
     | { kind: "success" | "error" | "info"; message: string }
@@ -128,7 +131,7 @@ export const EvidenceRetentionSettings = () => {
       const { data, error } = await supabase
         .from("evidence_retention_settings")
         .select(
-          "retention_days, photo_retention_days, video_retention_days, audio_retention_days, last_cleanup_at"
+          "retention_days, photo_retention_days, video_retention_days, audio_retention_days, last_cleanup_at, notify_on_cleanup"
         )
         .eq("user_id", user.id)
         .maybeSingle<RetentionRow>();
@@ -143,6 +146,7 @@ export const EvidenceRetentionSettings = () => {
             audio: fromColumn(data.audio_retention_days),
           });
           setLastCleanupAt(data.last_cleanup_at);
+          setNotifyOnCleanup(data.notify_on_cleanup !== false);
         }
         setLoading(false);
       }
@@ -216,6 +220,33 @@ export const EvidenceRetentionSettings = () => {
     } finally {
       setSaving(false);
     }
+  };
+
+  const saveNotifyPreference = async (next: boolean) => {
+    const previous = notifyOnCleanup;
+    setNotifyOnCleanup(next);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      setNotifyOnCleanup(previous);
+      toast.error("You must be signed in.");
+      return;
+    }
+    const { error } = await supabase
+      .from("evidence_retention_settings")
+      .upsert(
+        { user_id: user.id, notify_on_cleanup: next },
+        { onConflict: "user_id" }
+      );
+    if (error) {
+      setNotifyOnCleanup(previous);
+      toast.error(`Could not save: ${error.message}`);
+      return;
+    }
+    toast.success(
+      next
+        ? "You'll be notified when automatic cleanup runs."
+        : "Cleanup notifications turned off."
+    );
   };
 
   const runCleanupNow = async () => {
@@ -376,6 +407,22 @@ export const EvidenceRetentionSettings = () => {
           })}
         </div>
 
+
+        <div className="flex items-start justify-between gap-4 border-t pt-4">
+          <div className="space-y-0.5">
+            <Label htmlFor="cleanup-notify">Notify me about automatic cleanup</Label>
+            <p className="text-xs text-muted-foreground">
+              Show an alert when the daily cleanup deletes evidence or runs into
+              a problem.
+            </p>
+          </div>
+          <Switch
+            id="cleanup-notify"
+            checked={notifyOnCleanup}
+            onCheckedChange={saveNotifyPreference}
+            disabled={loading}
+          />
+        </div>
 
         <div className="border-t pt-4 space-y-3">
           {cleaning && (

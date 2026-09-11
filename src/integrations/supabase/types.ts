@@ -329,6 +329,7 @@ export type Database = {
           audio_retention_days: number | null
           created_at: string
           last_cleanup_at: string | null
+          notify_on_cleanup: boolean
           photo_retention_days: number | null
           retention_days: number | null
           updated_at: string
@@ -339,6 +340,7 @@ export type Database = {
           audio_retention_days?: number | null
           created_at?: string
           last_cleanup_at?: string | null
+          notify_on_cleanup?: boolean
           photo_retention_days?: number | null
           retention_days?: number | null
           updated_at?: string
@@ -349,6 +351,7 @@ export type Database = {
           audio_retention_days?: number | null
           created_at?: string
           last_cleanup_at?: string | null
+          notify_on_cleanup?: boolean
           photo_retention_days?: number | null
           retention_days?: number | null
           updated_at?: string
