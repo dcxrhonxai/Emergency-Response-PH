@@ -408,6 +408,22 @@ export const EvidenceRetentionSettings = () => {
         </div>
 
 
+        <div className="flex items-start justify-between gap-4 border-t pt-4">
+          <div className="space-y-0.5">
+            <Label htmlFor="cleanup-notify">Notify me about automatic cleanup</Label>
+            <p className="text-xs text-muted-foreground">
+              Show an alert when the daily cleanup deletes evidence or runs into
+              a problem.
+            </p>
+          </div>
+          <Switch
+            id="cleanup-notify"
+            checked={notifyOnCleanup}
+            onCheckedChange={saveNotifyPreference}
+            disabled={loading}
+          />
+        </div>
+
         <div className="border-t pt-4 space-y-3">
           {cleaning && (
             <div className="space-y-1.5" role="status" aria-live="polite">
