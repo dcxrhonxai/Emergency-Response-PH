@@ -423,7 +423,7 @@ export const EvidenceRetentionSettings = () => {
               variant="ghost"
               size="sm"
               onClick={runDryRun}
-              disabled={previewing || !anyWindowSet}
+              disabled={previewing || cleaning || !anyWindowSet}
             >
               {previewing ? (
                 <>
@@ -455,6 +455,7 @@ export const EvidenceRetentionSettings = () => {
                 </>
               )}
             </Button>
+          </div>
           </div>
         </div>
       </CardContent>
