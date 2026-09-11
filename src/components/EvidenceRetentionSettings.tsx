@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Clock, Eye, Loader2, Trash2 } from "lucide-react";
+import { CheckCircle2, Clock, Eye, Loader2, Trash2, XCircle } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import {
   Card,
@@ -101,6 +102,11 @@ export const EvidenceRetentionSettings = () => {
     audio: undefined,
   });
   const [lastCleanupAt, setLastCleanupAt] = useState<string | null>(null);
+  const [cleanupProgress, setCleanupProgress] = useState(0);
+  const [cleanupStatus, setCleanupStatus] = useState<
+    | { kind: "success" | "error" | "info"; message: string }
+    | null
+  >(null);
 
   const effectiveDays = (key: TypeKey): number | null => {
     const v = typeDays[key];
