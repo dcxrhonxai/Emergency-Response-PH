@@ -377,7 +377,42 @@ export const EvidenceRetentionSettings = () => {
         </div>
 
 
-        <div className="flex items-center justify-between border-t pt-4 gap-2 flex-wrap">
+        <div className="border-t pt-4 space-y-3">
+          {cleaning && (
+            <div className="space-y-1.5" role="status" aria-live="polite">
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span className="flex items-center gap-1.5">
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                  Running cleanup…
+                </span>
+                <span>{Math.round(cleanupProgress)}%</span>
+              </div>
+              <Progress value={cleanupProgress} className="h-2" />
+            </div>
+          )}
+          {!cleaning && cleanupStatus && (
+            <div
+              role="status"
+              aria-live="polite"
+              className={`flex items-start gap-2 text-sm rounded-md border px-3 py-2 ${
+                cleanupStatus.kind === "success"
+                  ? "border-primary/30 bg-primary/5 text-foreground"
+                  : cleanupStatus.kind === "error"
+                    ? "border-destructive/40 bg-destructive/10 text-destructive"
+                    : "border-border bg-muted/50 text-muted-foreground"
+              }`}
+            >
+              {cleanupStatus.kind === "success" ? (
+                <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0 text-primary" />
+              ) : cleanupStatus.kind === "error" ? (
+                <XCircle className="w-4 h-4 mt-0.5 shrink-0" />
+              ) : (
+                <Clock className="w-4 h-4 mt-0.5 shrink-0" />
+              )}
+              <span>{cleanupStatus.message}</span>
+            </div>
+          )}
+          <div className="flex items-center justify-between gap-2 flex-wrap">
           <div className="text-xs text-muted-foreground">
             {lastCleanupAt
               ? `Last cleanup: ${new Date(lastCleanupAt).toLocaleString()}`
