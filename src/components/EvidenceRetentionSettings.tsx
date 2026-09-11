@@ -220,6 +220,13 @@ export const EvidenceRetentionSettings = () => {
 
   const runCleanupNow = async () => {
     setCleaning(true);
+    setCleanupStatus(null);
+    setCleanupProgress(10);
+    // Indeterminate-feel progress: creep toward 90% while the function runs,
+    // then jump to 100% on completion.
+    const tick = window.setInterval(() => {
+      setCleanupProgress((p) => (p < 90 ? p + Math.max(1, (90 - p) / 8) : p));
+    }, 300);
     try {
       const { data, error } = await supabase.functions.invoke<{
         deletedCount?: number;
@@ -227,21 +234,30 @@ export const EvidenceRetentionSettings = () => {
         reason?: string;
       }>("cleanup-expired-evidence");
       if (error) {
-        toast.error(`Cleanup failed: ${error.message}`);
+        const message = `Cleanup failed: ${error.message}`;
+        setCleanupStatus({ kind: "error", message });
+        toast.error(message);
         return;
       }
       if (data?.skipped) {
-        toast.info(data.reason || "No retention window configured.");
+        const message = data.reason || "No retention window configured.";
+        setCleanupStatus({ kind: "info", message });
+        toast.info(message);
         return;
       }
       const count = data?.deletedCount ?? 0;
-      toast.success(
+      const message =
         count === 0
-          ? "Nothing to delete — no evidence is past its retention window."
-          : `Deleted ${count} expired evidence file(s).`
-      );
+          ? "Cleanup finished — no evidence was past its retention window."
+          : `Cleanup finished — deleted ${count} expired evidence file(s).`;
+      setCleanupStatus({ kind: "success", message });
+      toast.success(message);
       setLastCleanupAt(new Date().toISOString());
     } finally {
+      window.clearInterval(tick);
+      setCleanupProgress(100);
+      // Leave the completed bar visible briefly, then reset.
+      window.setTimeout(() => setCleanupProgress(0), 1200);
       setCleaning(false);
     }
   };
