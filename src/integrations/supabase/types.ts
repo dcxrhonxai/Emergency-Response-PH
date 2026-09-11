@@ -52,6 +52,134 @@ export type Database = {
           },
         ]
       }
+      case_alerts: {
+        Row: {
+          alert_id: string
+          case_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          alert_id: string
+          case_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          alert_id?: string
+          case_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_alerts_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "emergency_alerts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "case_alerts_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      case_findings: {
+        Row: {
+          case_id: string
+          category: string
+          created_at: string
+          detail: string | null
+          evidence_ref: Json | null
+          id: string
+          importance: string
+          recorded_at: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          case_id: string
+          category?: string
+          created_at?: string
+          detail?: string | null
+          evidence_ref?: Json | null
+          id?: string
+          importance?: string
+          recorded_at?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          case_id?: string
+          category?: string
+          created_at?: string
+          detail?: string | null
+          evidence_ref?: Json | null
+          id?: string
+          importance?: string
+          recorded_at?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_findings_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cases: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          incident_date: string | null
+          severity: string
+          status: string
+          tags: string[]
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          incident_date?: string | null
+          severity?: string
+          status?: string
+          tags?: string[]
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          incident_date?: string | null
+          severity?: string
+          status?: string
+          tags?: string[]
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       contact_group_members: {
         Row: {
           contact_id: string
