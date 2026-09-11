@@ -222,6 +222,33 @@ export const EvidenceRetentionSettings = () => {
     }
   };
 
+  const saveNotifyPreference = async (next: boolean) => {
+    const previous = notifyOnCleanup;
+    setNotifyOnCleanup(next);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      setNotifyOnCleanup(previous);
+      toast.error("You must be signed in.");
+      return;
+    }
+    const { error } = await supabase
+      .from("evidence_retention_settings")
+      .upsert(
+        { user_id: user.id, notify_on_cleanup: next },
+        { onConflict: "user_id" }
+      );
+    if (error) {
+      setNotifyOnCleanup(previous);
+      toast.error(`Could not save: ${error.message}`);
+      return;
+    }
+    toast.success(
+      next
+        ? "You'll be notified when automatic cleanup runs."
+        : "Cleanup notifications turned off."
+    );
+  };
+
   const runCleanupNow = async () => {
     setCleaning(true);
     setCleanupStatus(null);
