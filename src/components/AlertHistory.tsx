@@ -30,6 +30,28 @@ const AlertHistory = ({ userId }: AlertHistoryProps) => {
   const [alerts, setAlerts] = useState<EmergencyAlert[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [linking, setLinking] = useState<string | null>(null);
+  const navigate = useNavigate();
+
+  const handleOpenCase = async (alert: EmergencyAlert) => {
+    setLinking(alert.id);
+    try {
+      const { caseId, created, findingAdded } = await addAlertToCaseAsFinding(alert, userId);
+      toast.success(
+        created
+          ? "Case created with this alert as a finding"
+          : findingAdded
+            ? "Alert added to the case as a finding"
+            : "This alert is already recorded in the case"
+      );
+      navigate(`/cases/${caseId}`);
+    } catch (error) {
+      console.error("Open case error:", error);
+      toast.error("Could not open the case for this alert");
+    } finally {
+      setLinking(null);
+    }
+  };
 
   useEffect(() => {
     loadAlerts();
