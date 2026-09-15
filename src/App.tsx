@@ -61,6 +61,8 @@ const App = () => {
                 <Route path="/medical-records" element={<MedicalRecords />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/notification-history" element={<NotificationHistory />} />
+                <Route path="/cases" element={<Cases />} />
+                <Route path="/cases/:id" element={<CaseDetail />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
