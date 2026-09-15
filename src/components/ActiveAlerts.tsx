@@ -1,11 +1,14 @@
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
-import { MapPin, Clock, AlertTriangle } from "lucide-react";
+import { MapPin, Clock, AlertTriangle, FolderOpen, Loader2 } from "lucide-react";
 import { RealtimeAlert } from "@/hooks/useRealtimeAlerts";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { addAlertToCaseAsFinding } from "@/lib/caseLinking";
 
 interface ActiveAlertsProps {
   alerts: RealtimeAlert[];
@@ -13,7 +16,30 @@ interface ActiveAlertsProps {
 
 export const ActiveAlerts = ({ alerts }: ActiveAlertsProps) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const [linking, setLinking] = useState<string | null>(null);
   const activeAlerts = alerts.filter((alert) => alert.status === "active");
+
+  const handleOpenCase = async (alert: RealtimeAlert) => {
+    setLinking(alert.id);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not signed in");
+      const { caseId, created, findingAdded } = await addAlertToCaseAsFinding(alert as any, user.id);
+      toast({
+        title: created ? "Case created" : "Case updated",
+        description: findingAdded
+          ? "This alert was added to the case as a finding."
+          : "This alert is already recorded in the case.",
+      });
+      navigate(`/cases/${caseId}`);
+    } catch (error) {
+      console.error("Open case error:", error);
+      toast({ title: "Error", description: "Could not open the case for this alert", variant: "destructive" });
+    } finally {
+      setLinking(null);
+    }
+  };
 
   const handleResolveAlert = async (alertId: string) => {
     const { error } = await supabase
@@ -115,6 +141,20 @@ export const ActiveAlerts = ({ alerts }: ActiveAlertsProps) => {
                   className="text-xs"
                 >
                   Resolved
+                </Button>
+                <Button
+                  onClick={() => handleOpenCase(alert)}
+                  variant="secondary"
+                  size="sm"
+                  className="text-xs"
+                  disabled={linking === alert.id}
+                >
+                  {linking === alert.id ? (
+                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                  ) : (
+                    <FolderOpen className="w-3 h-3 mr-1" />
+                  )}
+                  Open Case
                 </Button>
               </div>
             </div>
