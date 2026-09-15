@@ -326,6 +326,22 @@ const AlertHistory = ({ userId }: AlertHistoryProps) => {
                     </div>
                   )}
                 </div>
+
+                {/* Case action */}
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="h-7 w-full text-xs"
+                  disabled={linking === alert.id}
+                  onClick={() => handleOpenCase(alert)}
+                >
+                  {linking === alert.id ? (
+                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                  ) : (
+                    <FolderOpen className="w-3 h-3 mr-1" />
+                  )}
+                  Open Case
+                </Button>
               </div>
             </Card>
           ))}
