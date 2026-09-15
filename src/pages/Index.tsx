@@ -241,6 +241,10 @@ const Index = () => {
                   <FileText className="w-4 h-4 mr-2" />
                   Medical Records
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/cases")}>
+                  <FolderOpen className="w-4 h-4 mr-2" />
+                  Cases
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate("/community-services")}>
                   <Plus className="w-4 h-4 mr-2" />
                   Add Service
