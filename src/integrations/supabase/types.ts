@@ -141,6 +141,48 @@ export type Database = {
           },
         ]
       }
+      case_templates: {
+        Row: {
+          created_at: string
+          default_findings: Json
+          description: string | null
+          id: string
+          name: string
+          severity: string
+          status: string
+          tags: string[]
+          title_prefix: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          default_findings?: Json
+          description?: string | null
+          id?: string
+          name: string
+          severity?: string
+          status?: string
+          tags?: string[]
+          title_prefix?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          default_findings?: Json
+          description?: string | null
+          id?: string
+          name?: string
+          severity?: string
+          status?: string
+          tags?: string[]
+          title_prefix?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       cases: {
         Row: {
           created_at: string
