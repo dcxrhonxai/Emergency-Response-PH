@@ -4,9 +4,11 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { MapPin, Clock, AlertCircle, Trash2 } from "lucide-react";
+import { MapPin, Clock, AlertCircle, Trash2, FolderOpen, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { deleteEvidence } from "@/lib/storage";
+import { useNavigate } from "react-router-dom";
+import { addAlertToCaseAsFinding } from "@/lib/caseLinking";
 
 interface EmergencyAlert {
   id: string;
