@@ -142,6 +142,20 @@ export const ActiveAlerts = ({ alerts }: ActiveAlertsProps) => {
                 >
                   Resolved
                 </Button>
+                <Button
+                  onClick={() => handleOpenCase(alert)}
+                  variant="secondary"
+                  size="sm"
+                  className="text-xs"
+                  disabled={linking === alert.id}
+                >
+                  {linking === alert.id ? (
+                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                  ) : (
+                    <FolderOpen className="w-3 h-3 mr-1" />
+                  )}
+                  Open Case
+                </Button>
               </div>
             </div>
 
