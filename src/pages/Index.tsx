@@ -16,7 +16,7 @@ import { EmergencyChat } from "@/components/EmergencyChat";
 import { EmergencyDirections } from "@/components/EmergencyDirections";
 import { InAppNotifications } from "@/components/InAppNotifications";
 import { NearbyServicesSearch } from "@/components/NearbyServicesSearch";
-import { Shield, LogOut, User, History, Users, Heart, IdCard, Plus, Menu, Wifi, WifiOff, FileText, MapPin, Eye, Settings, BellOff, Bell } from "lucide-react";
+import { Shield, LogOut, User, History, Users, Heart, IdCard, Plus, Menu, Wifi, WifiOff, FileText, MapPin, Eye, Settings, BellOff, Bell, FolderOpen } from "lucide-react";
 import { HighContrastToggle } from "@/components/HighContrastToggle";
 import { Button } from "@/components/ui/button";
 import { useNotificationFilter } from "@/hooks/useNotificationFilter";
@@ -240,6 +240,10 @@ const Index = () => {
                 <DropdownMenuItem onClick={() => navigate("/medical-records")}>
                   <FileText className="w-4 h-4 mr-2" />
                   Medical Records
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/cases")}>
+                  <FolderOpen className="w-4 h-4 mr-2" />
+                  Cases
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate("/community-services")}>
                   <Plus className="w-4 h-4 mr-2" />
