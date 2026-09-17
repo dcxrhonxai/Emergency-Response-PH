@@ -11,8 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
-import { ArrowLeft, FolderOpen, Plus, ChevronRight, Loader2 } from "lucide-react";
+import { ArrowLeft, FolderOpen, Plus, ChevronRight, Loader2, LayoutTemplate } from "lucide-react";
 import { toast } from "sonner";
+import { CaseTemplate, fetchCaseTemplates, applyTemplateFindings } from "@/lib/caseTemplates";
 
 interface CaseRow {
   id: string;
