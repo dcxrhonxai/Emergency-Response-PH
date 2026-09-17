@@ -56,6 +56,7 @@ const roadmapData: FeatureCategory[] = [
       { name: "Cloud Backup", completed: true },
       { name: "Evidence Retention & Auto-Cleanup", completed: true },
       { name: "Case View (Grouped Evidence, Timeline & Findings)", completed: true },
+      { name: "Case Templates (Reusable Structure & Auto-Fill)", completed: true },
     ],
   },
   {
