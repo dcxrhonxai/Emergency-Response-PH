@@ -86,6 +86,12 @@ const timelineIcon = (kind: TimelineEvent["kind"]) => {
   return ClipboardList;
 };
 
+const alertStatusGroup = (status: string | null): "open" | "closed" | "pending" => {
+  if (status === "active") return "open";
+  if (status === "resolved" || status === "false_alarm") return "closed";
+  return "pending";
+};
+
 const CaseDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -98,6 +104,7 @@ const CaseDetail = () => {
   const [savingFinding, setSavingFinding] = useState(false);
   const [findingOpen, setFindingOpen] = useState(false);
   const [linkOpen, setLinkOpen] = useState(false);
+  const [alertFilter, setAlertFilter] = useState<"all" | "open" | "closed" | "pending">("all");
   const [findingForm, setFindingForm] = useState({
     title: "", detail: "", category: "observation", importance: "normal",
   });
@@ -323,11 +330,66 @@ const CaseDetail = () => {
         </Card>
 
         <Tabs defaultValue="timeline">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="timeline">Timeline</TabsTrigger>
+            <TabsTrigger value="alerts">Alerts</TabsTrigger>
             <TabsTrigger value="findings">Findings</TabsTrigger>
             <TabsTrigger value="evidence">Evidence</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="alerts" className="mt-4 space-y-3">
+            <div className="flex flex-wrap gap-2">
+              {(["all", "open", "closed", "pending"] as const).map((f) => (
+                <Button
+                  key={f}
+                  size="sm"
+                  variant={alertFilter === f ? "default" : "outline"}
+                  className="capitalize"
+                  onClick={() => setAlertFilter(f)}
+                >
+                  {f}
+                  <span className="ml-1.5 text-xs opacity-70">
+                    {f === "all"
+                      ? alerts.length
+                      : alerts.filter((a) => alertStatusGroup(a.status) === f).length}
+                  </span>
+                </Button>
+              ))}
+            </div>
+            {filteredAlerts.length === 0 ? (
+              <p className="py-8 text-center text-sm text-muted-foreground">
+                {alerts.length === 0
+                  ? "No alerts linked to this case yet."
+                  : `No ${alertFilter} alerts.`}
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {filteredAlerts.map((a) => (
+                  <div key={a.id} className="flex items-center justify-between gap-2 rounded-md border p-3">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium capitalize">{a.emergency_type}</p>
+                        <Badge
+                          variant={a.status === "active" ? "destructive" : "secondary"}
+                          className="capitalize"
+                        >
+                          {alertStatusGroup(a.status)}
+                        </Badge>
+                      </div>
+                      <p className="truncate text-xs text-muted-foreground">{a.situation}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(a.created_at).toLocaleString()}
+                        {a.resolved_at && ` · Resolved ${new Date(a.resolved_at).toLocaleString()}`}
+                      </p>
+                    </div>
+                    <Button variant="ghost" size="icon" onClick={() => unlinkAlert(a.id)} aria-label="Remove alert from case">
+                      <Unlink className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </TabsContent>
 
           <TabsContent value="timeline" className="mt-4 space-y-4">
             <div className="flex justify-end">
