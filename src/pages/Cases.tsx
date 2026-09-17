@@ -39,7 +39,9 @@ const Cases = () => {
   const [filter, setFilter] = useState("all");
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ title: "", description: "", severity: "medium", incident_date: "" });
+  const [form, setForm] = useState({ title: "", description: "", severity: "medium", incident_date: "", status: "open", tags: [] as string[] });
+  const [templates, setTemplates] = useState<CaseTemplate[]>([]);
+  const [templateId, setTemplateId] = useState("none");
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -51,6 +53,36 @@ const Cases = () => {
   useEffect(() => {
     if (userId) loadCases();
   }, [userId, filter]);
+
+  useEffect(() => {
+    if (!userId) return;
+    fetchCaseTemplates(userId)
+      .then(setTemplates)
+      .catch(() => setTemplates([]));
+  }, [userId]);
+
+  const resetForm = () => {
+    setForm({ title: "", description: "", severity: "medium", incident_date: "", status: "open", tags: [] });
+    setTemplateId("none");
+  };
+
+  const applyTemplate = (id: string) => {
+    setTemplateId(id);
+    if (id === "none") {
+      resetForm();
+      return;
+    }
+    const t = templates.find((x) => x.id === id);
+    if (!t) return;
+    setForm((f) => ({
+      ...f,
+      title: t.title_prefix ? `${t.title_prefix} ` : f.title,
+      description: t.description || "",
+      severity: t.severity,
+      status: t.status,
+      tags: t.tags || [],
+    }));
+  };
 
   const loadCases = async () => {
     if (!userId) return;
