@@ -157,7 +157,10 @@ const Cases = () => {
             <h1 className="text-lg font-semibold">Cases</h1>
             <p className="text-xs text-muted-foreground">Group related evidence, timeline and findings</p>
           </div>
-          <Dialog open={open} onOpenChange={setOpen}>
+          <Button variant="outline" size="sm" onClick={() => navigate("/cases/templates")}>
+            <LayoutTemplate className="mr-1 h-4 w-4" /> Templates
+          </Button>
+          <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) resetForm(); }}>
             <DialogTrigger asChild>
               <Button size="sm">
                 <Plus className="mr-1 h-4 w-4" /> New
