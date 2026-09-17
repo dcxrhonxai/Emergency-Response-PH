@@ -11,8 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
-import { ArrowLeft, FolderOpen, Plus, ChevronRight, Loader2 } from "lucide-react";
+import { ArrowLeft, FolderOpen, Plus, ChevronRight, Loader2, LayoutTemplate } from "lucide-react";
 import { toast } from "sonner";
+import { CaseTemplate, fetchCaseTemplates, applyTemplateFindings } from "@/lib/caseTemplates";
 
 interface CaseRow {
   id: string;
@@ -38,7 +39,9 @@ const Cases = () => {
   const [filter, setFilter] = useState("all");
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ title: "", description: "", severity: "medium", incident_date: "" });
+  const [form, setForm] = useState({ title: "", description: "", severity: "medium", incident_date: "", status: "open", tags: [] as string[] });
+  const [templates, setTemplates] = useState<CaseTemplate[]>([]);
+  const [templateId, setTemplateId] = useState("none");
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -50,6 +53,36 @@ const Cases = () => {
   useEffect(() => {
     if (userId) loadCases();
   }, [userId, filter]);
+
+  useEffect(() => {
+    if (!userId) return;
+    fetchCaseTemplates(userId)
+      .then(setTemplates)
+      .catch(() => setTemplates([]));
+  }, [userId]);
+
+  const resetForm = () => {
+    setForm({ title: "", description: "", severity: "medium", incident_date: "", status: "open", tags: [] });
+    setTemplateId("none");
+  };
+
+  const applyTemplate = (id: string) => {
+    setTemplateId(id);
+    if (id === "none") {
+      resetForm();
+      return;
+    }
+    const t = templates.find((x) => x.id === id);
+    if (!t) return;
+    setForm((f) => ({
+      ...f,
+      title: t.title_prefix ? `${t.title_prefix} ` : f.title,
+      description: t.description || "",
+      severity: t.severity,
+      status: t.status,
+      tags: t.tags || [],
+    }));
+  };
 
   const loadCases = async () => {
     if (!userId) return;
@@ -80,17 +113,35 @@ const Cases = () => {
         title: form.title.trim(),
         description: form.description.trim() || null,
         severity: form.severity,
+        status: form.status,
+        tags: form.tags,
         incident_date: form.incident_date ? new Date(form.incident_date).toISOString() : null,
       })
       .select("id")
       .single();
-    setSaving(false);
     if (error || !data) {
+      setSaving(false);
       toast.error("Could not create the case");
       return;
     }
+
+    const template = templates.find((t) => t.id === templateId);
+    if (template) {
+      try {
+        await applyTemplateFindings(
+          template,
+          data.id,
+          userId,
+          form.incident_date ? new Date(form.incident_date).toISOString() : new Date().toISOString(),
+        );
+      } catch {
+        toast.error("Case created, but the template's default findings could not be added");
+      }
+    }
+
+    setSaving(false);
     setOpen(false);
-    setForm({ title: "", description: "", severity: "medium", incident_date: "" });
+    resetForm();
     toast.success("Case created");
     navigate(`/cases/${data.id}`);
   };
@@ -106,7 +157,10 @@ const Cases = () => {
             <h1 className="text-lg font-semibold">Cases</h1>
             <p className="text-xs text-muted-foreground">Group related evidence, timeline and findings</p>
           </div>
-          <Dialog open={open} onOpenChange={setOpen}>
+          <Button variant="outline" size="sm" onClick={() => navigate("/cases/templates")}>
+            <LayoutTemplate className="mr-1 h-4 w-4" /> Templates
+          </Button>
+          <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) resetForm(); }}>
             <DialogTrigger asChild>
               <Button size="sm">
                 <Plus className="mr-1 h-4 w-4" /> New
@@ -118,6 +172,27 @@ const Cases = () => {
                 <DialogDescription>Give the case a name so you can group evidence under it.</DialogDescription>
               </DialogHeader>
               <div className="space-y-3">
+                <div className="space-y-1.5">
+                  <Label>Start from a template</Label>
+                  <Select value={templateId} onValueChange={applyTemplate}>
+                    <SelectTrigger><SelectValue placeholder="No template" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">No template</SelectItem>
+                      {templates.map((t) => (
+                        <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {templates.length === 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      No templates yet —{" "}
+                      <button type="button" className="underline" onClick={() => navigate("/cases/templates")}>
+                        create one
+                      </button>{" "}
+                      to reuse the same structure.
+                    </p>
+                  )}
+                </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="case-title">Title</Label>
                   <Input
