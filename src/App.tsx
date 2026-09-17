@@ -22,6 +22,7 @@ const Settings = lazy(() => import("./pages/Settings"));
 const NotificationHistory = lazy(() => import("./pages/NotificationHistory"));
 const Cases = lazy(() => import("./pages/Cases"));
 const CaseDetail = lazy(() => import("./pages/CaseDetail"));
+const CaseTemplates = lazy(() => import("./pages/CaseTemplates"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const App = () => {
@@ -62,6 +63,7 @@ const App = () => {
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/notification-history" element={<NotificationHistory />} />
                 <Route path="/cases" element={<Cases />} />
+                <Route path="/cases/templates" element={<CaseTemplates />} />
                 <Route path="/cases/:id" element={<CaseDetail />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
