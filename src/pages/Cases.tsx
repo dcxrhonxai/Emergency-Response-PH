@@ -113,17 +113,35 @@ const Cases = () => {
         title: form.title.trim(),
         description: form.description.trim() || null,
         severity: form.severity,
+        status: form.status,
+        tags: form.tags,
         incident_date: form.incident_date ? new Date(form.incident_date).toISOString() : null,
       })
       .select("id")
       .single();
-    setSaving(false);
     if (error || !data) {
+      setSaving(false);
       toast.error("Could not create the case");
       return;
     }
+
+    const template = templates.find((t) => t.id === templateId);
+    if (template) {
+      try {
+        await applyTemplateFindings(
+          template,
+          data.id,
+          userId,
+          form.incident_date ? new Date(form.incident_date).toISOString() : new Date().toISOString(),
+        );
+      } catch {
+        toast.error("Case created, but the template's default findings could not be added");
+      }
+    }
+
+    setSaving(false);
     setOpen(false);
-    setForm({ title: "", description: "", severity: "medium", incident_date: "" });
+    resetForm();
     toast.success("Case created");
     navigate(`/cases/${data.id}`);
   };
