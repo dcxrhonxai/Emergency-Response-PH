@@ -173,6 +173,27 @@ const Cases = () => {
               </DialogHeader>
               <div className="space-y-3">
                 <div className="space-y-1.5">
+                  <Label>Start from a template</Label>
+                  <Select value={templateId} onValueChange={applyTemplate}>
+                    <SelectTrigger><SelectValue placeholder="No template" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">No template</SelectItem>
+                      {templates.map((t) => (
+                        <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {templates.length === 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      No templates yet —{" "}
+                      <button type="button" className="underline" onClick={() => navigate("/cases/templates")}>
+                        create one
+                      </button>{" "}
+                      to reuse the same structure.
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-1.5">
                   <Label htmlFor="case-title">Title</Label>
                   <Input
                     id="case-title"
