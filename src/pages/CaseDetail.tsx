@@ -120,6 +120,11 @@ const CaseDetail = () => {
     if (userId && id) loadAll();
   }, [userId, id]);
 
+  const filteredAlerts = useMemo(
+    () => (alertFilter === "all" ? alerts : alerts.filter((a) => alertStatusGroup(a.status) === alertFilter)),
+    [alerts, alertFilter]
+  );
+
   const loadAll = async () => {
     if (!userId || !id) return;
     setLoading(true);
