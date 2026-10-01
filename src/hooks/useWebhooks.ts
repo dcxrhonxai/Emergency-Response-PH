@@ -44,12 +44,10 @@ export const useWebhooks = () => {
     const config = getWebhookConfig();
     
     if (!config?.enabled || !config.url) {
-      console.log('Webhook not configured or disabled');
       return false;
     }
 
     if (!config.events.includes(eventType)) {
-      console.log(`Webhook not configured for event: ${eventType}`);
       return false;
     }
 
@@ -76,7 +74,6 @@ export const useWebhooks = () => {
         return false;
       }
 
-      console.log('Webhook sent:', response);
       return response?.success ?? false;
     } catch (error) {
       console.error('Failed to send webhook:', error);

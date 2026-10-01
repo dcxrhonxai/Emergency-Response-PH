@@ -5,7 +5,6 @@ let analyticsInitialized = false;
 export const initializeFirebase = (): boolean => {
   // Firebase will be initialized lazily when needed
   analyticsInitialized = true;
-  console.log('Firebase tracking ready');
   return true;
 };
 

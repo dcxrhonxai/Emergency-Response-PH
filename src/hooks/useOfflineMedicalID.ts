@@ -104,7 +104,6 @@ export const useOfflineMedicalID = () => {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(newData));
       setOfflineData(newData);
 
-      console.log("Medical ID data synced for offline use");
       return true;
     } catch (error) {
       console.error("Error syncing medical data:", error);

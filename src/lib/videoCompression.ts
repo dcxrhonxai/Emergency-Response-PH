@@ -21,7 +21,6 @@ export const compressVideo = async (
     // For actual video compression, we'd need server-side processing
     // or a dedicated video compression library
     // This is a placeholder that returns the original for now
-    console.log(`Video size: ${sizeMB.toFixed(2)}MB - compression would be applied here`);
     
     return videoDataUrl;
   } catch (error) {

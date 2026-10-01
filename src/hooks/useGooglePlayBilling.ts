@@ -43,7 +43,6 @@ export const useGooglePlayBilling = () => {
   useEffect(() => {
     const initBilling = async () => {
       if (!isAndroid || !isNativePlatform) {
-        console.log('Google Play Billing is only available on native Android');
         await loadMockProducts();
         setIsLoading(false);
         return;
@@ -52,7 +51,6 @@ export const useGooglePlayBilling = () => {
       try {
         // For now, simulate billing availability on Android
         // In production, this would use a real billing plugin
-        console.log('Initializing Google Play Billing...');
         setIsAvailable(true);
         
         // Load mock products for development
@@ -151,7 +149,6 @@ export const useGooglePlayBilling = () => {
     }
 
     try {
-      console.log(`Launching billing flow for: ${productId}`);
 
       // In production, the real Google Play purchase flow returns a token here.
       const purchaseToken = `mock_token_${Date.now()}`;
@@ -196,7 +193,6 @@ export const useGooglePlayBilling = () => {
     }
 
     try {
-      console.log('Restoring purchases...');
       await checkExistingPurchases();
       
       toast({

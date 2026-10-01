@@ -18,7 +18,6 @@ export const useAlertEscalation = () => {
         }
 
         if (data?.escalated > 0) {
-          console.log(`${data.escalated} alert(s) escalated`);
         }
       } catch (error) {
         console.error('Error in escalation check:', error);
