@@ -67,7 +67,6 @@ const LiveVideoStream = ({ alertId, userId }: LiveVideoStreamProps) => {
         if (event.data.size > 0) {
           // In a production app, you would upload chunks to storage
           // and update the stream URL for viewers
-          console.log("Video chunk recorded:", event.data.size, "bytes");
         }
       };
 

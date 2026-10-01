@@ -40,7 +40,6 @@ export const usePushNotifications = ({ userId }: UsePushNotificationsProps) => {
         return false;
       }
       
-      console.log('FCM token saved successfully');
       return true;
     } catch (err) {
       console.error('Error saving FCM token:', err);
@@ -52,7 +51,6 @@ export const usePushNotifications = ({ userId }: UsePushNotificationsProps) => {
     try {
       // Check if Firebase config is available
       if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
-        console.log('Firebase config not available, skipping FCM initialization');
         return null;
       }
 
@@ -61,7 +59,6 @@ export const usePushNotifications = ({ userId }: UsePushNotificationsProps) => {
       
       // Check if messaging is supported
       if (!('Notification' in window)) {
-        console.log('Notifications not supported');
         return null;
       }
 
@@ -92,7 +89,6 @@ export const usePushNotifications = ({ userId }: UsePushNotificationsProps) => {
           if (token) {
             setFcmToken(token);
             await saveFCMToken(token);
-            console.log('FCM Token:', token.substring(0, 20) + '...');
           }
         }
       } else if (permission === 'denied') {
@@ -111,7 +107,6 @@ export const usePushNotifications = ({ userId }: UsePushNotificationsProps) => {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/firebase-messaging-sw.js')
         .then(registration => {
-          console.log('FCM Service Worker registered:', registration.scope);
         })
         .catch(error => {
           console.error('FCM Service Worker registration failed:', error);
@@ -145,12 +140,10 @@ export const usePushNotifications = ({ userId }: UsePushNotificationsProps) => {
 
       // Handle foreground messages with notification filtering
       onMessage(msg, (payload) => {
-        console.log('Foreground message received:', payload);
         
         // Check if notification should be shown based on user preferences and quiet hours
         const emergencyType = payload.data?.emergency_type || payload.notification?.title || '';
         if (!shouldShowNotification(emergencyType)) {
-          console.log('Notification filtered out by user preferences or quiet hours');
           // Log filtered notification for history
           try {
             const existing = JSON.parse(localStorage.getItem('dndFilteredNotifications') || '[]');
@@ -208,7 +201,6 @@ export const usePushNotifications = ({ userId }: UsePushNotificationsProps) => {
       });
 
       if (error) throw error;
-      console.log('Push notification sent to user:', targetUserId);
     } catch (error) {
       console.error('Error sending push notification:', error);
       throw error;
@@ -232,7 +224,6 @@ export const usePushNotifications = ({ userId }: UsePushNotificationsProps) => {
       });
 
       if (error) throw error;
-      console.log('Push notification sent to tokens');
     } catch (error) {
       console.error('Error sending push notification:', error);
       throw error;

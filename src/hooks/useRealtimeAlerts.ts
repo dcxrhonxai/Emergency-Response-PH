@@ -60,7 +60,6 @@ export const useRealtimeAlerts = (userId: string | undefined) => {
           filter: `user_id=eq.${userId}`,
         },
         (payload) => {
-          console.log("New alert:", payload);
           setAlerts((prev) => [payload.new as RealtimeAlert, ...prev]);
           
           toast({
@@ -78,7 +77,6 @@ export const useRealtimeAlerts = (userId: string | undefined) => {
           filter: `user_id=eq.${userId}`,
         },
         (payload) => {
-          console.log("Alert updated:", payload);
           setAlerts((prev) =>
             prev.map((alert) =>
               alert.id === payload.new.id ? (payload.new as RealtimeAlert) : alert
@@ -102,7 +100,6 @@ export const useRealtimeAlerts = (userId: string | undefined) => {
           filter: `user_id=eq.${userId}`,
         },
         (payload) => {
-          console.log("Alert deleted:", payload);
           setAlerts((prev) => prev.filter((alert) => alert.id !== payload.old.id));
         }
       )

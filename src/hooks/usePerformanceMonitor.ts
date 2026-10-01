@@ -36,12 +36,10 @@ export const usePerformanceMonitor = () => {
         const fcpEntry = entries.find(entry => entry.name === 'first-contentful-paint');
         if (fcpEntry) {
           metricsRef.current.fcp = fcpEntry.startTime;
-          console.log(`[Performance] FCP: ${fcpEntry.startTime.toFixed(2)}ms`);
         }
       });
       fcpObserver.observe({ type: 'paint', buffered: true });
     } catch (e) {
-      console.log('FCP observer not supported');
     }
 
     // Largest Contentful Paint
@@ -51,12 +49,10 @@ export const usePerformanceMonitor = () => {
         const lastEntry = entries[entries.length - 1];
         if (lastEntry) {
           metricsRef.current.lcp = lastEntry.startTime;
-          console.log(`[Performance] LCP: ${lastEntry.startTime.toFixed(2)}ms`);
         }
       });
       lcpObserver.observe({ type: 'largest-contentful-paint', buffered: true });
     } catch (e) {
-      console.log('LCP observer not supported');
     }
 
     // First Input Delay
@@ -67,12 +63,10 @@ export const usePerformanceMonitor = () => {
         if (firstEntry && firstEntry.processingStart) {
           const fid = firstEntry.processingStart - firstEntry.startTime;
           metricsRef.current.fid = fid;
-          console.log(`[Performance] FID: ${fid.toFixed(2)}ms`);
         }
       });
       fidObserver.observe({ type: 'first-input', buffered: true });
     } catch (e) {
-      console.log('FID observer not supported');
     }
 
     // Cumulative Layout Shift
@@ -86,11 +80,9 @@ export const usePerformanceMonitor = () => {
             metricsRef.current.cls = clsValue;
           }
         }
-        console.log(`[Performance] CLS: ${clsValue.toFixed(4)}`);
       });
       clsObserver.observe({ type: 'layout-shift', buffered: true });
     } catch (e) {
-      console.log('CLS observer not supported');
     }
 
     // Time to First Byte
@@ -98,10 +90,8 @@ export const usePerformanceMonitor = () => {
       const navEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
       if (navEntry) {
         metricsRef.current.ttfb = navEntry.responseStart - navEntry.requestStart;
-        console.log(`[Performance] TTFB: ${metricsRef.current.ttfb.toFixed(2)}ms`);
       }
     } catch (e) {
-      console.log('Navigation timing not supported');
     }
   }, []);
 
@@ -119,7 +109,6 @@ export const usePerformanceMonitor = () => {
         };
       }
     } catch (e) {
-      console.log('Navigation metrics not available');
     }
     return null;
   }, []);
@@ -137,7 +126,6 @@ export const usePerformanceMonitor = () => {
     const start = performance.now();
     const result = operation();
     const duration = performance.now() - start;
-    console.log(`[Performance] ${name}: ${duration.toFixed(2)}ms`);
     return result;
   }, []);
 
@@ -149,7 +137,6 @@ export const usePerformanceMonitor = () => {
     const start = performance.now();
     const result = await operation();
     const duration = performance.now() - start;
-    console.log(`[Performance] ${name}: ${duration.toFixed(2)}ms`);
     return result;
   }, []);
 
@@ -165,12 +152,7 @@ export const usePerformanceMonitor = () => {
     if (typeof performance !== 'undefined' && performance.measure) {
       try {
         performance.measure(name, startMark, endMark);
-        const entries = performance.getEntriesByName(name);
-        if (entries.length > 0) {
-          console.log(`[Performance] ${name}: ${entries[0].duration.toFixed(2)}ms`);
-        }
       } catch (e) {
-        console.log(`Could not measure between ${startMark} and ${endMark}`);
       }
     }
   }, []);
