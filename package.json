@@ -11,13 +11,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@capacitor-community/media": "^8.0.1",
+    "@capacitor-community/media": "^7",
     "@capacitor/android": "^7.4.3",
     "@capacitor/camera": "^7.0.2",
     "@capacitor/core": "^7.4.3",
     "@capacitor/file-transfer": "^1.0.6",
     "@capacitor/filesystem": "^7.1.4",
-    "@capacitor/haptics": "^8.0.1",
+    "@capacitor/haptics": "^7",
     "@capacitor/ios": "^7.4.3",
     "@hookform/resolvers": "^3.10.0",
     "@lovable.dev/cloud-auth-js": "^1.1.1",
