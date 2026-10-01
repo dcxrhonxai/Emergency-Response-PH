@@ -48,7 +48,6 @@ export const useBackgroundLocation = ({ alertId, isActive }: UseBackgroundLocati
 
           if (error) {
             console.error('Error updating location:', error);
-          } else {
           }
         },
         (error) => {

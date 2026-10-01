@@ -16,9 +16,6 @@ export const useAlertEscalation = () => {
           console.error('Error checking alert escalation:', error);
           return;
         }
-
-        if (data?.escalated > 0) {
-        }
       } catch (error) {
         console.error('Error in escalation check:', error);
       }

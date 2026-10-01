@@ -152,9 +152,6 @@ export const usePerformanceMonitor = () => {
     if (typeof performance !== 'undefined' && performance.measure) {
       try {
         performance.measure(name, startMark, endMark);
-        const entries = performance.getEntriesByName(name);
-        if (entries.length > 0) {
-        }
       } catch (e) {
       }
     }
