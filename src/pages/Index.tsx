@@ -323,6 +323,23 @@ const Index = () => {
             </TabsList>
 
             <TabsContent value="emergency" className="space-y-3">
+              {(!isOnline || showOfflineScreen) && (
+                <OfflineEmergencyScreen
+                  reason={!isOnline ? "offline" : "location_failed"}
+                  onDismiss={isOnline ? () => setShowOfflineScreen(false) : undefined}
+                />
+              )}
+              {isOnline && !showOfflineScreen && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full text-xs"
+                  onClick={() => setShowOfflineScreen(true)}
+                >
+                  <WifiOff className="w-3.5 h-3.5 mr-1.5" />
+                  Offline emergency numbers (works without internet)
+                </Button>
+              )}
               {!alertsLoading && alerts.length > 0 && (
                 <div className="mb-3">
                   <ActiveAlerts alerts={alerts} />
