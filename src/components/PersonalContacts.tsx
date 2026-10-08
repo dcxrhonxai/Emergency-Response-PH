@@ -35,6 +35,7 @@ const PersonalContacts = ({ userId }: PersonalContactsProps) => {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [relationship, setRelationship] = useState("");
+  const [situation, setSituation] = useState("");
 
   useEffect(() => {
     loadContacts();
@@ -130,9 +131,24 @@ const PersonalContacts = ({ userId }: PersonalContactsProps) => {
     makeCall(phone, name);
   };
 
-  const handleMessage = (phone: string, name: string) => {
+  const getLocationLink = (): Promise<string | null> =>
+    new Promise((resolve) => {
+      if (!navigator.geolocation) return resolve(null);
+      navigator.geolocation.getCurrentPosition(
+        (p) => resolve(`https://maps.google.com/?q=${p.coords.latitude.toFixed(6)},${p.coords.longitude.toFixed(6)}`),
+        () => resolve(null),
+        { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
+      );
+    });
+
+  const handleMessage = async (phone: string, name: string) => {
     triggerImpact('light');
-    sendSMS(phone);
+    const text = situation.trim().slice(0, 300) || "I need help.";
+    const loc = await getLocationLink();
+    const message = `Hi ${name}, this is an urgent message. ${text}${
+      loc ? `\nMy location: ${loc}` : "\n(My location is unavailable right now.)"
+    }`;
+    sendSMS(phone, message);
   };
 
   const toggleDndBypass = (contactId: string, contactName: string) => {
