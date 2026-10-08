@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Phone, Trash2, Plus, MessageSquare, Users, BellOff, Bell } from "lucide-react";
+import { Phone, Trash2, Plus, MessageSquare, Users, BellOff, Bell, Star } from "lucide-react";
 import { toast } from "sonner";
 import { personalContactSchema } from "@/lib/validation";
 import { usePhoneCaller } from "@/hooks/usePhoneCaller";
@@ -20,6 +20,7 @@ interface PersonalContact {
   name: string;
   phone: string;
   relationship: string | null;
+  is_primary: boolean;
 }
 
 interface PersonalContactsProps {
@@ -120,6 +121,37 @@ const PersonalContacts = ({ userId }: PersonalContactsProps) => {
       setContacts([]);
       toast.success("All contacts deleted");
     }
+  };
+
+  const setPrimary = async (contact: PersonalContact) => {
+    if (contact.is_primary) {
+      const { error } = await supabase
+        .from('personal_contacts')
+        .update({ is_primary: false })
+        .eq('id', contact.id);
+      if (error) {
+        toast.error("Failed to update contact");
+      } else {
+        toast(`${contact.name} is no longer your primary contact`);
+      }
+    } else {
+      await supabase
+        .from('personal_contacts')
+        .update({ is_primary: false })
+        .eq('user_id', userId);
+      const { error } = await supabase
+        .from('personal_contacts')
+        .update({ is_primary: true })
+        .eq('id', contact.id);
+      if (error) {
+        toast.error("Failed to update contact");
+      } else {
+        toast.success(`${contact.name} is now your primary contact`, {
+          description: "Call and text shortcuts appear on the Emergency screen",
+        });
+      }
+    }
+    loadContacts();
   };
 
   const { makeCall, sendSMS } = usePhoneCaller();
@@ -311,7 +343,24 @@ const PersonalContacts = ({ userId }: PersonalContactsProps) => {
                   <Card className="p-2">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-semibold text-foreground mb-0.5">{contact.name}</h3>
+                        <div className="flex items-center gap-1.5 mb-0.5">
+                          <h3 className="text-sm font-semibold text-foreground">{contact.name}</h3>
+                          {contact.is_primary && (
+                            <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-accent bg-accent/10 px-1.5 py-0.5 rounded-full">
+                              <Star className="w-2.5 h-2.5 fill-current" aria-hidden="true" />
+                              Primary
+                            </span>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => setPrimary(contact)}
+                            className="text-muted-foreground hover:text-accent transition-colors"
+                            aria-label={contact.is_primary ? `Unset ${contact.name} as primary contact` : `Set ${contact.name} as primary contact`}
+                            title={contact.is_primary ? "Remove as primary contact" : "Set as primary contact"}
+                          >
+                            <Star className={`w-3.5 h-3.5 ${contact.is_primary ? 'text-accent fill-current' : ''}`} aria-hidden="true" />
+                          </button>
+                        </div>
                         {contact.relationship && (
                           <p className="text-xs text-muted-foreground mb-1">
                             {contact.relationship}
