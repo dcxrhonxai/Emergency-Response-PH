@@ -33,6 +33,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useEmergencyActions } from "@/hooks/useEmergencyActions";
 import { useEvidenceAutoCleanup } from "@/hooks/useEvidenceAutoCleanup";
 import { LoadingSpinner } from "@/components/ui/loading-states";
+import { OfflineEmergencyScreen } from "@/components/OfflineEmergencyScreen";
 
 export interface EmergencyContact {
   id: string;
