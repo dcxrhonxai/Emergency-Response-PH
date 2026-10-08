@@ -59,6 +59,7 @@ const Index = () => {
   const [showMedicalID, setShowMedicalID] = useState(false);
   const [isPulling, setIsPulling] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
+  const [showOfflineScreen, setShowOfflineScreen] = useState(false);
 
   const { alerts, isLoading: alertsLoading } = useRealtimeAlerts(session?.user?.id);
   const { isOnline } = useOfflineSync();
