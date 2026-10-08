@@ -39,6 +39,7 @@ const roadmapData: FeatureCategory[] = [
       { name: "Alert Escalation System", completed: true },
       { name: "Background Location Tracking", completed: true },
       { name: "Silent Panic Button", completed: true },
+      { name: "Offline Emergency Screen (National Hotlines)", completed: true },
       { name: "False Alarm Cancellation", completed: true },
     ],
   },
