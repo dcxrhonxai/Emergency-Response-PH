@@ -187,9 +187,9 @@ const PersonalContacts = ({ userId }: PersonalContactsProps) => {
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-bold text-foreground" id="contacts-heading">Emergency Contacts</h2>
+              <h2 className="text-lg font-bold text-foreground" id="contacts-heading">Trusted Contacts</h2>
               <p className="text-xs text-muted-foreground">
-                Quick access to family & friends
+                People you rely on — call or text them in one tap
               </p>
             </div>
             <div className="flex gap-1">
@@ -223,6 +223,21 @@ const PersonalContacts = ({ userId }: PersonalContactsProps) => {
               </Button>
             </div>
           </div>
+
+          {contacts.length > 0 && (
+            <div className="space-y-1">
+              <Label htmlFor="situation-msg" className="text-xs">Your situation (added to texts)</Label>
+              <Input
+                id="situation-msg"
+                placeholder="e.g., Car broke down on the highway, please call me"
+                value={situation}
+                maxLength={300}
+                onChange={(e) => setSituation(e.target.value)}
+                className="h-9 text-sm"
+              />
+              <p className="text-[10px] text-muted-foreground">Texts include your current location when available.</p>
+            </div>
+          )}
 
           {/* Add Form */}
           {showForm && (
