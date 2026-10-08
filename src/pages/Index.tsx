@@ -16,6 +16,7 @@ import { EmergencyChat } from "@/components/EmergencyChat";
 import { EmergencyDirections } from "@/components/EmergencyDirections";
 import { InAppNotifications } from "@/components/InAppNotifications";
 import { NearbyServicesSearch } from "@/components/NearbyServicesSearch";
+import { PrimaryContactShortcut } from "@/components/PrimaryContactShortcut";
 import { Shield, LogOut, User, History, Users, Heart, IdCard, Plus, Menu, Wifi, WifiOff, FileText, MapPin, Eye, Settings, BellOff, Bell, FolderOpen } from "lucide-react";
 import { HighContrastToggle } from "@/components/HighContrastToggle";
 import { Button } from "@/components/ui/button";
@@ -358,6 +359,12 @@ const Index = () => {
                   )}
                 </div>
               )}
+
+              {/* Primary Contact Shortcut */}
+              <PrimaryContactShortcut
+                userId={session.user.id}
+                onOpenContacts={() => handleTabChange("contacts")}
+              />
 
               {/* Quick SOS Button */}
               <div className="mb-3">
