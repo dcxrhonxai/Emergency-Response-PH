@@ -74,12 +74,24 @@ const PrimaryContactShortcut = ({ userId, onOpenContacts }: PrimaryContactShortc
   const handleText = async () => {
     if (!contact) return;
     triggerImpact('light');
-    const text = situation.trim().slice(0, 300) || "I need help.";
-    const loc = await getLocationLink();
-    const message = `Hi ${contact.name}, this is an urgent message. ${text}${
-      loc ? `\nMy location: ${loc}` : "\n(My location is unavailable right now.)"
-    }`;
-    sendSMS(contact.phone, message);
+    setLocating(true);
+    setPreview(null);
+    try {
+      const text = situation.trim().slice(0, 300) || "I need help.";
+      const loc = await getLocationLink();
+      const message = `Hi ${contact.name}, this is an urgent message. ${text}${
+        loc ? `\nMy location: ${loc}` : "\n(My location is unavailable right now.)"
+      }`;
+      setPreview({ message, hasLocation: !!loc });
+    } finally {
+      setLocating(false);
+    }
+  };
+
+  const handleConfirmSend = () => {
+    if (!preview) return;
+    sendSMS(contact!.phone, preview.message);
+    setPreview(null);
   };
 
   if (loading) return null;
