@@ -3,7 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Phone, MessageSquare, Star, UserPlus } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Phone, MessageSquare, Star, UserPlus, MapPin, Loader2 } from "lucide-react";
 import { usePhoneCaller } from "@/hooks/usePhoneCaller";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 
