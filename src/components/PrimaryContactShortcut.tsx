@@ -26,6 +26,8 @@ const PrimaryContactShortcut = ({ userId, onOpenContacts }: PrimaryContactShortc
   const [hasContacts, setHasContacts] = useState(true);
   const [loading, setLoading] = useState(true);
   const [situation, setSituation] = useState("");
+  const [preview, setPreview] = useState<{ message: string; hasLocation: boolean } | null>(false as never);
+  const [locating, setLocating] = useState(false);
   const { makeCall, sendSMS } = usePhoneCaller();
   const { triggerImpact } = useHapticFeedback();
 
