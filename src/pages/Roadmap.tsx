@@ -84,6 +84,7 @@ const roadmapData: FeatureCategory[] = [
       { name: "Service Rating System", completed: true },
       { name: "Service Verification", completed: true },
       { name: "Contact Groups", completed: true },
+      { name: "Primary Contact Emergency Shortcut", completed: true },
     ],
   },
   {
