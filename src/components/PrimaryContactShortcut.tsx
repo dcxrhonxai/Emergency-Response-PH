@@ -147,10 +147,15 @@ const PrimaryContactShortcut = ({ userId, onOpenContacts }: PrimaryContactShortc
             variant="outline"
             className="h-8 px-2 text-xs"
             onClick={handleText}
-            aria-label={`Text ${contact.name}`}
+            disabled={locating}
+            aria-label={`Review text message to ${contact.name}`}
           >
-            <MessageSquare className="w-3 h-3 mr-1" aria-hidden="true" />
-            Text
+            {locating ? (
+              <Loader2 className="w-3 h-3 mr-1 animate-spin" aria-hidden="true" />
+            ) : (
+              <MessageSquare className="w-3 h-3 mr-1" aria-hidden="true" />
+            )}
+            {locating ? "Locating…" : "Text"}
           </Button>
         </div>
       </div>
@@ -163,8 +168,40 @@ const PrimaryContactShortcut = ({ userId, onOpenContacts }: PrimaryContactShortc
         aria-label="Situation to include in the message"
       />
       <p className="text-[10px] text-muted-foreground mt-1">
-        Texts include your current location when available.
+        Texts include your current location when available — you'll review the message before it's sent.
       </p>
+
+      <Dialog open={!!preview} onOpenChange={(open) => { if (!open) setPreview(null); }}>
+        <DialogContent className="max-w-[calc(100vw-2rem)] rounded-lg sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-base">Review message to {contact.name}</DialogTitle>
+            <DialogDescription className="text-xs">
+              Sending to {contact.phone}. Nothing is sent until you confirm.
+            </DialogDescription>
+          </DialogHeader>
+          <div
+            className="rounded-md border bg-muted/40 p-3 text-xs whitespace-pre-wrap break-words text-foreground max-h-48 overflow-y-auto"
+            aria-label="Message preview"
+          >
+            {preview?.message}
+          </div>
+          <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+            <MapPin className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
+            {preview?.hasLocation
+              ? "A map link to your current location is included."
+              : "Your location couldn't be found, so the message says it's unavailable."}
+          </p>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" size="sm" className="h-9" onClick={() => setPreview(null)}>
+              Edit
+            </Button>
+            <Button size="sm" className="h-9" onClick={handleConfirmSend}>
+              <MessageSquare className="w-3.5 h-3.5 mr-1" aria-hidden="true" />
+              Open Messages
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 };
