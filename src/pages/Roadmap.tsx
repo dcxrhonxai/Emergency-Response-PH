@@ -85,6 +85,7 @@ const roadmapData: FeatureCategory[] = [
       { name: "Service Verification", completed: true },
       { name: "Contact Groups", completed: true },
       { name: "Primary Contact Emergency Shortcut", completed: true },
+      { name: "Message Preview Before Texting Primary Contact", completed: true },
     ],
   },
   {
