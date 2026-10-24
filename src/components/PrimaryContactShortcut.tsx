@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Phone, MessageSquare, Star, UserPlus, MapPin, Loader2, Sparkles } from "lucide-react";
+import { Phone, MessageSquare, Star, UserPlus, MapPin, Loader2 } from "lucide-react";
 import { usePhoneCaller } from "@/hooks/usePhoneCaller";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 
@@ -28,8 +28,6 @@ const PrimaryContactShortcut = ({ userId, onOpenContacts }: PrimaryContactShortc
   const [situation, setSituation] = useState("");
   const [preview, setPreview] = useState<{ message: string; hasLocation: boolean } | null>(null);
   const [locating, setLocating] = useState(false);
-  const [drafting, setDrafting] = useState(false);
-  const [aiError, setAiError] = useState<string | null>(null);
   const { makeCall, sendSMS } = usePhoneCaller();
   const { triggerImpact } = useHapticFeedback();
 
@@ -87,38 +85,6 @@ const PrimaryContactShortcut = ({ userId, onOpenContacts }: PrimaryContactShortc
       setPreview({ message, hasLocation: !!loc });
     } finally {
       setLocating(false);
-    }
-  };
-
-  const handleAiDraft = async () => {
-    if (!contact) return;
-    const text = situation.trim();
-    if (!text) {
-      setAiError("Describe your situation first.");
-      return;
-    }
-    triggerImpact('light');
-    setDrafting(true);
-    setAiError(null);
-    setPreview(null);
-    try {
-      const loc = await getLocationLink();
-      const { data, error } = await supabase.functions.invoke('draft-help-message', {
-        body: { situation: text, contactName: contact.name, hasLocation: !!loc },
-      });
-      if (error || !data?.draft) {
-        let msg = data?.error || "Couldn't draft the message right now. You can still send your own.";
-        try {
-          const ctx = (error as { context?: Response })?.context;
-          if (ctx) { const j = await ctx.json(); if (j?.error) msg = j.error; }
-        } catch { /* ignore */ }
-        setAiError(msg);
-        return;
-      }
-      const message = `${data.draft}${loc ? `\nMy location: ${loc}` : "\n(My location is unavailable right now.)"}`;
-      setPreview({ message, hasLocation: !!loc });
-    } finally {
-      setDrafting(false);
     }
   };
 
@@ -201,22 +167,6 @@ const PrimaryContactShortcut = ({ userId, onOpenContacts }: PrimaryContactShortc
         className="h-8 text-xs"
         aria-label="Situation to include in the message"
       />
-      <Button
-        size="sm"
-        variant="secondary"
-        className="h-8 w-full mt-2 text-xs"
-        onClick={handleAiDraft}
-        disabled={drafting || locating}
-        aria-label={`Draft a message to ${contact.name} with AI`}
-      >
-        {drafting ? (
-          <Loader2 className="w-3 h-3 mr-1 animate-spin" aria-hidden="true" />
-        ) : (
-          <Sparkles className="w-3 h-3 mr-1" aria-hidden="true" />
-        )}
-        {drafting ? "Drafting…" : "Draft message with AI"}
-      </Button>
-      {aiError && <p className="text-[10px] text-destructive mt-1" role="alert">{aiError}</p>}
       <p className="text-[10px] text-muted-foreground mt-1">
         Texts include your current location when available — you'll review the message before it's sent.
       </p>
