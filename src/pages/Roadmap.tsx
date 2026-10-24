@@ -86,6 +86,7 @@ const roadmapData: FeatureCategory[] = [
       { name: "Contact Groups", completed: true },
       { name: "Primary Contact Emergency Shortcut", completed: true },
       { name: "Message Preview Before Texting Primary Contact", completed: true },
+      { name: "AI-Drafted Help Message for Primary Contact", completed: true },
     ],
   },
   {
