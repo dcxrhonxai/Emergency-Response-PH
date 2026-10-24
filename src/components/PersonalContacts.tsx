@@ -74,19 +74,31 @@ const PersonalContacts = ({ userId }: PersonalContactsProps) => {
       return;
     }
 
-    const { error } = await supabase
+    // Automatically make the first added contact the primary contact
+    const isFirstContact = contacts.length === 0;
+
+    const { data: inserted, error } = await supabase
       .from('personal_contacts')
       .insert({
         user_id: userId,
         name: result.data.name,
         phone: result.data.phone,
         relationship: result.data.relationship || null,
-      });
+        is_primary: isFirstContact,
+      })
+      .select('name')
+      .single();
 
     if (error) {
       toast.error("Failed to add contact");
     } else {
-      toast.success("Contact added!");
+      if (isFirstContact) {
+        toast.success("Contact added and set as your primary contact", {
+          description: "Call and text shortcuts now appear on the Emergency screen",
+        });
+      } else {
+        toast.success(`${inserted?.name ?? "Contact"} added!`);
+      }
       setName("");
       setPhone("");
       setRelationship("");
