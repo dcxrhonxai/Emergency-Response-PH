@@ -97,7 +97,7 @@ const PersonalContacts = ({ userId }: PersonalContactsProps) => {
     if (error) {
       toast.error("Failed to add contact");
     } else {
-      if (isFirstContact) {
+      if (shouldSetPrimary) {
         toast.success("Contact added and set as your primary contact", {
           description: "Call and text shortcuts now appear on the Emergency screen",
         });
