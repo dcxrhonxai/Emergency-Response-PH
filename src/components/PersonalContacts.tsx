@@ -89,7 +89,7 @@ const PersonalContacts = ({ userId }: PersonalContactsProps) => {
         name: result.data.name,
         phone: result.data.phone,
         relationship: result.data.relationship || null,
-        is_primary: isFirstContact,
+        is_primary: shouldSetPrimary,
       })
       .select('name')
       .single();
