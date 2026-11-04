@@ -108,6 +108,7 @@ const PersonalContacts = ({ userId }: PersonalContactsProps) => {
   };
 
   const handleDelete = async (id: string) => {
+    const deleted = contacts.find((c) => c.id === id);
     const { error } = await supabase
       .from('personal_contacts')
       .delete()
@@ -116,6 +117,19 @@ const PersonalContacts = ({ userId }: PersonalContactsProps) => {
     if (error) {
       toast.error("Failed to delete contact");
     } else {
+      // If the deleted contact was primary, promote the most recent remaining one
+      if (deleted?.is_primary) {
+        const remaining = contacts.filter((c) => c.id !== id);
+        if (remaining.length > 0) {
+          const { error: promoteError } = await supabase
+            .from('personal_contacts')
+            .update({ is_primary: true })
+            .eq('id', remaining[0].id);
+          if (!promoteError) {
+            toast(`${remaining[0].name} is now your primary contact`);
+          }
+        }
+      }
       toast.success("Contact deleted");
       loadContacts();
     }
