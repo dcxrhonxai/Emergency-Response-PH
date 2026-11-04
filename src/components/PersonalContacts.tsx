@@ -74,8 +74,13 @@ const PersonalContacts = ({ userId }: PersonalContactsProps) => {
       return;
     }
 
-    // Automatically make the first added contact the primary contact
-    const isFirstContact = contacts.length === 0;
+    // Automatically set the new contact as primary if none is marked primary yet
+    const { count: primaryCount } = await supabase
+      .from('personal_contacts')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('is_primary', true);
+    const shouldSetPrimary = !primaryCount;
 
     const { data: inserted, error } = await supabase
       .from('personal_contacts')
