@@ -1,8 +1,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
 import { initializeApp, getApps } from 'firebase/app';
-import { getMessaging, getToken, onMessage, Messaging } from 'firebase/messaging';
+import { getMessaging, getToken, isSupported, onMessage, Messaging } from 'firebase/messaging';
+import { Capacitor } from '@capacitor/core';
 import { useNotificationFilter } from './useNotificationFilter';
 import { useNotificationSounds } from './useNotificationSounds';
 
@@ -10,21 +10,40 @@ interface UsePushNotificationsProps {
   userId: string;
 }
 
-// Firebase config from environment
+export type PushRegistrationStatus =
+  | 'idle'
+  | 'registering'
+  | 'registered'
+  | 'not-configured'
+  | 'unsupported'
+  | 'open-in-new-tab'
+  | 'denied'
+  | 'native-setup-required'
+  | 'error';
+
+// Firebase's web app settings are public client configuration, supplied by the connection.
+const appId = import.meta.env.VITE_LOVABLE_CONNECTOR_FIREBASE_MESSAGING_APP_ID || '';
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || '',
-  authDomain: `${import.meta.env.VITE_FIREBASE_PROJECT_ID || ''}.firebaseapp.com`,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || '',
-  storageBucket: `${import.meta.env.VITE_FIREBASE_PROJECT_ID || ''}.appspot.com`,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || '',
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || '',
+  apiKey: import.meta.env.VITE_LOVABLE_CONNECTOR_FIREBASE_MESSAGING_WEB_API_KEY || '',
+  projectId: import.meta.env.VITE_LOVABLE_CONNECTOR_FIREBASE_MESSAGING_PROJECT_ID || '',
+  appId,
+  messagingSenderId: appId.split(':')[1] || '',
 };
+const vapidKey = import.meta.env.VITE_LOVABLE_CONNECTOR_FIREBASE_MESSAGING_VAPID_KEY || '';
+
+const hasFirebaseWebConfig = Boolean(
+  firebaseConfig.apiKey &&
+  firebaseConfig.projectId &&
+  firebaseConfig.appId &&
+  firebaseConfig.messagingSenderId &&
+  vapidKey
+);
 
 export const usePushNotifications = ({ userId }: UsePushNotificationsProps) => {
   const [fcmToken, setFcmToken] = useState<string | null>(null);
   const [messaging, setMessaging] = useState<Messaging | null>(null);
   const [permissionStatus, setPermissionStatus] = useState<NotificationPermission>('default');
+  const [registrationStatus, setRegistrationStatus] = useState<PushRegistrationStatus>('idle');
   const { shouldShowNotification, isWithinQuietHours, getQuietHoursStatus } = useNotificationFilter();
   const { playEmergencySound } = useNotificationSounds();
 
@@ -49,19 +68,11 @@ export const usePushNotifications = ({ userId }: UsePushNotificationsProps) => {
 
   const initializeFirebaseMessaging = useCallback(async () => {
     try {
-      // Check if Firebase config is available
-      if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
+      if (!hasFirebaseWebConfig || !(await isSupported())) {
         return null;
       }
 
-      // Initialize Firebase if not already initialized
-      const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-      
-      // Check if messaging is supported
-      if (!('Notification' in window)) {
-        return null;
-      }
-
+      const app = getApps().find((existing) => existing.name === '[DEFAULT]') || initializeApp(firebaseConfig);
       const messagingInstance = getMessaging(app);
       setMessaging(messagingInstance);
 
@@ -72,75 +83,106 @@ export const usePushNotifications = ({ userId }: UsePushNotificationsProps) => {
     }
   }, []);
 
-  const requestPermission = useCallback(async () => {
+  const registerWebDevice = useCallback(async (requestPermission: boolean): Promise<PushRegistrationStatus> => {
     try {
-      const permission = await Notification.requestPermission();
+      if (Capacitor.isNativePlatform()) {
+        setRegistrationStatus('native-setup-required');
+        return 'native-setup-required';
+      }
+
+      if (!userId) return 'error';
+      if (!hasFirebaseWebConfig) {
+        setRegistrationStatus('not-configured');
+        return 'not-configured';
+      }
+      if (!('Notification' in window) || !('serviceWorker' in navigator) || !(await isSupported())) {
+        setRegistrationStatus('unsupported');
+        return 'unsupported';
+      }
+      if (window.top !== window.self) {
+        setRegistrationStatus('open-in-new-tab');
+        return 'open-in-new-tab';
+      }
+
+      setRegistrationStatus('registering');
+      const permission = Notification.permission === 'granted'
+        ? 'granted'
+        : requestPermission
+          ? await Notification.requestPermission()
+          : Notification.permission;
       setPermissionStatus(permission);
 
-      if (permission === 'granted') {
-        toast.success('Push notifications enabled');
-        
-        // Get FCM token
-        if (messaging) {
-          const token = await getToken(messaging, {
-            vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
-          });
-          
-          if (token) {
-            setFcmToken(token);
-            await saveFCMToken(token);
-          }
-        }
-      } else if (permission === 'denied') {
-        toast.error('Push notifications blocked');
+      if (permission !== 'granted') {
+        const status = permission === 'denied' ? 'denied' : 'idle';
+        setRegistrationStatus(status);
+        return status;
       }
 
-      return permission;
+      const messagingInstance = messaging || await initializeFirebaseMessaging();
+      if (!messagingInstance) {
+        setRegistrationStatus('unsupported');
+        return 'unsupported';
+      }
+
+      const workerConfig = new URLSearchParams(firebaseConfig).toString();
+      const serviceWorkerRegistration = await navigator.serviceWorker.register(
+        `/firebase-messaging-sw.js?${workerConfig}`
+      );
+      const token = await getToken(messagingInstance, { vapidKey, serviceWorkerRegistration });
+      if (!token) {
+        setRegistrationStatus('error');
+        return 'error';
+      }
+
+      const saved = await saveFCMToken(token);
+      if (!saved) {
+        setRegistrationStatus('error');
+        return 'error';
+      }
+
+      setFcmToken(token);
+      setRegistrationStatus('registered');
+      return 'registered';
     } catch (err) {
-      console.error('Error requesting notification permission:', err);
-      return 'denied' as NotificationPermission;
+      console.error('Error registering push notifications:', err);
+      setRegistrationStatus('error');
+      return 'error';
     }
-  }, [messaging, saveFCMToken]);
+  }, [userId, messaging, initializeFirebaseMessaging, saveFCMToken]);
+
+  const requestPermission = useCallback(async () => {
+    return registerWebDevice(true);
+  }, [registerWebDevice]);
 
   useEffect(() => {
-    // Register service worker
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/firebase-messaging-sw.js')
-        .then(registration => {
-        })
-        .catch(error => {
-          console.error('FCM Service Worker registration failed:', error);
-        });
+    if (!userId) return;
+    if (Capacitor.isNativePlatform()) {
+      setRegistrationStatus('native-setup-required');
+      return;
+    }
+    if (!hasFirebaseWebConfig) {
+      setRegistrationStatus('not-configured');
+      return;
+    }
+    if (!('Notification' in window) || !(Notification.permission === 'granted')) {
+      if ('Notification' in window) setPermissionStatus(Notification.permission);
+      return;
+    }
+    if (window.top !== window.self) {
+      setRegistrationStatus('open-in-new-tab');
+      return;
     }
 
-    // Initialize Firebase Messaging
+    let unsubscribe: (() => void) | undefined;
+    let active = true;
     initializeFirebaseMessaging().then(async (msg) => {
       if (!msg) return;
-
-      // Check current permission status
-      if ('Notification' in window) {
-        setPermissionStatus(Notification.permission);
-        
-        // If already granted, get the token
-        if (Notification.permission === 'granted') {
-          try {
-            const token = await getToken(msg, {
-              vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
-            });
-            
-            if (token) {
-              setFcmToken(token);
-              await saveFCMToken(token);
-            }
-          } catch (err) {
-            console.error('Error getting FCM token:', err);
-          }
-        }
-      }
+      if (!active) return;
+      setPermissionStatus(Notification.permission);
+      await registerWebDevice(false);
 
       // Handle foreground messages with notification filtering
-      onMessage(msg, (payload) => {
-        
+      unsubscribe = onMessage(msg, (payload) => {
         // Check if notification should be shown based on user preferences and quiet hours
         const emergencyType = payload.data?.emergency_type || payload.notification?.title || '';
         if (!shouldShowNotification(emergencyType)) {
@@ -174,15 +216,19 @@ export const usePushNotifications = ({ userId }: UsePushNotificationsProps) => {
         if (Notification.permission === 'granted') {
           new Notification(payload.notification?.title || 'Emergency Alert', {
             body: payload.notification?.body,
-            icon: '/pwa-192x192.png',
-            badge: '/pwa-192x192.png',
+            icon: '/favicon.ico',
+            badge: '/favicon.ico',
             tag: 'emergency-notification',
             requireInteraction: true,
           });
         }
       });
     });
-  }, [initializeFirebaseMessaging, saveFCMToken]);
+    return () => {
+      active = false;
+      unsubscribe?.();
+    };
+  }, [userId, initializeFirebaseMessaging, registerWebDevice, shouldShowNotification, isWithinQuietHours, playEmergencySound]);
 
   const sendPushNotification = async (
     targetUserId: string,
@@ -233,6 +279,7 @@ export const usePushNotifications = ({ userId }: UsePushNotificationsProps) => {
   return { 
     fcmToken,
     permissionStatus,
+    registrationStatus,
     requestPermission,
     sendPushNotification,
     sendPushToTokens,
