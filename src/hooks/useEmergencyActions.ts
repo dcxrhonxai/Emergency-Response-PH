@@ -163,6 +163,28 @@ export const useEmergencyActions = ({
 
       if (data) {
         onAlertCreated(data.id, location);
+        try {
+          const { data: pushResult, error: pushError } = await supabase.functions.invoke('send-push-notification', {
+            body: {
+              userId,
+              title: `🚨 ${type}`.slice(0, 100),
+              body: 'Your emergency alert was created. Tap to open the app.',
+              data: {
+                alert_id: data.id,
+                emergency_type: type.slice(0, 120),
+                path: `/?alertId=${encodeURIComponent(data.id)}`,
+              },
+            },
+          });
+
+          if (pushError) throw pushError;
+          if (pushResult?.sent === 0 && pushResult?.reason === 'device_not_registered') {
+            toast.info('Alert saved. Enable push notifications in Settings to receive alerts on this device.');
+          }
+        } catch (pushError) {
+          console.error('Emergency alert push delivery failed:', pushError);
+          toast.warning('Alert saved, but a push notification could not be delivered to this device.');
+        }
         await notifyContacts(data.id, location, type, description, evidenceFiles);
       }
     } catch (err) {

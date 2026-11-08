@@ -107,6 +107,7 @@ const Settings = () => {
   const { 
     fcmToken, 
     permissionStatus, 
+    registrationStatus,
     requestPermission,
     sendPushNotification 
   } = usePushNotifications({ userId: userId || '' });
@@ -119,36 +120,27 @@ const Settings = () => {
 
     setIsSendingTest(true);
     try {
-      // Send using the browser's native notification API for immediate feedback
-      if (Notification.permission === 'granted') {
-        new Notification('🔔 Test Notification', {
-          body: 'Push notifications are working correctly!',
-          icon: '/pwa-192x192.png',
-          badge: '/pwa-192x192.png',
-          tag: 'test-notification',
-        });
-        toast.success('Test notification sent!');
-      } else {
-        toast.error('Push notifications not enabled');
+      if (!fcmToken || registrationStatus !== 'registered') {
+        toast.error('Register this device for push notifications first.');
+        return;
       }
 
-      // Also try to send via FCM for server-side verification
-      if (fcmToken) {
-        await sendPushNotification(
-          userId,
-          '🔔 Test Notification',
-          'Your push notification setup is working correctly!',
-          { type: 'test', timestamp: new Date().toISOString() }
-        );
+      const result = await sendPushNotification(
+        userId,
+        '🔔 Test Notification',
+        'Your Firebase push notification setup is working.',
+        { type: 'test', timestamp: new Date().toISOString() }
+      );
+      if (result?.sent === 1) {
+        toast.success('Test push notification sent to this device.');
+      } else if (result?.reason === 'device_registration_expired') {
+        toast.error('This device registration expired. Please enable push notifications again.');
+      } else {
+        toast.error('No registered device was found for this account.');
       }
     } catch (error) {
       console.error('Error sending test notification:', error);
-      // Still show success if browser notification worked
-      if (Notification.permission === 'granted') {
-        toast.success('Local notification sent (FCM may need configuration)');
-      } else {
-        toast.error('Failed to send test notification');
-      }
+      toast.error('Failed to send the test push notification.');
     } finally {
       setIsSendingTest(false);
     }
@@ -157,7 +149,15 @@ const Settings = () => {
   const handleRequestPermission = async () => {
     setIsRequestingPermission(true);
     try {
-      await requestPermission();
+      const result = await requestPermission();
+      if (result === 'registered') toast.success('This device is registered for emergency push alerts.');
+      if (result === 'open-in-new-tab') toast.info('Open the app in its own browser tab to enable notifications.');
+      if (result === 'not-configured') toast.error('Firebase web push settings are missing. Update the Firebase connection to include web push.');
+      if (result === 'denied') toast.error('Allow notifications in your browser’s site settings, then try again.');
+      if (result === 'unsupported') toast.error('This browser does not support Firebase push notifications.');
+      if (result === 'native-setup-required') toast.info('The installed Android app still needs its Firebase Android app setup before it can register.');
+      if (result === 'error') toast.error('This device could not be registered. Please try again.');
+      if (result === 'idle') toast.info('Please allow notifications when your browser asks.');
     } finally {
       setIsRequestingPermission(false);
     }
@@ -168,7 +168,7 @@ const Settings = () => {
       case 'granted':
         return { 
           icon: <CheckCircle className="h-4 w-4 text-green-500" />, 
-          text: 'Enabled', 
+          text: registrationStatus === 'registered' ? 'Registered' : 'Allowed', 
           color: 'text-green-500',
           badgeVariant: 'default' as const
         };
@@ -351,37 +351,57 @@ const Settings = () => {
                     </div>
                   </div>
                   
-                  {permissionStatus !== 'granted' && (
+                  {registrationStatus === 'open-in-new-tab' && (
+                    <p className="text-sm text-muted-foreground" role="status">
+                      Open this app in its own browser tab or use the published app to register this device.
+                    </p>
+                  )}
+                  {registrationStatus === 'not-configured' && (
+                    <p className="text-sm text-destructive" role="status">
+                      Firebase web push is not configured. Update the Firebase connection and include web push.
+                    </p>
+                  )}
+                  {registrationStatus === 'unsupported' && (
+                    <p className="text-sm text-muted-foreground" role="status">
+                      This browser does not support Firebase push notifications. Try a supported browser on your phone.
+                    </p>
+                  )}
+                  {registrationStatus === 'native-setup-required' && (
+                    <p className="text-sm text-muted-foreground" role="status">
+                      The installed Android app still needs its Firebase Android app setup before this device can register.
+                    </p>
+                  )}
+                  {registrationStatus === 'error' && (
+                    <p className="text-sm text-destructive" role="status">
+                      This device could not be registered. Try again or check your browser’s notification settings.
+                    </p>
+                  )}
+
+                  {registrationStatus !== 'registered' && permissionStatus !== 'denied' && (
                     <div className="flex flex-col gap-2">
                       {permissionStatus === 'denied' ? (
-                        <div className="p-3 bg-destructive/10 rounded-lg">
+                        <div className="p-3 bg-destructive/10 rounded-lg" role="status">
                           <p className="text-sm text-destructive">
-                            Push notifications are blocked. Please enable them in your browser settings to receive emergency alerts.
+                            Push notifications are blocked. Enable them in your browser’s site settings, then return here.
                           </p>
                         </div>
                       ) : (
-                        <Button 
+                        <Button
                           onClick={handleRequestPermission}
                           disabled={isRequestingPermission || !userId}
                           className="w-full"
                         >
                           {isRequestingPermission ? (
-                            <>
-                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                              Requesting Permission...
-                            </>
+                            <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Registering device...</>
                           ) : (
-                            <>
-                              <Bell className="h-4 w-4 mr-2" />
-                              Enable Push Notifications
-                            </>
+                            <><Bell className="h-4 w-4 mr-2" />{permissionStatus === 'granted' ? 'Register This Device' : 'Enable Push Notifications'}</>
                           )}
                         </Button>
                       )}
                     </div>
                   )}
 
-                  {permissionStatus === 'granted' && (
+                  {registrationStatus === 'registered' && (
                     <div className="space-y-3">
                       <div className="p-3 bg-green-500/10 rounded-lg">
                         <div className="flex items-center gap-2 text-green-600">

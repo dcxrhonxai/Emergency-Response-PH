@@ -1,90 +1,38 @@
-// Firebase Cloud Messaging Service Worker
-// This service worker handles push notifications when the app is closed or in background
+importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js');
 
-importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js');
-importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compat.js');
+const firebaseConfig = Object.fromEntries(new URL(self.location.href).searchParams.entries());
+firebase.initializeApp(firebaseConfig);
 
-// Firebase configuration will be injected from the main app
-// For now, we handle messages with a basic config
-self.addEventListener('push', function(event) {
-  console.log('[Service Worker] Push Received.');
-  
-  let notificationData = {
-    title: 'Emergency Alert',
-    body: 'You have a new emergency notification',
-    icon: '/pwa-192x192.png',
-    badge: '/pwa-192x192.png',
-    vibrate: [200, 100, 200, 100, 200],
-    tag: 'emergency-notification',
+const messaging = firebase.messaging();
+messaging.onBackgroundMessage((payload) => {
+  const title = payload.data?.title || 'Emergency Alert';
+  const body = payload.data?.body || 'A new emergency alert is available.';
+  const path = payload.data?.path || '/';
+
+  self.registration.showNotification(title, {
+    body,
+    icon: '/favicon.ico',
+    badge: '/favicon.ico',
+    tag: payload.data?.alert_id || 'emergency-notification',
     requireInteraction: true,
-    data: {
-      url: '/'
-    }
-  };
-
-  if (event.data) {
-    try {
-      const payload = event.data.json();
-      console.log('[Service Worker] Push data:', payload);
-      
-      notificationData = {
-        title: payload.notification?.title || payload.data?.title || 'Emergency Alert',
-        body: payload.notification?.body || payload.data?.body || 'You have a new emergency notification',
-        icon: payload.notification?.icon || '/pwa-192x192.png',
-        badge: '/pwa-192x192.png',
-        vibrate: [200, 100, 200, 100, 200],
-        tag: payload.data?.tag || 'emergency-notification',
-        requireInteraction: true,
-        data: {
-          url: payload.data?.click_action || payload.notification?.click_action || '/',
-          ...payload.data
-        }
-      };
-    } catch (e) {
-      console.log('[Service Worker] Error parsing push data:', e);
-    }
-  }
-
-  event.waitUntil(
-    self.registration.showNotification(notificationData.title, notificationData)
-  );
+    data: { path },
+  });
 });
 
-self.addEventListener('notificationclick', function(event) {
-  console.log('[Service Worker] Notification click received.');
-  
+self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  
-  const urlToOpen = event.notification.data?.url || '/';
-  
-  event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
-      // Check if there's already a window open
-      for (let i = 0; i < clientList.length; i++) {
-        const client = clientList[i];
-        if (client.url.includes(self.location.origin) && 'focus' in client) {
-          client.focus();
-          if (urlToOpen !== '/') {
-            client.navigate(urlToOpen);
-          }
-          return;
-        }
-      }
-      // If no window is open, open a new one
-      if (clients.openWindow) {
-        return clients.openWindow(urlToOpen);
-      }
-    })
-  );
-});
+  const requestedPath = event.notification.data?.path || '/';
+  const destination = new URL(requestedPath, self.location.origin);
+  if (destination.origin !== self.location.origin) return;
 
-// Handle background message
-self.addEventListener('message', function(event) {
-  console.log('[Service Worker] Message received:', event.data);
-  
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
+  event.waitUntil((async () => {
+    const windows = await clients.matchAll({ type: 'window', includeUncontrolled: true });
+    const existing = windows.find((client) => client.url.startsWith(self.location.origin));
+    if (existing) {
+      await existing.navigate(destination.href);
+      return existing.focus();
+    }
+    return clients.openWindow(destination.href);
+  })());
 });
-
-console.log('[Service Worker] Firebase Messaging SW loaded');

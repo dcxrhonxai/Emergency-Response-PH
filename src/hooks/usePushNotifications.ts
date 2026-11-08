@@ -41,7 +41,6 @@ const hasFirebaseWebConfig = Boolean(
 
 export const usePushNotifications = ({ userId }: UsePushNotificationsProps) => {
   const [fcmToken, setFcmToken] = useState<string | null>(null);
-  const [messaging, setMessaging] = useState<Messaging | null>(null);
   const [permissionStatus, setPermissionStatus] = useState<NotificationPermission>('default');
   const [registrationStatus, setRegistrationStatus] = useState<PushRegistrationStatus>('idle');
   const { shouldShowNotification, isWithinQuietHours, getQuietHoursStatus } = useNotificationFilter();
@@ -73,10 +72,7 @@ export const usePushNotifications = ({ userId }: UsePushNotificationsProps) => {
       }
 
       const app = getApps().find((existing) => existing.name === '[DEFAULT]') || initializeApp(firebaseConfig);
-      const messagingInstance = getMessaging(app);
-      setMessaging(messagingInstance);
-
-      return messagingInstance;
+      return getMessaging(app);
     } catch (err) {
       console.error('Error initializing Firebase Messaging:', err);
       return null;
@@ -118,7 +114,7 @@ export const usePushNotifications = ({ userId }: UsePushNotificationsProps) => {
         return status;
       }
 
-      const messagingInstance = messaging || await initializeFirebaseMessaging();
+      const messagingInstance = await initializeFirebaseMessaging();
       if (!messagingInstance) {
         setRegistrationStatus('unsupported');
         return 'unsupported';
@@ -148,7 +144,7 @@ export const usePushNotifications = ({ userId }: UsePushNotificationsProps) => {
       setRegistrationStatus('error');
       return 'error';
     }
-  }, [userId, messaging, initializeFirebaseMessaging, saveFCMToken]);
+  }, [userId, initializeFirebaseMessaging, saveFCMToken]);
 
   const requestPermission = useCallback(async () => {
     return registerWebDevice(true);
@@ -180,11 +176,14 @@ export const usePushNotifications = ({ userId }: UsePushNotificationsProps) => {
       if (!active) return;
       setPermissionStatus(Notification.permission);
       await registerWebDevice(false);
+      if (!active) return;
 
       // Handle foreground messages with notification filtering
       unsubscribe = onMessage(msg, (payload) => {
         // Check if notification should be shown based on user preferences and quiet hours
-        const emergencyType = payload.data?.emergency_type || payload.notification?.title || '';
+        const title = payload.notification?.title || payload.data?.title || 'Emergency Alert';
+        const body = payload.notification?.body || payload.data?.body || 'A new emergency alert is available.';
+        const emergencyType = payload.data?.emergency_type || title;
         if (!shouldShowNotification(emergencyType)) {
           // Log filtered notification for history
           try {
@@ -203,19 +202,19 @@ export const usePushNotifications = ({ userId }: UsePushNotificationsProps) => {
         playEmergencySound(emergencyType);
 
         // Show toast notification for foreground messages
-        toast(payload.notification?.title || 'New Notification', {
-          description: payload.notification?.body,
+        toast(title, {
+          description: body,
           duration: 10000,
-          action: payload.data?.url ? {
+          action: payload.data?.path ? {
             label: 'View',
-            onClick: () => window.location.href = payload.data?.url || '/',
+            onClick: () => window.location.href = payload.data?.path || '/',
           } : undefined,
         });
 
         // Also show browser notification if permission granted
         if (Notification.permission === 'granted') {
-          new Notification(payload.notification?.title || 'Emergency Alert', {
-            body: payload.notification?.body,
+          new Notification(title, {
+            body,
             icon: '/favicon.ico',
             badge: '/favicon.ico',
             tag: 'emergency-notification',
@@ -247,6 +246,7 @@ export const usePushNotifications = ({ userId }: UsePushNotificationsProps) => {
       });
 
       if (error) throw error;
+      return data;
     } catch (error) {
       console.error('Error sending push notification:', error);
       throw error;
@@ -260,7 +260,7 @@ export const usePushNotifications = ({ userId }: UsePushNotificationsProps) => {
     data?: Record<string, any>
   ) => {
     try {
-      const { error } = await supabase.functions.invoke('send-push-notification', {
+      const { data, error } = await supabase.functions.invoke('send-push-notification', {
         body: {
           tokens,
           title,
@@ -270,6 +270,7 @@ export const usePushNotifications = ({ userId }: UsePushNotificationsProps) => {
       });
 
       if (error) throw error;
+      return data;
     } catch (error) {
       console.error('Error sending push notification:', error);
       throw error;

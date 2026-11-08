@@ -1,150 +1,131 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
+import { createClient } from 'npm:@supabase/supabase-js@2';
+import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+const GATEWAY_URL = 'https://connector-gateway.lovable.dev/firebase_messaging';
 
-interface FCMMessage {
-  to: string;
-  notification: {
-    title: string;
-    body: string;
-    icon?: string;
-    click_action?: string;
-  };
-  data?: Record<string, any>;
-  priority?: string;
-}
+const jsonResponse = (body: Record<string, unknown>, status = 200) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
 
-serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+  if (req.method !== 'POST') return jsonResponse({ error: 'Method not allowed' }, 405);
+
+  const authorization = req.headers.get('Authorization');
+  if (!authorization?.startsWith('Bearer ')) return jsonResponse({ error: 'Unauthorized' }, 401);
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const anonKey = Deno.env.get('SUPABASE_ANON_KEY');
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+    const connectionApiKey = Deno.env.get('FIREBASE_MESSAGING_API_KEY');
 
-    const { userId, title, body, data, tokens } = await req.json();
-    
-    const FCM_SERVER_KEY = Deno.env.get('FCM_SERVER_KEY');
-    
-    if (!FCM_SERVER_KEY) {
-      console.error('FCM_SERVER_KEY not configured');
-      return new Response(
-        JSON.stringify({ error: 'FCM not configured' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    if (!supabaseUrl || !anonKey || !serviceRoleKey || !lovableApiKey || !connectionApiKey) {
+      console.error('Push notification service configuration is incomplete');
+      return jsonResponse({ error: 'Push notification service is not configured' }, 503);
     }
 
-    let fcmTokens: string[] = [];
+    const userClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authorization } },
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+    const jwt = authorization.slice('Bearer '.length);
+    const { data: claimsData, error: claimsError } = await userClient.auth.getClaims(jwt);
+    const authenticatedUserId = claimsData?.claims?.sub;
+    if (claimsError || typeof authenticatedUserId !== 'string') {
+      return jsonResponse({ error: 'Unauthorized' }, 401);
+    }
 
-    // If specific tokens provided, use those
-    if (tokens && Array.isArray(tokens)) {
-      fcmTokens = tokens.filter(Boolean);
-    } else if (userId) {
-      // Get user's FCM token from profile
-      const { data: profile, error: profileError } = await supabaseClient
-        .from('profiles')
-        .select('fcm_token')
-        .eq('id', userId)
-        .single();
+    const body = await req.json().catch(() => null);
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+      return jsonResponse({ error: 'Invalid request body' }, 400);
+    }
 
-      if (profileError) {
-        console.error('Error fetching profile:', profileError);
-        throw new Error('Failed to fetch user profile');
+    const { userId, title, body: messageBody, data } = body as Record<string, unknown>;
+    if (userId !== authenticatedUserId) return jsonResponse({ error: 'Forbidden' }, 403);
+    if (typeof title !== 'string' || title.trim().length === 0 || title.length > 100) {
+      return jsonResponse({ error: 'Title must be between 1 and 100 characters' }, 400);
+    }
+    if (typeof messageBody !== 'string' || messageBody.trim().length === 0 || messageBody.length > 240) {
+      return jsonResponse({ error: 'Message must be between 1 and 240 characters' }, 400);
+    }
+
+    const messageData: Record<string, string> = {};
+    if (data !== undefined) {
+      if (!data || typeof data !== 'object' || Array.isArray(data)) {
+        return jsonResponse({ error: 'Notification data must be an object of text values' }, 400);
       }
-
-      if (profile?.fcm_token) {
-        fcmTokens = [profile.fcm_token];
+      const entries = Object.entries(data as Record<string, unknown>);
+      if (entries.length > 20 || entries.some(([key, value]) =>
+        !/^[a-zA-Z0-9_]{1,40}$/.test(key) ||
+        /^(from|message_type|notification|google\.|gcm\.|collapse_key)/i.test(key) ||
+        typeof value !== 'string' || value.length > 500
+      )) {
+        return jsonResponse({ error: 'Notification data contains an invalid field' }, 400);
       }
+      for (const [key, value] of entries) messageData[key] = value as string;
+    }
+    messageData.title = title.trim();
+    messageData.body = messageBody.trim();
+
+    const adminClient = createClient(supabaseUrl, serviceRoleKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+    const { data: profile, error: profileError } = await adminClient
+      .from('profiles')
+      .select('fcm_token')
+      .eq('id', authenticatedUserId)
+      .maybeSingle();
+
+    if (profileError) {
+      console.error('Could not load the signed-in user notification token:', profileError.message);
+      return jsonResponse({ error: 'Could not load this device registration' }, 500);
+    }
+    if (!profile?.fcm_token) {
+      return jsonResponse({ sent: 0, reason: 'device_not_registered' });
     }
 
-    if (fcmTokens.length === 0) {
-      console.log('No FCM tokens to send to');
-      return new Response(
-        JSON.stringify({ message: 'No FCM tokens found', sent: 0 }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    console.log(`Sending push notification to ${fcmTokens.length} device(s)`);
-    console.log('Title:', title);
-    console.log('Body:', body);
-
-    const results = [];
-
-    for (const token of fcmTokens) {
-      const message: FCMMessage = {
-        to: token,
-        notification: {
-          title,
-          body,
-          icon: '/pwa-192x192.png',
-          click_action: 'https://fcbb65b3-90f2-4418-90e8-a8de327e1a60.lovableproject.com',
+    const response = await fetch(`${GATEWAY_URL}/v1/projects/_/messages:send`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${lovableApiKey}`,
+        'X-Connection-Api-Key': connectionApiKey,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        message: {
+          token: profile.fcm_token,
+          data: messageData,
+          webpush: { headers: { Urgency: 'high' } },
         },
-        data: data || {},
-        priority: 'high',
-      };
+      }),
+    });
 
+    const responseText = await response.text();
+    if (!response.ok) {
+      let providerStatus = '';
       try {
-        const fcmResponse = await fetch('https://fcm.googleapis.com/fcm/send', {
-          method: 'POST',
-          headers: {
-            'Authorization': `key=${FCM_SERVER_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(message),
-        });
-
-        const fcmData = await fcmResponse.json();
-        console.log('FCM response for token:', token.substring(0, 20) + '...', fcmData);
-        
-        results.push({
-          token: token.substring(0, 20) + '...',
-          success: fcmData.success === 1,
-          error: fcmData.results?.[0]?.error,
-        });
-
-        // If token is invalid, remove it from the profile
-        if (fcmData.results?.[0]?.error === 'InvalidRegistration' || 
-            fcmData.results?.[0]?.error === 'NotRegistered') {
-          console.log('Removing invalid FCM token');
-          await supabaseClient
-            .from('profiles')
-            .update({ fcm_token: null })
-            .eq('fcm_token', token);
-        }
-      } catch (err) {
-        console.error('FCM send error:', err);
-        results.push({
-          token: token.substring(0, 20) + '...',
-          success: false,
-          error: String(err),
-        });
+        const parsed = JSON.parse(responseText);
+        providerStatus = parsed?.error?.status || '';
+      } catch {
+        // Preserve the original provider response below.
       }
+
+      if (response.status === 404 || (response.status === 400 && providerStatus === 'INVALID_ARGUMENT')) {
+        await adminClient.from('profiles').update({ fcm_token: null }).eq('id', authenticatedUserId);
+        return jsonResponse({ sent: 0, reason: 'device_registration_expired' });
+      }
+
+      console.error(`Firebase message send failed [${response.status}]: ${responseText}`);
+      return jsonResponse({ error: 'Firebase could not send this notification', status: response.status, details: responseText }, response.status);
     }
 
-    const successCount = results.filter(r => r.success).length;
-
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: `Push notifications sent: ${successCount}/${fcmTokens.length}`,
-        results,
-      }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-
+    return jsonResponse({ sent: 1 });
   } catch (error) {
     console.error('Error in send-push-notification:', error);
-    return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return jsonResponse({ error: 'Could not send the push notification' }, 500);
   }
 });
