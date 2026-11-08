@@ -1,0 +1,1 @@
+- Send Firebase push messages only from authenticated server-side code through the linked connector; client code must never hold sender credentials.
