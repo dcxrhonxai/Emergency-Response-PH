@@ -13,6 +13,8 @@ dependencies {
     implementation project(':capacitor-camera')
     implementation project(':capacitor-file-transfer')
     implementation project(':capacitor-filesystem')
+    implementation project(':capacitor-haptics')
+    implementation project(':revenuecat-purchases-capacitor')
     implementation project(':capacitor-voice-recorder')
 
 }

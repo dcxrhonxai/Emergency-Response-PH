@@ -1,0 +1,465 @@
+diff --git a/node_modules/@capacitor-community/media/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/AndroidManifest.xml b/node_modules/@capacitor-community/media/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/AndroidManifest.xml
+new file mode 100644
+index 0000000..4f7327a
+--- /dev/null
++++ b/node_modules/@capacitor-community/media/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/AndroidManifest.xml
+@@ -0,0 +1,7 @@
++<?xml version="1.0" encoding="utf-8"?>
++<manifest xmlns:android="http://schemas.android.com/apk/res/android"
++    package="com.getcapacitor.community.media" >
++
++    <uses-sdk android:minSdkVersion="23" />
++
++</manifest>
+\ No newline at end of file
+diff --git a/node_modules/@capacitor-community/media/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/output-metadata.json b/node_modules/@capacitor-community/media/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/output-metadata.json
+new file mode 100644
+index 0000000..8a760ce
+--- /dev/null
++++ b/node_modules/@capacitor-community/media/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/output-metadata.json
+@@ -0,0 +1,18 @@
++{
++  "version": 3,
++  "artifactType": {
++    "type": "AAPT_FRIENDLY_MERGED_MANIFESTS",
++    "kind": "Directory"
++  },
++  "applicationId": "com.getcapacitor.community.media",
++  "variantName": "debug",
++  "elements": [
++    {
++      "type": "SINGLE",
++      "filters": [],
++      "attributes": [],
++      "outputFile": "AndroidManifest.xml"
++    }
++  ],
++  "elementType": "File"
++}
+\ No newline at end of file
+diff --git a/node_modules/@capacitor-community/media/android/build/intermediates/aar_metadata/debug/writeDebugAarMetadata/aar-metadata.properties b/node_modules/@capacitor-community/media/android/build/intermediates/aar_metadata/debug/writeDebugAarMetadata/aar-metadata.properties
+new file mode 100644
+index 0000000..1211b1e
+--- /dev/null
++++ b/node_modules/@capacitor-community/media/android/build/intermediates/aar_metadata/debug/writeDebugAarMetadata/aar-metadata.properties
+@@ -0,0 +1,6 @@
++aarFormatVersion=1.0
++aarMetadataVersion=1.0
++minCompileSdk=1
++minCompileSdkExtension=0
++minAndroidGradlePluginVersion=1.0.0
++coreLibraryDesugaringEnabled=false
+diff --git a/node_modules/@capacitor-community/media/android/build/intermediates/annotation_processor_list/debug/javaPreCompileDebug/annotationProcessors.json b/node_modules/@capacitor-community/media/android/build/intermediates/annotation_processor_list/debug/javaPreCompileDebug/annotationProcessors.json
+new file mode 100644
+index 0000000..9e26dfe
+--- /dev/null
++++ b/node_modules/@capacitor-community/media/android/build/intermediates/annotation_processor_list/debug/javaPreCompileDebug/annotationProcessors.json
+@@ -0,0 +1 @@
++{}
+\ No newline at end of file
+diff --git a/node_modules/@capacitor-community/media/android/build/intermediates/compile_r_class_jar/debug/generateDebugRFile/R.jar b/node_modules/@capacitor-community/media/android/build/intermediates/compile_r_class_jar/debug/generateDebugRFile/R.jar
+new file mode 100644
+index 0000000..04c0539
+Binary files /dev/null and b/node_modules/@capacitor-community/media/android/build/intermediates/compile_r_class_jar/debug/generateDebugRFile/R.jar differ
+diff --git a/node_modules/@capacitor-community/media/android/build/intermediates/compile_symbol_list/debug/generateDebugRFile/R.txt b/node_modules/@capacitor-community/media/android/build/intermediates/compile_symbol_list/debug/generateDebugRFile/R.txt
+new file mode 100644
+index 0000000..e69de29
+diff --git a/node_modules/@capacitor-community/media/android/build/intermediates/incremental/debug/packageDebugResources/compile-file-map.properties b/node_modules/@capacitor-community/media/android/build/intermediates/incremental/debug/packageDebugResources/compile-file-map.properties
+new file mode 100644
+index 0000000..00672ec
+--- /dev/null
++++ b/node_modules/@capacitor-community/media/android/build/intermediates/incremental/debug/packageDebugResources/compile-file-map.properties
+@@ -0,0 +1 @@
++#Mon Oct 05 21:36:42 PST 2026
+diff --git a/node_modules/@capacitor-community/media/android/build/intermediates/incremental/debug/packageDebugResources/merger.xml b/node_modules/@capacitor-community/media/android/build/intermediates/incremental/debug/packageDebugResources/merger.xml
+new file mode 100644
+index 0000000..06b70bd
+--- /dev/null
++++ b/node_modules/@capacitor-community/media/android/build/intermediates/incremental/debug/packageDebugResources/merger.xml
+@@ -0,0 +1,2 @@
++<?xml version="1.0" encoding="utf-8"?>
++<merger version="3"><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="main$Generated" generated="true" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="C:\Users\DC\ProjectAndroid\Emergency-Response-PH\node_modules\@capacitor-community\media\android\src\main\res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="main" generated-set="main$Generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~:!&lt;dir>navigation"><source path="C:\Users\DC\ProjectAndroid\Emergency-Response-PH\node_modules\@capacitor-community\media\android\src\main\res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="debug$Generated" generated="true" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="C:\Users\DC\ProjectAndroid\Emergency-Response-PH\node_modules\@capacitor-community\media\android\src\debug\res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="debug" generated-set="debug$Generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~:!&lt;dir>navigation"><source path="C:\Users\DC\ProjectAndroid\Emergency-Response-PH\node_modules\@capacitor-community\media\android\src\debug\res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="generated$Generated" generated="true" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="C:\Users\DC\ProjectAndroid\Emergency-Response-PH\node_modules\@capacitor-community\media\android\build\generated\res\resValues\debug"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="generated" generated-set="generated$Generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~:!&lt;dir>navigation"><source path="C:\Users\DC\ProjectAndroid\Emergency-Response-PH\node_modules\@capacitor-community\media\android\build\generated\res\resValues\debug"/></dataSet><mergedItems/></merger>
+\ No newline at end of file
+diff --git a/node_modules/@capacitor-community/media/android/build/intermediates/incremental/mergeDebugAssets/merger.xml b/node_modules/@capacitor-community/media/android/build/intermediates/incremental/mergeDebugAssets/merger.xml
+new file mode 100644
+index 0000000..966e0e4
+--- /dev/null
++++ b/node_modules/@capacitor-community/media/android/build/intermediates/incremental/mergeDebugAssets/merger.xml
+@@ -0,0 +1,2 @@
++<?xml version="1.0" encoding="utf-8"?>
++<merger version="3"><dataSet config="main" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="C:\Users\DC\ProjectAndroid\Emergency-Response-PH\node_modules\@capacitor-community\media\android\src\main\assets"/></dataSet><dataSet config="debug" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="C:\Users\DC\ProjectAndroid\Emergency-Response-PH\node_modules\@capacitor-community\media\android\src\debug\assets"/></dataSet><dataSet config="generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="C:\Users\DC\ProjectAndroid\Emergency-Response-PH\node_modules\@capacitor-community\media\android\build\intermediates\shader_assets\debug\compileDebugShaders\out"/></dataSet></merger>
+\ No newline at end of file
+diff --git a/node_modules/@capacitor-community/media/android/build/intermediates/incremental/mergeDebugJniLibFolders/merger.xml b/node_modules/@capacitor-community/media/android/build/intermediates/incremental/mergeDebugJniLibFolders/merger.xml
+new file mode 100644
+index 0000000..6028a09
+--- /dev/null
++++ b/node_modules/@capacitor-community/media/android/build/intermediates/incremental/mergeDebugJniLibFolders/merger.xml
+@@ -0,0 +1,2 @@
++<?xml version="1.0" encoding="utf-8"?>
++<merger version="3"><dataSet config="main" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="C:\Users\DC\ProjectAndroid\Emergency-Response-PH\node_modules\@capacitor-community\media\android\src\main\jniLibs"/></dataSet><dataSet config="debug" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="C:\Users\DC\ProjectAndroid\Emergency-Response-PH\node_modules\@capacitor-community\media\android\src\debug\jniLibs"/></dataSet></merger>
+\ No newline at end of file
+diff --git a/node_modules/@capacitor-community/media/android/build/intermediates/incremental/mergeDebugShaders/merger.xml b/node_modules/@capacitor-community/media/android/build/intermediates/incremental/mergeDebugShaders/merger.xml
+new file mode 100644
+index 0000000..20acc75
+--- /dev/null
++++ b/node_modules/@capacitor-community/media/android/build/intermediates/incremental/mergeDebugShaders/merger.xml
+@@ -0,0 +1,2 @@
++<?xml version="1.0" encoding="utf-8"?>
++<merger version="3"><dataSet config="main" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="C:\Users\DC\ProjectAndroid\Emergency-Response-PH\node_modules\@capacitor-community\media\android\src\main\shaders"/></dataSet><dataSet config="debug" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="C:\Users\DC\ProjectAndroid\Emergency-Response-PH\node_modules\@capacitor-community\media\android\src\debug\shaders"/></dataSet></merger>
+\ No newline at end of file
+diff --git a/node_modules/@capacitor-community/media/android/build/intermediates/local_only_symbol_list/debug/parseDebugLocalResources/R-def.txt b/node_modules/@capacitor-community/media/android/build/intermediates/local_only_symbol_list/debug/parseDebugLocalResources/R-def.txt
+new file mode 100644
+index 0000000..78ac5b8
+--- /dev/null
++++ b/node_modules/@capacitor-community/media/android/build/intermediates/local_only_symbol_list/debug/parseDebugLocalResources/R-def.txt
+@@ -0,0 +1,2 @@
++R_DEF: Internal format may change without notice
++local
+diff --git a/node_modules/@capacitor-community/media/android/build/intermediates/manifest_merge_blame_file/debug/processDebugManifest/manifest-merger-blame-debug-report.txt b/node_modules/@capacitor-community/media/android/build/intermediates/manifest_merge_blame_file/debug/processDebugManifest/manifest-merger-blame-debug-report.txt
+new file mode 100644
+index 0000000..5cb6e8b
+--- /dev/null
++++ b/node_modules/@capacitor-community/media/android/build/intermediates/manifest_merge_blame_file/debug/processDebugManifest/manifest-merger-blame-debug-report.txt
+@@ -0,0 +1,7 @@
++1<?xml version="1.0" encoding="utf-8"?>
++2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
++3    package="com.getcapacitor.community.media" >
++4
++5    <uses-sdk android:minSdkVersion="23" />
++6
++7</manifest>
+diff --git a/node_modules/@capacitor-community/media/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml b/node_modules/@capacitor-community/media/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml
+new file mode 100644
+index 0000000..4f7327a
+--- /dev/null
++++ b/node_modules/@capacitor-community/media/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml
+@@ -0,0 +1,7 @@
++<?xml version="1.0" encoding="utf-8"?>
++<manifest xmlns:android="http://schemas.android.com/apk/res/android"
++    package="com.getcapacitor.community.media" >
++
++    <uses-sdk android:minSdkVersion="23" />
++
++</manifest>
+\ No newline at end of file
+diff --git a/node_modules/@capacitor-community/media/android/build/intermediates/navigation_json/debug/extractDeepLinksDebug/navigation.json b/node_modules/@capacitor-community/media/android/build/intermediates/navigation_json/debug/extractDeepLinksDebug/navigation.json
+new file mode 100644
+index 0000000..0637a08
+--- /dev/null
++++ b/node_modules/@capacitor-community/media/android/build/intermediates/navigation_json/debug/extractDeepLinksDebug/navigation.json
+@@ -0,0 +1 @@
++[]
+\ No newline at end of file
+diff --git a/node_modules/@capacitor-community/media/android/build/intermediates/nested_resources_validation_report/debug/generateDebugResources/nestedResourcesValidationReport.txt b/node_modules/@capacitor-community/media/android/build/intermediates/nested_resources_validation_report/debug/generateDebugResources/nestedResourcesValidationReport.txt
+new file mode 100644
+index 0000000..08f4ebe
+--- /dev/null
++++ b/node_modules/@capacitor-community/media/android/build/intermediates/nested_resources_validation_report/debug/generateDebugResources/nestedResourcesValidationReport.txt
+@@ -0,0 +1 @@
++0 Warning/Error
+\ No newline at end of file
+diff --git a/node_modules/@capacitor-community/media/android/build/intermediates/symbol_list_with_package_name/debug/generateDebugRFile/package-aware-r.txt b/node_modules/@capacitor-community/media/android/build/intermediates/symbol_list_with_package_name/debug/generateDebugRFile/package-aware-r.txt
+new file mode 100644
+index 0000000..0daf637
+--- /dev/null
++++ b/node_modules/@capacitor-community/media/android/build/intermediates/symbol_list_with_package_name/debug/generateDebugRFile/package-aware-r.txt
+@@ -0,0 +1 @@
++com.getcapacitor.community.media
+diff --git a/node_modules/@capacitor-community/media/android/build/outputs/logs/manifest-merger-debug-report.txt b/node_modules/@capacitor-community/media/android/build/outputs/logs/manifest-merger-debug-report.txt
+new file mode 100644
+index 0000000..d04055a
+--- /dev/null
++++ b/node_modules/@capacitor-community/media/android/build/outputs/logs/manifest-merger-debug-report.txt
+@@ -0,0 +1,16 @@
++-- Merging decision tree log ---
++manifest
++ADDED from C:\Users\DC\ProjectAndroid\Emergency-Response-PH\node_modules\@capacitor-community\media\android\src\main\AndroidManifest.xml:2:3-4:14
++INJECTED from C:\Users\DC\ProjectAndroid\Emergency-Response-PH\node_modules\@capacitor-community\media\android\src\main\AndroidManifest.xml:2:3-4:14
++	package
++		INJECTED from C:\Users\DC\ProjectAndroid\Emergency-Response-PH\node_modules\@capacitor-community\media\android\src\main\AndroidManifest.xml
++	xmlns:android
++		ADDED from C:\Users\DC\ProjectAndroid\Emergency-Response-PH\node_modules\@capacitor-community\media\android\src\main\AndroidManifest.xml:2:13-71
++uses-sdk
++INJECTED from C:\Users\DC\ProjectAndroid\Emergency-Response-PH\node_modules\@capacitor-community\media\android\src\main\AndroidManifest.xml reason: use-sdk injection requested
++INJECTED from C:\Users\DC\ProjectAndroid\Emergency-Response-PH\node_modules\@capacitor-community\media\android\src\main\AndroidManifest.xml
++INJECTED from C:\Users\DC\ProjectAndroid\Emergency-Response-PH\node_modules\@capacitor-community\media\android\src\main\AndroidManifest.xml
++	android:targetSdkVersion
++		INJECTED from C:\Users\DC\ProjectAndroid\Emergency-Response-PH\node_modules\@capacitor-community\media\android\src\main\AndroidManifest.xml
++	android:minSdkVersion
++		INJECTED from C:\Users\DC\ProjectAndroid\Emergency-Response-PH\node_modules\@capacitor-community\media\android\src\main\AndroidManifest.xml
+diff --git a/node_modules/@capacitor-community/media/android/src/main/java/com/getcapacitor/community/media/MediaPlugin.java b/node_modules/@capacitor-community/media/android/src/main/java/com/getcapacitor/community/media/MediaPlugin.java
+index ff205a4..e9f5365 100644
+--- a/node_modules/@capacitor-community/media/android/src/main/java/com/getcapacitor/community/media/MediaPlugin.java
++++ b/node_modules/@capacitor-community/media/android/src/main/java/com/getcapacitor/community/media/MediaPlugin.java
+@@ -41,17 +41,17 @@ import okhttp3.Response;
+ import okhttp3.ResponseBody;
+ 
+ @CapacitorPlugin(
+-    name = "Media",
+-    permissions = {
+-        @Permission(
+-            strings = { Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE },
+-            alias = "publicStorage"
+-        ),
+-        @Permission(
+-            strings = { Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO },
+-            alias = "publicStorage13Plus"
+-        )
+-    }
++        name = "Media",
++        permissions = {
++                @Permission(
++                        strings = { Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE },
++                        alias = "publicStorage"
++                ),
++                @Permission(
++                        strings = { Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO },
++                        alias = "publicStorage13Plus"
++                )
++        }
+ )
+ public class MediaPlugin extends Plugin {
+ 
+@@ -170,9 +170,9 @@ public class MediaPlugin extends Plugin {
+         Set<String> identifiers = new HashSet<String>();
+ 
+         String[] projection = new String[] {
+-            MediaStore.MediaColumns.BUCKET_DISPLAY_NAME,
+-            MediaStore.MediaColumns.BUCKET_ID,
+-            MediaStore.MediaColumns.DATA
++                MediaStore.MediaColumns.BUCKET_DISPLAY_NAME,
++                MediaStore.MediaColumns.BUCKET_ID,
++                MediaStore.MediaColumns.DATA
+         };
+ 
+         Uri imageUri = isGalleryMode() ?
+@@ -184,8 +184,8 @@ public class MediaPlugin extends Plugin {
+                 MediaStore.Video.Media.INTERNAL_CONTENT_URI;
+ 
+         Cursor[] curs = {
+-            getActivity().getContentResolver().query(imageUri, projection, null, null, null),
+-            getActivity().getContentResolver().query(videoUri, projection, null, null, null)
++                getActivity().getContentResolver().query(imageUri, projection, null, null, null),
++                getActivity().getContentResolver().query(videoUri, projection, null, null, null)
+         };
+ 
+         for (Cursor cur : curs) {
+@@ -235,218 +235,4 @@ public class MediaPlugin extends Plugin {
+         data.put("path", _getAlbumsPath());
+         call.resolve(data);
+     }
+-
+-    private String _getAlbumsPath() {
+-        return getContext().getExternalMediaDirs()[0].getAbsolutePath();
+-    }
+-
+-    private void _saveMedia(PluginCall call) {
+-        Log.d("DEBUG LOG", "___SAVE MEDIA TO ALBUM");
+-        String inputPath = call.getString("path");
+-        if (inputPath == null) {
+-            call.reject("Input file path is required", EC_ARG_ERROR);
+-            return;
+-        }
+-
+-        File inputFile;
+-
+-        if (inputPath.startsWith("data:")) {
+-            try {
+-                String base64EncodedString = inputPath.substring(inputPath.indexOf(",") + 1);
+-                byte[] decodedBytes = Base64.decode(base64EncodedString, Base64.DEFAULT);
+-                String mime = inputPath.split(";", 2)[0].split(":")[1];
+-                String extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mime);
+-                if (extension == null || extension.isEmpty()) {
+-                    call.reject("Cannot identify media type to save image.", EC_ARG_ERROR);
+-                    return;
+-                }
+-
+-                try {
+-                    inputFile = File.createTempFile("tmp", "." + extension, getContext().getCacheDir());
+-                    OutputStream os = new FileOutputStream(inputFile);
+-                    os.write(decodedBytes);
+-                    os.close();
+-                } catch (IOException e) {
+-                    call.reject("Temporary file creation from data URL failed", EC_FS_ERROR);
+-                    return;
+-                }
+-            } catch (Exception e) {
+-                call.reject("Data URL parsing failed.", EC_ARG_ERROR);
+-                return;
+-            }
+-        } else if (inputPath.startsWith("http://") || inputPath.startsWith("https://")) {
+-            OkHttpClient client = new OkHttpClient();
+-            Request okrequest = new Request.Builder().url(inputPath).build();
+-            try {
+-                // Download image
+-                Response response = client.newCall(okrequest).execute();
+-                if (!response.isSuccessful() || response.body() == null) {
+-                    throw new IOException();
+-                }
+-
+-                // Get file extension from URL
+-                String extension = MimeTypeMap.getFileExtensionFromUrl(inputPath);
+-                // If it doesn't have it there,
+-                // attempt to pull extension from MIME type
+-                if (extension.isEmpty()) {
+-                    ResponseBody body = response.body();
+-                    if (body == null) {
+-                        call.reject("Download failed", EC_DOWNLOAD_ERROR);
+-                        return;
+-                    }
+-
+-                    MediaType mt = body.contentType();
+-                    if (mt == null) {
+-                        call.reject("Cannot identify media type to save image.", EC_ARG_ERROR);
+-                        return;
+-                    }
+-
+-                    String mime = mt.type() + "/" + mt.subtype();
+-                    extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mime);
+-                }
+-
+-                // Still no extension? reject
+-                if (extension == null || extension.isEmpty()) {
+-                    call.reject("Cannot identify media type to save image.", EC_ARG_ERROR);
+-                    return;
+-                }
+-
+-                // Save to temp file
+-                try {
+-                    inputFile = File.createTempFile("tmp", "." + extension, getContext().getCacheDir());
+-                    OutputStream os = new FileOutputStream(inputFile);
+-                    os.write(response.body().bytes());
+-                    os.close();
+-                } catch (IOException e) {
+-                    call.reject("Saving download to device failed.", EC_FS_ERROR);
+-                    return;
+-                }
+-            } catch (IOException e) {
+-                call.reject("Download failed", EC_DOWNLOAD_ERROR);
+-                return;
+-            }
+-        } else {
+-            Uri inputUri = Uri.parse(inputPath);
+-            inputFile = new File(inputUri.getPath());
+-        }
+-
+-        String album = call.getString("albumIdentifier");
+-        File albumDir = null;
+-        Log.d("SDK BUILD VERSION", String.valueOf(Build.VERSION.SDK_INT));
+-
+-        if (album != null) {
+-            albumDir = new File(album);
+-        } else {
+-            call.reject("Album identifier required", EC_ARG_ERROR);
+-            return;
+-        }
+-
+-        if (!albumDir.exists() || !albumDir.isDirectory()) {
+-            call.reject("Album identifier does not exist, use getAlbums() to get", EC_ARG_ERROR);
+-            return;
+-        }
+-
+-        Log.d("ENV LOG - ALBUM DIR", String.valueOf(albumDir));
+-
+-        try {
+-            // generate image file name using current date and time
+-            String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmssSSS").format(new Date());
+-            String fileName = call.getString("fileName", "IMG_" + timeStamp);
+-            File expFile = copyFile(inputFile, albumDir, fileName);
+-            scanPhoto(expFile);
+-
+-            JSObject result = new JSObject();
+-            result.put("filePath", expFile.toString());
+-            call.resolve(result);
+-        } catch (RuntimeException e) {
+-            call.reject("Error occurred: " + e, EC_ARG_ERROR);
+-            return;
+-        }
+-    }
+-
+-    private void _createAlbum(PluginCall call) {
+-        Log.d("DEBUG LOG", "___CREATE ALBUM");
+-        String folderName = call.getString("name");
+-
+-        if (folderName == null) {
+-            call.reject("Album name must be given!", EC_ARG_ERROR);
+-            return;
+-        }
+-
+-        File f = new File(_getAlbumsPath(), folderName);
+-
+-        if (!f.exists()) {
+-            if (!f.mkdir()) {
+-                Log.d("DEBUG LOG", "___ERROR ALBUM");
+-                call.reject("Cant create album", EC_FS_ERROR);
+-            } else {
+-                Log.d("DEBUG LOG", "___SUCCESS ALBUM CREATED");
+-                call.success();
+-            }
+-        } else {
+-            Log.d("DEBUG LOG", "___ERROR ALBUM ALREADY EXISTS");
+-            call.reject("Album already exists", EC_FS_ERROR);
+-        }
+-    }
+-
+-    private File copyFile(File inputFile, File albumDir, String fileName) {
+-        // if destination folder does not exist, create it
+-        if (!albumDir.exists()) {
+-            if (!albumDir.mkdir()) {
+-                throw new RuntimeException("Destination folder does not exist and cannot be created.");
+-            }
+-        }
+-
+-        String absolutePath = inputFile.getAbsolutePath();
+-        String extension = absolutePath.substring(absolutePath.lastIndexOf("."));
+-
+-        File newFile = new File(albumDir, fileName + extension);
+-
+-        // Read and write image files
+-        FileChannel inChannel = null;
+-        FileChannel outChannel = null;
+-
+-        try {
+-            inChannel = new FileInputStream(inputFile).getChannel();
+-        } catch (FileNotFoundException e) {
+-            throw new RuntimeException("Source file not found: " + inputFile + ", error: " + e.getMessage());
+-        }
+-        try {
+-            outChannel = new FileOutputStream(newFile).getChannel();
+-        } catch (FileNotFoundException e) {
+-            throw new RuntimeException("Copy file not found: " + newFile + ", error: " + e.getMessage());
+-        }
+-
+-        try {
+-            inChannel.transferTo(0, inChannel.size(), outChannel);
+-        } catch (IOException e) {
+-            throw new RuntimeException("Error transfering file, error: " + e.getMessage());
+-        } finally {
+-            if (inChannel != null) {
+-                try {
+-                    inChannel.close();
+-                } catch (IOException e) {
+-                    Log.d("SaveImage", "Error closing input file channel: " + e.getMessage());
+-                    // does not harm, do nothing
+-                }
+-            }
+-            if (outChannel != null) {
+-                try {
+-                    outChannel.close();
+-                } catch (IOException e) {
+-                    Log.d("SaveImage", "Error closing output file channel: " + e.getMessage());
+-                    // does not harm, do nothing
+-                }
+-            }
+-        }
+-
+-        return newFile;
+-    }
+-
+-    private void scanPhoto(File imageFile) {
+-        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+-        Uri contentUri = Uri.fromFile(imageFile);
+-        mediaScanIntent.setData(contentUri);
+-        bridge.getActivity().sendBroadcast(mediaScanIntent);
+-    }
+ }
