@@ -1,13 +1,13 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    
+
     repositories {
         google()
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.13.2'
+        classpath 'com.android.tools.build:gradle:9.5.1'
         classpath 'com.google.gms:google-services:4.4.2'
         classpath 'com.google.firebase:firebase-crashlytics-gradle:3.0.2'
 
@@ -27,4 +27,20 @@ allprojects {
 
 task clean(type: Delete) {
     delete rootProject.buildDir
+}
+
+// Early-stage interceptor to substitute proguard targets before sub-module compilation evaluates
+gradle.beforeProject { project ->
+    if (project.hasProperty('android')) {
+        project.android.buildTypes.whenObjectAdded { buildType ->
+            def current = buildType.proguardFiles
+            def optimized = current.collect { file ->
+                if (file.toString().contains('proguard-android.txt')) {
+                    return 'proguard-android-optimize.txt'
+                }
+                return file
+            }
+            buildType.proguardFiles = optimized
+        }
+    }
 }
