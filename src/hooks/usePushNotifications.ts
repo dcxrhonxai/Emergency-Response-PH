@@ -3,8 +3,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { initializeApp, getApps } from 'firebase/app';
 import { getMessaging, getToken, isSupported, onMessage, Messaging } from 'firebase/messaging';
 import { Capacitor } from '@capacitor/core';
+import { PushNotifications } from '@capacitor/push-notifications';
 import { useNotificationFilter } from './useNotificationFilter';
 import { useNotificationSounds } from './useNotificationSounds';
+import { toast } from 'sonner';
 
 interface UsePushNotificationsProps {
   userId: string;
@@ -82,8 +84,48 @@ export const usePushNotifications = ({ userId }: UsePushNotificationsProps) => {
   const registerWebDevice = useCallback(async (requestPermission: boolean): Promise<PushRegistrationStatus> => {
     try {
       if (Capacitor.isNativePlatform()) {
-        setRegistrationStatus('native-setup-required');
-        return 'native-setup-required';
+        if (!userId) return 'error';
+        setRegistrationStatus('registering');
+
+        const permissions = await PushNotifications.checkPermissions();
+        const receivePermission = permissions.receive === 'granted'
+          ? permissions.receive
+          : (await PushNotifications.requestPermissions()).receive;
+        if (receivePermission !== 'granted') {
+          setRegistrationStatus('denied');
+          return 'denied';
+        }
+
+        const token = await new Promise<string>(async (resolve, reject) => {
+          let settled = false;
+          const finish = (callback: () => void) => {
+            if (settled) return;
+            settled = true;
+            window.clearTimeout(timeout);
+            void registrationListener.then((listener) => listener.remove());
+            void errorListener.then((listener) => listener.remove());
+            callback();
+          };
+          const timeout = window.setTimeout(() => finish(() => reject(new Error('Push registration timed out'))), 15000);
+          const registrationListener = PushNotifications.addListener('registration', (registration) => {
+            finish(() => resolve(registration.value));
+          });
+          const errorListener = PushNotifications.addListener('registrationError', (error) => {
+            finish(() => reject(new Error(error.error || 'Push registration failed')));
+          });
+          await Promise.all([registrationListener, errorListener]);
+          await PushNotifications.register();
+        });
+
+        const saved = await saveFCMToken(token);
+        if (!saved) {
+          setRegistrationStatus('error');
+          return 'error';
+        }
+
+        setFcmToken(token);
+        setRegistrationStatus('registered');
+        return 'registered';
       }
 
       if (!userId) return 'error';
@@ -253,36 +295,11 @@ export const usePushNotifications = ({ userId }: UsePushNotificationsProps) => {
     }
   };
 
-  const sendPushToTokens = async (
-    tokens: string[],
-    title: string,
-    body: string,
-    data?: Record<string, any>
-  ) => {
-    try {
-      const { data, error } = await supabase.functions.invoke('send-push-notification', {
-        body: {
-          tokens,
-          title,
-          body,
-          data,
-        },
-      });
-
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error('Error sending push notification:', error);
-      throw error;
-    }
-  };
-
   return { 
     fcmToken,
     permissionStatus,
     registrationStatus,
     requestPermission,
     sendPushNotification,
-    sendPushToTokens,
   };
 };
